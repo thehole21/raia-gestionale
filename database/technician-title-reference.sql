@@ -1,0 +1,5 @@
+-- Follow-up to cancel-technician.sql, already applied. Reference only.
+-- The personal account retains role=admin; title=Tecnico is display-only.
+-- raia_sync_staff excludes title=Tecnico; raia_no_technician_assignment checks title.
+-- raia_deleted_orders now includes actor_name and client_data, populated by
+-- raia_archive_details BEFORE INSERT. Active staff can read the archive.
