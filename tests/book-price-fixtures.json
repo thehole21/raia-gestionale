@@ -1,0 +1,1639 @@
+{
+  "source": "listino libri 2026.xlsx",
+  "fixtures": [
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C12",
+      "unit": 2.4362500000000002
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D12",
+      "unit": 2.7862500000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E12",
+      "unit": 2.35625
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F12",
+      "unit": 2.6362500000000004
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C13",
+      "unit": 2.46607
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D13",
+      "unit": 2.8160700000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E13",
+      "unit": 2.38607
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F13",
+      "unit": 2.6660700000000004
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C14",
+      "unit": 2.49568
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D14",
+      "unit": 2.84568
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E14",
+      "unit": 2.41568
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F14",
+      "unit": 2.6956800000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C15",
+      "unit": 2.4598750000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D15",
+      "unit": 2.8098750000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E15",
+      "unit": 2.379875
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F15",
+      "unit": 2.6598750000000004
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C19",
+      "unit": 2.7180000000000004
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D19",
+      "unit": 3.0680000000000005
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E19",
+      "unit": 2.9780000000000006
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F19",
+      "unit": 3.3680000000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C20",
+      "unit": 2.75475
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D20",
+      "unit": 3.10475
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E20",
+      "unit": 3.0147500000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F20",
+      "unit": 3.40475
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C21",
+      "unit": 2.7915
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D21",
+      "unit": 3.1415
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E21",
+      "unit": 3.0515
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F21",
+      "unit": 3.4415
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C22",
+      "unit": 2.7474000000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D22",
+      "unit": 3.0974000000000004
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E22",
+      "unit": 3.0074000000000005
+    },
+    {
+      "pages": 112,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F22",
+      "unit": 3.3974
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C12",
+      "unit": 2.9962500000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D12",
+      "unit": 3.3462500000000004
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E12",
+      "unit": 2.9162500000000002
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F12",
+      "unit": 3.1962500000000005
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C13",
+      "unit": 3.0260700000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D13",
+      "unit": 3.3760700000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E13",
+      "unit": 2.94607
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F13",
+      "unit": 3.2260700000000004
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C14",
+      "unit": 3.05568
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D14",
+      "unit": 3.4056800000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E14",
+      "unit": 2.97568
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F14",
+      "unit": 3.2556800000000004
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C15",
+      "unit": 3.0198750000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D15",
+      "unit": 3.3698750000000004
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E15",
+      "unit": 2.9398750000000002
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F15",
+      "unit": 3.2198750000000005
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C19",
+      "unit": 3.7580000000000005
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D19",
+      "unit": 4.1080000000000005
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E19",
+      "unit": 4.018000000000001
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F19",
+      "unit": 4.408
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C20",
+      "unit": 3.79475
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D20",
+      "unit": 4.14475
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E20",
+      "unit": 4.05475
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F20",
+      "unit": 4.44475
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C21",
+      "unit": 3.8315
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D21",
+      "unit": 4.1815
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E21",
+      "unit": 4.0915
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F21",
+      "unit": 4.4815
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C22",
+      "unit": 3.7874000000000003
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D22",
+      "unit": 4.1374
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E22",
+      "unit": 4.0474000000000006
+    },
+    {
+      "pages": 112,
+      "colorPages": 16,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F22",
+      "unit": 4.4374
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C12",
+      "unit": 1.508359375
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D12",
+      "unit": 1.858359375
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E12",
+      "unit": 1.4283593749999999
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F12",
+      "unit": 1.7083593750000001
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C13",
+      "unit": 1.508625625
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D13",
+      "unit": 1.8586256250000002
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E13",
+      "unit": 1.428625625
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F13",
+      "unit": 1.7086256250000003
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C14",
+      "unit": 1.50889
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D14",
+      "unit": 1.8588900000000002
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E14",
+      "unit": 1.42889
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F14",
+      "unit": 1.7088900000000002
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C15",
+      "unit": 1.5085703124999998
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D15",
+      "unit": 1.8585703125
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E15",
+      "unit": 1.4285703124999998
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F15",
+      "unit": 1.7085703125
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C19",
+      "unit": 1.510875
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D19",
+      "unit": 1.860875
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E19",
+      "unit": 1.770875
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F19",
+      "unit": 2.160875
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C20",
+      "unit": 1.511203125
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D20",
+      "unit": 1.8612031249999998
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E20",
+      "unit": 1.771203125
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F20",
+      "unit": 2.1612031249999997
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C21",
+      "unit": 1.51153125
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D21",
+      "unit": 1.86153125
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E21",
+      "unit": 1.77153125
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F21",
+      "unit": 2.16153125
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C22",
+      "unit": 1.5111375
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D22",
+      "unit": 1.8611375
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E22",
+      "unit": 1.7711375
+    },
+    {
+      "pages": 1,
+      "colorPages": 0,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F22",
+      "unit": 2.1611374999999997
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C12",
+      "unit": 4.7475000000000005
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D12",
+      "unit": 5.0975
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E12",
+      "unit": 4.6675
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F12",
+      "unit": 4.9475
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C13",
+      "unit": 4.82418
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D13",
+      "unit": 5.17418
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E13",
+      "unit": 4.74418
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F13",
+      "unit": 5.024179999999999
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C14",
+      "unit": 4.90032
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D14",
+      "unit": 5.250319999999999
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E14",
+      "unit": 4.82032
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F14",
+      "unit": 5.100319999999999
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C15",
+      "unit": 4.80825
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D15",
+      "unit": 5.15825
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E15",
+      "unit": 4.72825
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F15",
+      "unit": 5.008249999999999
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C19",
+      "unit": 6.192
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D19",
+      "unit": 6.542
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E19",
+      "unit": 6.452
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F19",
+      "unit": 6.842
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C20",
+      "unit": 6.2865
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D20",
+      "unit": 6.6365
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E20",
+      "unit": 6.5465
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F20",
+      "unit": 6.9365
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C21",
+      "unit": 6.381
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D21",
+      "unit": 6.731
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E21",
+      "unit": 6.641
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F21",
+      "unit": 7.031
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C22",
+      "unit": 6.2676
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D22",
+      "unit": 6.6175999999999995
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E22",
+      "unit": 6.5276
+    },
+    {
+      "pages": 288,
+      "colorPages": 24,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F22",
+      "unit": 6.917599999999999
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C12",
+      "unit": 218.29687500000003
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D12",
+      "unit": 218.64687500000002
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E12",
+      "unit": 218.21687500000002
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F12",
+      "unit": 218.49687500000002
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C13",
+      "unit": 219.628125
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D13",
+      "unit": 219.978125
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E13",
+      "unit": 219.548125
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F13",
+      "unit": 219.828125
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C14",
+      "unit": 220.95000000000005
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D14",
+      "unit": 221.30000000000004
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E14",
+      "unit": 220.87000000000003
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F14",
+      "unit": 221.15000000000003
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C15",
+      "unit": 219.35156250000003
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D15",
+      "unit": 219.70156250000002
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E15",
+      "unit": 219.27156250000002
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "15x21",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F15",
+      "unit": 219.55156250000002
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C19",
+      "unit": 380.875
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D19",
+      "unit": 381.225
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E19",
+      "unit": 381.135
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F19",
+      "unit": 381.52500000000003
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C20",
+      "unit": 382.515625
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D20",
+      "unit": 382.865625
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E20",
+      "unit": 382.775625
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano90",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F20",
+      "unit": 383.16562500000003
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C21",
+      "unit": 384.15625
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D21",
+      "unit": 384.50625
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E21",
+      "unit": 384.41625
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "usomano100",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F21",
+      "unit": 384.80625000000003
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": false,
+      "cell": "C22",
+      "unit": 382.1875
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "patinata",
+      "flaps": true,
+      "cell": "D22",
+      "unit": 382.5375
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": false,
+      "cell": "E22",
+      "unit": 382.4475
+    },
+    {
+      "pages": 5000,
+      "colorPages": 5000,
+      "format": "17x24",
+      "paperKey": "avorio80",
+      "coverKey": "marcata",
+      "flaps": true,
+      "cell": "F22",
+      "unit": 382.83750000000003
+    }
+  ],
+  "formulas": {
+    "C12": "=Foglio1!H33*B26+Foglio1!W39+Foglio1!W40+Foglio1!V53*C26",
+    "D12": "=C12+0.35",
+    "E12": "=SUM(C12-0.08)",
+    "F12": "=SUM(D12-0.15)",
+    "C13": "=Foglio1!H34*B26+Foglio1!W39+Foglio1!W40+Foglio1!V53*C26",
+    "D13": "=C13+0.35",
+    "E13": "=SUM(C13-0.08)",
+    "F13": "=SUM(D13-0.15)",
+    "C14": "=Foglio1!H35*B26+Foglio1!W39+Foglio1!W40+Foglio1!V53*C26",
+    "D14": "=C14+0.35",
+    "E14": "=SUM(C14-0.08)",
+    "F14": "=SUM(D14-0.15)",
+    "C15": "=Foglio1!G33*B26+Foglio1!W39+Foglio1!W40+Foglio1!V53*C26",
+    "D15": "=C15+0.35",
+    "E15": "=SUM(C15-0.08)",
+    "F15": "=SUM(D15-0.15)",
+    "C19": "=Foglio1!L12*B26+Foglio1!W45+Foglio1!W46+Foglio1!V55*C26",
+    "D19": "=C19+0.35",
+    "E19": "=SUM(C19+0.26)",
+    "F19": "=SUM(D19+0.3)",
+    "C20": "=Foglio1!L13*B26+Foglio1!W45+Foglio1!W46+Foglio1!V55*C26",
+    "D20": "=C20+0.35",
+    "E20": "=SUM(C20+0.26)",
+    "F20": "=SUM(D20+0.3)",
+    "C21": "=Foglio1!L14*B26+Foglio1!W45+Foglio1!W46+Foglio1!V55*C26",
+    "D21": "=C21+0.35",
+    "E21": "=SUM(C21+0.26)",
+    "F21": "=SUM(D21+0.3)",
+    "C22": "=Foglio1!K12*B26+Foglio1!W45+Foglio1!W46+Foglio1!V55*C26",
+    "D22": "=C22+0.35",
+    "E22": "=SUM(C22+0.26)",
+    "F22": "=SUM(D22+0.3)"
+  }
+}

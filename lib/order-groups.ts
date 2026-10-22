@@ -1,4 +1,11 @@
 import { type Order, type Work, type WorkRow, type Status } from './data';
+export function orderRegistrationNumbers(orders:Order[]):Map<string,number>{
+ const registered=[...orders].sort((a,b)=>
+  (a.created||'9999-99-99').localeCompare(b.created||'9999-99-99')||
+  a.id.localeCompare(b.id)
+ );
+ return new Map(registered.map((order,index)=>[order.id,index+1]));
+}
 export const executionDay=(order:Order)=>order.executionDate || order.created;
 export const planningPeriod=(order:Order)=>order.planningMonth || executionDay(order).slice(0,7);
 export const workPeriods=(r:WorkRow)=>r.production?.planningMonths || [planningPeriod(r.order)];

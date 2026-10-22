@@ -2,17 +2,17 @@ export const STATUSES = ['Sopralluogo', 'Preventivo', 'Da elaborare', 'In lavora
 export type Status = typeof STATUSES[number];
 export type Client = { taxCode?: string; recipientCode?: string; pec?: string; address?: string; postalCode?: string; province?: string; country?: string; ficEntityId?: number; id: string; name: string; email: string; phone: string; vat: string; city: string };
 export type Operator = { id: string; name: string };
-export type SourceRecord = { sheet: string; row: number; values: unknown[]; headers?: string[]; comments?: Record<string,string> };
+export type SourceRecord = { identity?: string; sheet: string; row: number; values: unknown[]; headers?: string[]; comments?: Record<string,string> };
 export type Production = { planningMonths?: string[]; category?: string; section?: string; bookNumber?: string; entryTime?: string; exitTime?: string; urgent?: boolean; comments?: string; additionalNotes?: string; quantity: string; priceUnspecified: boolean; supplier: string; requestedDate: string; requestedText: string; ddtNumber: string; delivery: string; terminated: boolean; invoicing: string };
 export const quantityLabel = (w: Pick<Work, 'qty'|'unit'|'production'>) => w.production ? w.production.quantity || 'Non precisata' : w.qty.toLocaleString('it-IT')+' '+w.unit;
 export const workAmount = (w: Work) => w.production?.priceUnspecified || (w.production && !w.qty) ? 'Da definire' : money(sumWork(w));
 export const workDue = (w: Work, o: Order) => w.production ? w.production.requestedDate : o.due;
 export type Work = { production?: Production; vatId?: number; importKey?: string; source?: SourceRecord; sourceHistory?: SourceRecord[]; id: string; description: string; qty: number; unit: string; price: number; status: Status; operatorId: string; invoiceId: string | null; notes: string };
 export type DeliveryNote = { number: string; date: string };
-export type Order = { planningMonth?: string; customerRequestId?: string; executionDate?: string; ddt?: DeliveryNote; id: string; number: string; clientId: string; created: string; due: string; notes: string; lines: Work[] };
+export type Order = { planningMonth?: string; customerRequestId?: string; executionDate?: string; ddt?: DeliveryNote; solicited?: boolean; solicitedAutoDismissedDue?: string; id: string; number: string; clientId: string; created: string; due: string; notes: string; lines: Work[] };
 export type Draft = { status?: 'draft' | 'validated' | 'creating' | 'created' | 'sending' | 'sent' | 'failed' | 'reconcile'; remoteDocumentId?: number; submissionKey?: string; preparedInvoice?: unknown; id: string; number: string; clientId: string; created: string; workIds: string[] };
 export type Activity = { id: string; at: string; text: string };
-export type Store = { planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
+export type Store = { operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
 export type WorkRow = Work & { client: Client; order: Order; operator: Operator };
 
 export const money = (n: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n || 0);
@@ -28,7 +28,7 @@ export const isClosed = (s: Status) => ['Consegnato', 'Pronto'].includes(s);
 export function flatten(db: Store): WorkRow[] {
   return db.orders.flatMap(order => {
     const client = db.clients.find(c => c.id === order.clientId) || { id: '', name: 'Cliente non trovato', city: '', email: '', phone: '', vat: '' };
-    return order.lines.map(line => ({ ...line, client, order, operator: db.operators.find(o => o.id === line.operatorId) || { id: '', name: '—' } }));
+    return order.lines.map(line => ({ ...line, client, order, operator: db.operators.find(o => o.id === line.operatorId) || db.operatorHistory?.find(o => o.id === line.operatorId) || { id: '', name: '—' } }));
   });
 }
 export function seeded(): Store {

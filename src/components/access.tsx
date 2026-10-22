@@ -1,7 +1,7 @@
 'use client';
 import { createContext, useContext, useEffect, useState, type ReactNode, type FormEvent } from 'react';
 import { cloud, cloudConfigured } from '@/lib/supabase';
-export type Profile = { id: string; name: string; email: string; role: 'admin' | 'operator'; title?: string | null; active: boolean };
+export type Profile = { id: string; name: string; email: string; role: 'admin' | 'operator'; title?: string | null; active: boolean; deleted_at?: string | null };
 const Access = createContext<{ profile: Profile; demo: boolean }>({ profile: { id: 'demo', name: 'Amministratore', email: '', role: 'admin', active: true }, demo: true });
 export const useAccess = () => useContext(Access);
 export function AccessGate({ children }: { children: ReactNode }) {

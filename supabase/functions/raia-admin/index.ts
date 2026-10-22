@@ -20,9 +20,23 @@ Deno.serve(async req=>{
   if(deleted.error){const m=deleted.error.message;return reply({error:m.includes("DRAFT_LINKED")?"Ordine collegato a una bozza: rimuovila prima di cancellare.":m.includes("CONFLICT")?"Dati aggiornati da un altro operatore. Ricarica prima di cancellare.":"Cancellazione non riuscita."},409);}
   return reply({ok:true});
  }
+ if(body.action==="delete-client"){
+  if(typeof body.clientId!=="string"||body.clientId.length>150||typeof body.password!=="string"||!body.password||body.password.length>128||!Number.isSafeInteger(body.expectedRevision))return reply({error:"Dati non validi."},400);
+  if(profile.role!=="admin")return reply({error:"Eliminazione clienti riservata all’amministratore."},403);
+  const proof=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}});
+  const verified=await proof.auth.signInWithPassword({email:user.email,password:body.password});
+  if(verified.error||verified.data.user?.id!==user.id)return reply({error:"Password non corretta o verifica temporaneamente limitata."},403);
+  await proof.auth.signOut({scope:"local"});
+  const deleted=await service.rpc("raia_delete_client",{target_client_id:body.clientId,actor_id:user.id,expected_revision:body.expectedRevision});
+  if(deleted.error){
+   const m=deleted.error.message;
+   return reply({error:m.includes("DRAFT_LINKED")?"Cliente collegato a una bozza di fatturazione: rimuovila prima di eliminare il cliente.":m.includes("CUSTOMER_PORTAL_LINKED")?"Cliente collegato a un account del portale clienti: l’eliminazione non è disponibile finché l’account è attivo.":m.includes("CONFLICT")?"Dati aggiornati da un altro operatore. Ricarica prima di eliminare il cliente.":m.includes("NOT_FOUND")?"Cliente non trovato. Ricarica i dati e riprova.":"Eliminazione non riuscita."},409);
+  }
+  return reply({ok:true});
+ }
  if(profile.role!=="admin")return reply({error:"Operazione riservata all’amministratore."},403);
  if(body.action==="list"){
-  const result=await service.from("raia_profiles").select("*").order("name");if(result.error)throw result.error;return reply(result.data);
+  const result=await service.from("raia_profiles").select("*").is("deleted_at",null).order("name");if(result.error)throw result.error;return reply(result.data);
  }
  if(body.action==="create"){
   const {name,email,password,role}=body;
@@ -35,10 +49,19 @@ Deno.serve(async req=>{
   if(saved.error){await service.auth.admin.deleteUser(created.data.user.id);throw saved.error;}
   return reply(newProfile);
  }
+ if(body.action==="remove"){
+  if(typeof body.id!=="string"||body.id===user.id)return reply({error:"Non puoi eliminare il tuo account."},400);
+  const target=await service.from("raia_profiles").select("id,role,title,deleted_at").eq("id",body.id).single();
+  if(target.error||target.data?.role!=="operator"||target.data?.title==="Tecnico")return reply({error:"Account non eliminabile."},403);
+  // Logical removal immediately revokes staff authorization without losing work history.
+  const removed=await service.from("raia_profiles").update({active:false,deleted_at:target.data.deleted_at||new Date().toISOString()}).eq("id",body.id).eq("role","operator").select("id").single();
+  if(removed.error)throw removed.error;
+  return reply({ok:true});
+ }
  if(body.action==="set-active"){
   if(typeof body.id!=="string"||typeof body.active!=="boolean"||body.id===user.id)return reply({error:"Richiesta non valida."},400);
-  const target=await service.from("raia_profiles").select("role").eq("id",body.id).single();
-  if(target.error||target.data?.role!=="operator")return reply({error:"Account non modificabile."},403);
+  const target=await service.from("raia_profiles").select("role,title,deleted_at").eq("id",body.id).single();
+  if(target.error||target.data?.role!=="operator"||target.data?.deleted_at||target.data?.title==="Tecnico")return reply({error:"Account non modificabile."},403);
   const result=await service.from("raia_profiles").update({active:body.active}).eq("id",body.id);if(result.error)throw result.error;
   return reply({ok:true});
  }
