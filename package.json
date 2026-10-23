@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node tests/core.test.cjs && node tests/production.test.cjs && node tests/year-import.test.cjs && node tests/book-pricing.test.cjs && node tests/operator-removal.test.cjs && node tests/import-incremental.test.cjs && node tests/workspace-merge.test.cjs"
+    "test": "node tests/core.test.cjs && node tests/production.test.cjs && node tests/year-import.test.cjs && node tests/book-pricing.test.cjs && node tests/operator-removal.test.cjs && node tests/import-incremental.test.cjs && node tests/workspace-merge.test.cjs && node tests/group-documents.test.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

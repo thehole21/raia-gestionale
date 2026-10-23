@@ -8,6 +8,7 @@ export function mergeWorkspace(base:Store,local:Store,remote:Store):Store {
  function merge(b:any,l:any,r:any,path:string):any {
   if(same(l,b))return r;
   if(same(r,b)||same(l,r))return l;
+  if(path.endsWith('.ddt'))throw new WorkspaceConflict('DDT condiviso');
   if(path==='drafts')throw new WorkspaceConflict('preparazioni fatture');
   if(Array.isArray(b)&&Array.isArray(l)&&Array.isArray(r)&&[...b,...l,...r].every(x=>x&&typeof x.id==='string')){
    const bm=new Map(b.map(x=>[x.id,x])),lm=new Map(l.map(x=>[x.id,x])),rm=new Map(r.map(x=>[x.id,x]));

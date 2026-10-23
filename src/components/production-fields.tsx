@@ -16,7 +16,6 @@ export function ProductionFields({work,onChange}:{work:Partial<Work>;onChange:(p
  <label className="form-field">Fornitore<input value={p.supplier} onChange={e=>change('supplier',e.target.value)}/></label>
  <label className="form-field">Consegna richiesta<input type="date" value={p.requestedDate} onChange={e=>change('requestedDate',e.target.value)}/></label>
  <label className="form-field">Indicazioni sulla scadenza<input value={p.requestedText} onChange={e=>change('requestedText',e.target.value)} placeholder="Non precisata"/></label>
- <label className="form-field">DDT della lavorazione<input value={p.ddtNumber} onChange={e=>change('ddtNumber',e.target.value)}/></label>
  <label className="form-field">Modalità di consegna{p.category==='Libri'?<select value={p.delivery} onChange={e=>change('delivery',e.target.value)}><option value="">Non precisata</option>{p.delivery&&!BOOK_DELIVERIES.some(v=>v===p.delivery)&&<option value={p.delivery}>{p.delivery}</option>}{BOOK_DELIVERIES.map(v=><option key={v}>{v}</option>)}</select>:<input value={p.delivery} onChange={e=>change('delivery',e.target.value)} placeholder="Es. Ritirano, Noi alla Posta"/>}</label>
  <label className="form-field">Fatturato / indicazioni<input value={p.invoicing} onChange={e=>change('invoicing',e.target.value)} placeholder="Non indicato"/></label>
  <label className="portal-check"><input type="checkbox" checked={p.terminated} onChange={e=>change('terminated',e.target.checked)}/>Terminato</label>

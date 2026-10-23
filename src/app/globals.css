@@ -168,3 +168,34 @@
  .register-group-heading .register-company{flex-direction:column;gap:0}
  .register-group-heading .register-group-action{grid-column:1/-1;min-height:28px}
 }
+
+/* Clear visual hierarchy for always-visible client/day registers. */
+.register-group{border:1px solid #dac5cd;box-shadow:0 2px 7px #63263b08}
+.register-group-heading,.books-register .register-group-heading{background:#f1e3e8;border-left:4px solid #883d55}
+.register-company strong{color:#662b40;font-weight:750;font-size:16px}
+.register-company small{color:#795565;font-weight:650}
+.register-order-title{display:flex;align-items:center;gap:14px;padding:8px 12px;background:#faf5f7;border-bottom:1px solid #eadde2;min-width:0}
+.register-order-title>button{background:none;border:0;text-align:left;color:#492f3a;font:inherit;font-weight:700;overflow-wrap:anywhere;cursor:pointer;flex:1}
+.register-order-title>.register-entry{flex:0 0 auto;min-width:0;background:transparent;padding:0 10px 0 0;border:0}
+.register-count{margin-left:auto;display:flex;align-items:center;gap:8px;color:#755361;font-size:12px;white-space:nowrap}
+.register-count strong{background:#e9d5de;color:#662b40;padding:3px 8px;border-radius:6px;font-size:14px}
+.register-products>.register-work{border-bottom:1px solid #eee5e9;border-left:3px solid #e4cfd8;margin-left:10px}
+.register-products>.register-work:last-child{border-bottom:0}
+.register-job-link strong{font-weight:650}
+.register-field dt{color:#775a66;font-weight:600}
+.register-field:first-child dd{font-weight:750;color:#4e3140}
+.register-overall{font-weight:700}
+.register-done{background:#e1eee7;color:#28583e}
+.book-register-table .book-order-title>td{padding:0;background:#faf5f7}
+.new-line.new-line-without-price{grid-template-columns:24px minmax(0,1fr) 90px 150px 30px}
+@media(max-width:700px){.register-order-title{flex-wrap:wrap;gap:6px 10px}.register-order-title>button{flex-basis:50%}.register-order-title>.register-entry{flex-basis:100%}.new-line.new-line-without-price{grid-template-columns:24px minmax(0,1fr) 70px 30px}.new-line-without-price select{grid-column:2/4}.new-line-without-price>.icon-btn{grid-column:4;grid-row:1}.register-products>.register-work{margin-left:4px}}
+
+.register-overall[data-tone=done],.overall-status[data-tone=done],select.register-process[data-tone=done]{background:#dfede4;border-color:#bad4c3;color:#28583e}
+.register-overall[data-tone=active],.overall-status[data-tone=active],select.register-process[data-tone=active]{background:#e3edf6;border-color:#c2d5e6;color:#305775}
+.register-overall[data-tone=waiting],.overall-status[data-tone=waiting],select.register-process[data-tone=waiting]{background:#fbefd7;border-color:#e5d0a7;color:#79521a}
+.register-overall[data-tone=planned],.overall-status[data-tone=planned],select.register-process[data-tone=planned]{background:#eee6f2;border-color:#d6c4df;color:#67477c}
+.day-heading{background:#f1e3e8;border-left:4px solid #883d55;cursor:default}
+.day-title>strong{color:#662b40;font-weight:750}
+.day-heading .company-avatar{background:#e2c6d1;color:#682c42}
+.register-entry time strong{color:#7a304b}
+@media(max-width:900px){.book-register-table tr.book-order-title{display:block;padding:0}.book-register-table .book-order-title>td{display:block;width:100%}.book-register-table .book-order-title>td:before{display:none}.book-order-title .register-order-title{flex-wrap:wrap}}

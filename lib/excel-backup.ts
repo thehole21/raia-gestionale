@@ -6,14 +6,14 @@ export type ArchivedOrder={id:number;order_data:Order;client_data:Client|null;ac
 const months=['GENNAIO','FEBBRAIO','MARZO','APRILE','MAGGIO','GIUGNO','LUGLIO','AGOSTO','SETTEMBRE','OTTOBRE','NOVEMBRE','DICEMBRE'];
 const general=['','Entrata','Cliente','Lavoro','copie','Operatore','Fornitore','Processo','Consegna richiesta','DDT','Consegna','Terminato','Fatturato'];
 const books=['N.','Cliente','Data ingresso','Orario ingresso','Titolo Lavoro','Copie','Operatore','Processo','Commenti','Consegna','URGENZA','Orario uscita','DDT','Consegna','Terminato','Fatturato'];
-const extra=['Numero ordine','Data esecuzione','Note lavoro','Note ordine','Sezione','Annotazioni','Prezzo unitario','Unità','Sollecitato','ID ordine','ID lavorazione','Commenti lavorazione','Fornitore lavorazione','Data DDT'];
+const extra=['Numero ordine','Data esecuzione','Note lavoro','Note ordine','Sezione','Annotazioni','Prezzo unitario','Unità','Sollecitato','ID ordine','ID lavorazione','Commenti lavorazione','Fornitore lavorazione','Data DDT','Titolo ordine'];
 const date=(value:string|undefined):Date|string=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')?new Date(value+'T12:00:00'):value||'';
 function row(r:WorkRow,book:boolean){
  const p=r.production,qty=p?.quantity??r.qty,op=r.operator.name==='—'?'':r.operator.name;
  const due=date(p?.requestedDate||(!p?r.order.due:''))||p?.requestedText||'Non precisata';
  const ended=p?p.terminated:['Pronto','Consegnato'].includes(r.status),billed=p?.invoicing||(r.invoiceId?'In bozza':'');
  const common=book?[p?.bookNumber||'',r.client.name,date(r.order.created),p?.entryTime||'',r.description,qty,op,r.status,p?.comments||'',due,p?.urgent||false,p?.exitTime||'',p?.ddtNumber||r.order.ddt?.number||'',p?.delivery||'',ended,billed]:['',date(r.order.created),r.client.name,r.description,qty,op,p?.supplier||'',r.status,due,p?.ddtNumber||r.order.ddt?.number||'',p?.delivery||'',ended,billed];
- return [...common,r.order.number,date(r.order.executionDate),r.notes,r.order.notes,p?.section||'',p?.additionalNotes||'',p?.priceUnspecified?'Da definire':r.price,r.unit,r.order.solicited||false,r.order.id,r.id,p?.comments||'',p?.supplier||'',date(r.order.ddt?.date)];
+ return [...common,r.order.number,date(r.order.executionDate),r.notes,r.order.notes,p?.section||'',p?.additionalNotes||'',p?.priceUnspecified?'Da definire':r.price,r.unit,r.order.solicited||false,r.order.id,r.id,p?.comments||'',p?.supplier||'',date(r.order.ddt?.date),r.order.title||''];
 }
 export function buildExcelBackup(store:Store,archived:ArchivedOrder[]=[]){
  const wb=XLSX.utils.book_new();

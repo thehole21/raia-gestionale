@@ -1,25 +1,24 @@
 'use client';
-import {useId,useState,useRef,useEffect} from 'react';
-import {ChevronDown,ChevronRight,ArrowUpRight,AlertTriangle,Trash2,X} from 'lucide-react';
+import {Fragment,useState,useRef,useEffect} from 'react';
+import {ChevronRight,ArrowUpRight,AlertTriangle,Trash2,X} from 'lucide-react';
 import {type Work,type WorkRow,type Operator,type Status,STATUSES,fmtDate,isInvoiced,quantityLabel,workDue} from '@/lib/data';
 import {BOOK_DELIVERIES,bookProduction} from '@/lib/work-categories';
-import {groupWork,overallStatus} from '@/lib/order-groups';
+import {groupWork,overallStatus,orderTitle,statusTone} from '@/lib/order-groups';
 import {isOrderSolicited} from '@/lib/order-solicitation';
 import {DeleteOrder} from './delete-order';
 const columns=['N.','Cliente','Data ingresso','Orario ingresso','Titolo lavoro','Copie','Operatore','Processo','Commenti','Consegna richiesta','Urgenza','Orario uscita','DDT','Consegna','Terminato','Fatturato'];
 export function BookRegister({all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,canDelete,getRevision,now}:{canDelete:boolean;getRevision:()=>number;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;now:number}){
- const [expanded,setExpanded]=useState<string[]>([]),prefix=useId(),groups=groupWork(all,visible);
+ const groups=groupWork(all,visible);
  const [deleting,setDeleting]=useState<WorkRow|null>(null),dialog=useRef<HTMLDialogElement>(null);
  useEffect(()=>{if(deleting)dialog.current?.showModal();},[deleting]);
- const multiple=groups.filter(g=>g.visible.length>1),allOpen=multiple.length>0&&multiple.every(g=>expanded.includes(g.key));
  const change=(r:WorkRow,patch:Partial<ReturnType<typeof bookProduction>>)=>onUpdate(r.id,{production:{...bookProduction(r,r.order),...patch}});
- return <div className="overview-register books-register"><div className="register-toolbar"><span>{visible.length} libri · {groups.length} gruppi</span>{multiple.length>0&&<button type="button" className="btn btn-plain" onClick={()=>setExpanded(allOpen?[]:multiple.map(g=>g.key))}>{allOpen?'Comprimi gli altri libri':'Mostra tutti i libri'}</button>}</div>{groups.map((g,index)=>{
-  const open=expanded.includes(g.key),main=g.visible[0],hasMore=g.visible.length>1,panel=prefix+'-books-'+index;
-  return <section className="register-group" key={g.key}><button type="button" className="register-group-heading" aria-expanded={hasMore?open:undefined} aria-controls={hasMore?panel:undefined} onClick={()=>hasMore?setExpanded(old=>open?old.filter(k=>k!==g.key):[...old,g.key]):onOpen(main)}><span className="register-company"><small>CLIENTE · LIBRI</small><strong>{g.client.name}</strong></span><span className="register-overall">{overallStatus(g.rows)}</span><span className="register-group-action">{hasMore?(open?'Chiudi gli altri libri':`+ ${g.visible.length-1} altri libri della stessa giornata`):'Dettagli'}{open?<ChevronDown size={18}/>:<ChevronRight size={18}/>}</span></button>{g.visible.length<g.rows.length&&<p className="register-filter-note">{g.visible.length} di {g.rows.length} libri corrispondono ai filtri. Stato generale calcolato sull’intero gruppo.</p>}
-  <div className="book-register-scroll" tabIndex={0} role="region" aria-label={'Registro libri di '+g.client.name}><table className="book-register-table"><caption className="sr-only">Registro libri di {g.client.name}</caption><thead><tr><th aria-label="Selezione"/>{columns.map(c=><th key={c}>{c}</th>)}<th aria-label="Dettagli"/></tr></thead><tbody id={panel}>{(open?g.visible:[main]).map((r,i)=>{
+ return <div className="overview-register books-register"><div className="register-toolbar"><span>{visible.length} libri · {groups.length} gruppi</span></div>{groups.map(g=>{
+  const main=g.visible[0];
+  return <section className="register-group" key={g.key}><button type="button" className="register-group-heading" onClick={()=>onOpen(main)}><span className="register-company"><small>CLIENTE · LIBRI</small><strong>{g.client.name}</strong></span><span className="register-overall" data-tone={statusTone(overallStatus(g.rows))}>{overallStatus(g.rows)}</span><span className="register-group-action">Dettagli e DDT <ChevronRight size={18}/></span></button>{g.visible.length<g.rows.length&&<p className="register-filter-note">{g.visible.length} di {g.rows.length} libri corrispondono ai filtri. Stato generale calcolato sull’intero gruppo.</p>}
+  <div className="book-register-scroll" tabIndex={0} role="region" aria-label={'Registro libri di '+g.client.name}><table className="book-register-table"><caption className="sr-only">Registro libri di {g.client.name}</caption><thead><tr><th aria-label="Selezione"/>{columns.map(c=><th key={c}>{c}</th>)}<th aria-label="Dettagli"/></tr></thead><tbody>{g.visible.map((r,i)=>{
    const p=bookProduction(r,r.order),historic=!!r.operatorId&&!operators.some(o=>o.id===r.operatorId),sameDate=i>0&&r.order.created===main.order.created,due=workDue(r,r.order);
    const solicited=isOrderSolicited(r.order,now);
-   return <tr key={r.id} className={(i?'book-cascade-row ':'')+(solicited?'book-solicited-row':'')}>
+   return <Fragment key={r.id}>{(i===0||g.visible[i-1].order.id!==r.order.id)&&<tr className="book-order-title"><td colSpan={18}><div className="register-order-title"><strong>{orderTitle(r.order)}</strong><span className="register-count">Tot. Lavori <strong>{r.order.lines.length}</strong></span></div></td></tr>}<tr className={(i?'book-cascade-row ':'')+(solicited?'book-solicited-row':'')}>
     <td data-label="Seleziona"><input type="checkbox" aria-label={'Seleziona '+r.description} disabled={isInvoiced(r)} checked={selected.includes(r.id)} onChange={e=>onSelect(r.id,e.target.checked)}/></td>
     <td data-label="N.">{p.bookNumber||'—'}</td><td data-label="Cliente" className={i?'book-shared-value':''}>{!i&&r.client.name}</td>
     <td data-label="Data ingresso" className={sameDate?'book-shared-value':'book-entry-date'}>{!sameDate&&(r.order.created?<time dateTime={r.order.created}>{fmtDate(r.order.created)}</time>:'Non precisata')}</td>
@@ -27,7 +26,7 @@ export function BookRegister({all,visible,operators,selected,onSelect,onUpdate,o
     <td data-label="Titolo lavoro" className="book-title-cell"><button type="button" className={'register-solicit'+(solicited?' register-solicit-active':'')} aria-label={solicited?'Rimuovi il sollecito dall’ordine '+r.order.number:'Sollecita ordine '+r.order.number} aria-pressed={solicited} title={solicited?'Ordine sollecitato':'Sollecita ordine'} onClick={()=>onToggleSolicited(r.order.id,!solicited)}><AlertTriangle size={16}/></button><button type="button" className="register-job-link" onClick={()=>onOpen(r)}><strong>{r.description}</strong></button><button type="button" className="book-delete-link" onClick={()=>setDeleting(r)}><Trash2 size={14}/> Elimina ordine</button></td>
     <td data-label="Copie">{quantityLabel(r)}</td>
     <td data-label="Operatore"><select aria-label={'Operatore di '+r.description} value={r.operatorId} onChange={e=>onUpdate(r.id,{operatorId:e.target.value})}><option value="">Non assegnato</option>{historic&&<option disabled value={r.operatorId}>{r.operator.name} · storico</option>}{operators.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></td>
-    <td data-label="Processo"><select aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s}>{s}</option>)}</select></td>
+    <td data-label="Processo"><select className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s}>{s}</option>)}</select></td>
     <td data-label="Commenti" className="book-comments">{p.comments||'—'}</td>
     <td data-label="Consegna richiesta">{due?fmtDate(due):p.requestedText||'Non precisata'}</td>
     <td data-label="Urgenza"><label className={p.urgent?'book-urgent':''}><input type="checkbox" aria-label={'Urgenza: '+r.description} checked={!!p.urgent} onChange={e=>change(r,{urgent:e.target.checked})}/>{p.urgent?'Sì':'No'}</label></td>
@@ -35,7 +34,7 @@ export function BookRegister({all,visible,operators,selected,onSelect,onUpdate,o
     <td data-label="Consegna"><select aria-label={'Consegna di '+r.description} value={p.delivery} onChange={e=>change(r,{delivery:e.target.value})}><option value="">Non precisata</option>{p.delivery&&!BOOK_DELIVERIES.some(v=>v===p.delivery)&&<option value={p.delivery}>{p.delivery}</option>}{BOOK_DELIVERIES.map(v=><option key={v}>{v}</option>)}</select></td>
     <td data-label="Terminato"><label><input type="checkbox" aria-label={'Terminato: '+r.description} checked={p.terminated} onChange={e=>change(r,{terminated:e.target.checked})}/>{p.terminated?'Sì':'No'}</label></td>
     <td data-label="Fatturato">{p.invoicing||(r.invoiceId?'In bozza':'—')}</td><td data-label="Dettagli"><button type="button" className="icon-btn" aria-label={'Apri '+r.description} onClick={()=>onOpen(r)}><ArrowUpRight size={17}/></button></td>
-   </tr>;
+   </tr></Fragment>;
   })}</tbody></table></div></section>;
  })}{deleting&&<dialog ref={dialog} className="raia-edit-dialog" onCancel={()=>setDeleting(null)}><header><h2>Elimina ordine {deleting.order.number}</h2><button type="button" className="icon-btn" aria-label="Chiudi" onClick={()=>setDeleting(null)}><X size={20}/></button></header><p>{deleting.client.name} · {deleting.order.lines.length} lavorazioni in questo ordine</p><DeleteOrder key={deleting.order.id} order={all.find(r=>r.order.id===deleting.order.id)?.order||deleting.order} canDelete={canDelete} getRevision={getRevision}/></dialog>}</div>;
 }
