@@ -26,10 +26,11 @@ export function groupInvoiceRows(store:Store,ids:string[]){
  return all.filter(r=>keys.has(orderGroupKey(r.order)));
 }
 export function prepareGroupDraft(store:Store,ids:string[],fresh:Draft):Store{
- const rows=groupInvoiceRows(store,ids);
+ const rows=flatten(store).filter(r=>ids.includes(r.id));
+ const groupRows=groupInvoiceRows(store,ids);
  if(!rows.length||new Set(rows.map(r=>r.client.id)).size!==1)throw new Error('Seleziona lavorazioni di un solo cliente.');
  if(rows.some(r=>/^(si|sì|true)$/i.test(r.production?.invoicing?.trim()||'')))throw new Error('Il gruppo contiene lavori già fatturati nel registro. Verifica prima di preparare una nuova fattura.');
- const linked=[...new Set(rows.map(r=>r.invoiceId).filter(Boolean))];
+ const linked=[...new Set(groupRows.map(r=>r.invoiceId).filter(Boolean))];
  if(linked.length>1)throw new Error('Il gruppo ha più bozze esistenti: elimina le bozze modificabili e prepara una sola fattura.');
  const previous=linked.length?store.drafts.find(d=>d.id===linked[0]):undefined;
  if(linked.length&&(!previous||!editable(previous)))throw new Error('Il gruppo è già collegato a una fattura elaborata. Non viene creata una seconda fattura.');

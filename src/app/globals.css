@@ -199,3 +199,11 @@
 .day-heading .company-avatar{background:#e2c6d1;color:#682c42}
 .register-entry time strong{color:#7a304b}
 @media(max-width:900px){.book-register-table tr.book-order-title{display:block;padding:0}.book-register-table .book-order-title>td{display:block;width:100%}.book-register-table .book-order-title>td:before{display:none}.book-order-title .register-order-title{flex-wrap:wrap}}
+
+.order-title-edit{display:flex;align-items:center;gap:8px;flex:1;min-width:0;border:0;background:transparent;padding:4px 0;text-align:left;font:inherit;font-weight:700;color:#662b40;cursor:pointer}
+.order-title-edit span{overflow-wrap:anywhere}.order-title-edit svg{flex-shrink:0}.order-title-edit:hover span{text-decoration:underline}
+.order-title-editor{display:flex;align-items:center;flex-wrap:wrap;gap:6px;flex:1;min-width:0}.order-title-editor input{width:120px;flex:1;min-width:0;border:1px solid #a46e82;border-radius:6px;padding:8px;color:#492f3a;font:inherit;background:#fff}.order-title-editor small{flex-basis:100%;color:#a12137}
+@media(max-width:700px){.order-title-editor{flex-basis:100%}.order-title-editor input{font-size:16px}.order-title-edit{min-height:44px}}
+
+.order-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px}.order-actions>label{display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:12px;color:#66364a;font-weight:600}.order-actions input{width:17px;height:17px;accent-color:#80374d}.job-delete-button{display:inline-flex;align-items:center;gap:5px;padding:6px 8px;font:inherit;font-size:11px;color:#9b233b;background:#fff4f5;border:1px solid #efd1d8;border-radius:6px;cursor:pointer}.job-delete-button:hover{background:#fbdfe5}.job-delete-button:disabled{opacity:.5;cursor:not-allowed}.register-order-title{flex-wrap:wrap}.register-work-top>.job-delete-button{margin-left:auto}.register-work-top .register-select{margin-left:0}.order-actions input:focus-visible,.job-delete-button:focus-visible{outline:2px solid #80374d;outline-offset:2px}
+@media(max-width:700px){.order-actions{flex-basis:100%;justify-content:space-between}.order-actions>label,.job-delete-button{min-height:40px}.register-work-top>.job-delete-button{order:4}}

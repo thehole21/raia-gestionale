@@ -8,7 +8,7 @@ export function orderRegistrationNumbers(orders:Order[]):Map<string,number>{
 }
 export const executionDay=(order:Order)=>order.executionDate || order.created;
 export const orderGroupKey=(order:Order)=>JSON.stringify([order.clientId,Boolean(order.executionDate),executionDay(order)||order.id]);
-export const orderTitle=(order:Order)=>order.title?.trim() || 'Lavoro '+order.number;
+export const orderTitle=(order:Order)=>order.title?.trim() || 'Senza titolo';
 export const planningPeriod=(order:Order)=>order.planningMonth || executionDay(order).slice(0,7);
 export const workPeriods=(r:WorkRow)=>r.production?.planningMonths || [planningPeriod(r.order)];
 export const matchesPeriod=(r:WorkRow,year:string,month:string)=>workPeriods(r).some(p=>(!year||p.slice(0,4)===year)&&(!month||p.slice(5,7)===month));
