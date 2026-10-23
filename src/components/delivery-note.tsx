@@ -6,6 +6,7 @@ export function DeliveryNoteSection({order,onSave,conflict=false}:{order:Order;c
  const [number,setNumber]=useState(order.ddt?.number||'');const [date,setDate]=useState(order.ddt?.date||'');const [message,setMessage]=useState('');
  const [saved,setSaved]=useState({number:order.ddt?.number||'',date:order.ddt?.date||''});
  const dirty=number!==saved.number||date!==saved.date;
+ useEffect(()=>{if(!dirty){const latest={number:order.ddt?.number||'',date:order.ddt?.date||''};setNumber(latest.number);setDate(latest.date);setSaved(latest);}},[order.ddt?.number,order.ddt?.date]);
  function save(){if(((order.ddt?.number||'')!==saved.number||(order.ddt?.date||'')!==saved.date)){setMessage('Dati aggiornati da un altro operatore. Copia le modifiche e riapri il dettaglio.');return false;}if((number.trim()&&!date)||(!number.trim()&&date)){setMessage('Inserisci sia il numero sia la data del DDT.');return false;}if(conflict&&!window.confirm("Sono presenti DDT diversi nel gruppo. Uniformarli tutti al riferimento inserito?"))return false;if(onSave({number:number.trim(),date})===false)return false;setSaved({number,date});setMessage('DDT aggiornato. Verifica lo stato del salvataggio in alto.');return true;}
  useEffect(()=>{announcePendingEdit({key:'ddt-'+order.id,dirty,save});},[number,date,saved,dirty,order.id,order.ddt?.number,order.ddt?.date,conflict,onSave]);
  useEffect(()=>()=>announcePendingEdit({key:'ddt-'+order.id,dirty:false,save:()=>true}),[order.id]);

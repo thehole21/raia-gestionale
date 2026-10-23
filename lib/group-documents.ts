@@ -6,10 +6,13 @@ export function sharedDDT(orders:Order[],anchor:Order){
  const numbers=new Set(members.flatMap(o=>[o.ddt?.number||'',...o.lines.map(w=>w.production?.ddtNumber||'')]).map(n=>n.trim()).filter(Boolean));
  const dates=new Set(members.map(o=>o.ddt?.date||'').filter(Boolean));
  const conflict=numbers.size>1||dates.size>1;
- return {members,conflict,numbers:[...numbers],value:{number:conflict?'':[...numbers][0]||'',date:conflict?'':[...dates][0]||''}};
+ return {members,conflict,numbers:[...numbers],value:{number:conflict?'':[...numbers][0]||'',date:conflict?'':[...dates][0]||'',document:conflict?undefined:members.find(o=>o.ddt?.document)?.ddt?.document}};
 }
 const editable=(d:Draft)=>!d.remoteDocumentId&&(!d.status||['draft','validated'].includes(d.status));
 export function saveGroupDDT(store:Store,anchor:Order,ddt:DeliveryNote):Store{
+ const existing=sharedDDT(store.orders,anchor).value;
+ if(!ddt.document&&existing.number===ddt.number&&existing.date===ddt.date&&existing.document)ddt={...ddt,document:existing.document};
+ if(ddt.number&&store.orders.some(o=>orderGroupKey(o)!==orderGroupKey(anchor)&&o.ddt?.number===ddt.number&&o.ddt?.date?.slice(0,4)===ddt.date.slice(0,4)))throw new Error('Questo numero DDT è già usato da un altro gruppo nello stesso anno.');
  const members=sharedDDT(store.orders,anchor).members,ids=new Set(members.map(o=>o.id));
  const linked=new Set(members.flatMap(o=>o.lines.map(w=>w.invoiceId)).filter(Boolean));
  if(store.drafts.some(d=>linked.has(d.id)&&!editable(d)))throw new Error('DDT collegato a una fattura già elaborata: non modificabile.');

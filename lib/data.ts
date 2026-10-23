@@ -1,3 +1,4 @@
+import type {DdtDocument,DdtIssuer} from './ddt-document';
 export const STATUSES = ['Sopralluogo', 'Preventivo', 'Da elaborare', 'In lavorazione', 'Bozza', 'Procedere', 'In Stampa', 'In allestimento', 'In attesa File', 'In attesa conferma', 'Sospeso', 'Elaborato', 'Pronto', 'Consegnato'] as const;
 export type Status = typeof STATUSES[number];
 export type Client = { taxCode?: string; recipientCode?: string; pec?: string; address?: string; postalCode?: string; province?: string; country?: string; ficEntityId?: number; id: string; name: string; email: string; phone: string; vat: string; city: string };
@@ -8,11 +9,11 @@ export const quantityLabel = (w: Pick<Work, 'qty'|'unit'|'production'>) => w.pro
 export const workAmount = (w: Work) => w.production?.priceUnspecified || (w.production && !w.qty) ? 'Da definire' : money(sumWork(w));
 export const workDue = (w: Work, o: Order) => w.production ? w.production.requestedDate : o.due;
 export type Work = { production?: Production; vatId?: number; importKey?: string; source?: SourceRecord; sourceHistory?: SourceRecord[]; id: string; description: string; qty: number; unit: string; price: number; status: Status; operatorId: string; invoiceId: string | null; notes: string };
-export type DeliveryNote = { number: string; date: string };
+export type DeliveryNote = { document?:DdtDocument; number: string; date: string };
 export type Order = { title?: string; planningMonth?: string; customerRequestId?: string; executionDate?: string; ddt?: DeliveryNote; solicited?: boolean; solicitedAutoDismissedDue?: string; id: string; number: string; clientId: string; created: string; due: string; notes: string; lines: Work[] };
 export type Draft = { status?: 'draft' | 'validated' | 'creating' | 'created' | 'sending' | 'sent' | 'failed' | 'reconcile'; remoteDocumentId?: number; submissionKey?: string; preparedInvoice?: unknown; id: string; number: string; clientId: string; created: string; workIds: string[] };
 export type Activity = { id: string; at: string; text: string };
-export type Store = { operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
+export type Store = { ddtIssuer?:DdtIssuer; operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
 export type WorkRow = Work & { client: Client; order: Order; operator: Operator };
 
 export const money = (n: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n || 0);

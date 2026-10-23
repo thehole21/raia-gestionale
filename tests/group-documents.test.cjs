@@ -11,7 +11,7 @@ const base={version:2,clients:[{id:'c',name:'Cliente'},{id:'x',name:'Altro'}],op
 const ddt={number:'25',date:'2026-10-23'};
 let next=saveGroupDDT(base,base.orders[0],ddt);
 assert.deepEqual(next.orders[0].ddt,ddt);assert.deepEqual(next.orders[1].ddt,ddt);assert.equal(next.orders[2].ddt,undefined);assert.equal(next.orders[3].ddt,undefined);assert.equal(base.orders[0].ddt,undefined);
-assert.deepEqual(inheritGroupDDT(next.orders,order('new')).ddt,ddt);
+assert.deepEqual(JSON.parse(JSON.stringify(inheritGroupDDT(next.orders,order('new')).ddt)),ddt);
 assert.equal(orderTitle(next.orders[0]),'Lavoro 1');assert.equal(orderTitle({...next.orders[0],title:undefined}),'Senza titolo');
 const conflict=structuredClone(next);conflict.orders[1].ddt.number='26';assert.equal(sharedDDT(conflict.orders,conflict.orders[0]).conflict,true);
 const fresh={id:'d',number:'BOZ-1',created:'2026-10-23',clientId:'c',workIds:[]};
