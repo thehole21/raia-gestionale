@@ -209,3 +209,7 @@
 @media(max-width:700px){.order-actions{flex-basis:100%;justify-content:space-between}.order-actions>label,.job-delete-button{min-height:40px}.register-work-top>.job-delete-button{order:4}}
 
 .ddt-generator{margin-top:16px;padding:12px;border:1px solid #e4cfd8;border-radius:10px;background:#fdfafb}.ddt-generator h4{margin:16px 0 10px}.ddt-product{display:grid;grid-template-columns:minmax(0,1fr) 80px 65px;gap:8px;margin:8px 0}.ddt-product label{font-size:11px;min-width:0}.ddt-product input{width:100%;padding:8px;border:1px solid #d8c6cd;border-radius:5px;min-width:0}.ddt-pdf-preview{width:100%;height:520px;border:1px solid #ddd;margin-top:12px;border-radius:8px}@media(max-width:600px){.ddt-product{grid-template-columns:1fr 1fr}.ddt-product label:first-child{grid-column:1/-1}.ddt-product input{font-size:16px}.ddt-pdf-preview{height:400px}}
+
+.billing-mark{display:inline-flex;align-items:center;gap:4px;color:#7b6c73;font-size:12px}.billing-mark-done{color:#276241;font-weight:700}.billing-mark-done svg{background:#dfefe5;border-radius:4px;padding:1px}.order-billed{display:inline-flex;gap:6px;align-items:center;font-size:11px;color:#725665}.drawer-documents{border:1px solid #e5d3da;border-radius:8px;padding:12px;margin:16px 0}.drawer-documents>summary{font-weight:650;color:#713247;cursor:pointer}
+
+.document-launcher{padding:18px;margin:18px 0}.document-launcher p{color:#786672;font-size:13px;line-height:1.6}.document-launcher .grid-form{margin-top:12px}

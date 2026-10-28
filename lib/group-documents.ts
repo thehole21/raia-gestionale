@@ -44,13 +44,5 @@ export function prepareGroupDraft(store:Store,ids:string[],fresh:Draft):Store{
 }
 
 export function changeGroupDates(store:Store,orderId:string,changes:Pick<Order,'created'|'executionDate'|'due'>):Store{
- const previous=store.orders.find(o=>o.id===orderId);if(!previous)return store;
- let updated={...previous,...changes};
- if(orderGroupKey(previous)!==orderGroupKey(updated)){
-  if(previous.lines.some(w=>w.invoiceId))throw new Error('Rimuovi prima la bozza modificabile: cambiare giornata sposterebbe i lavori in un altro gruppo di fatturazione.');
-  const target=sharedDDT(store.orders.filter(o=>o.id!==orderId),updated);
-  if(target.conflict)throw new Error('Il gruppo di destinazione contiene DDT diversi. Uniformali prima di spostare il lavoro.');
-  if(target.members.length)updated={...updated,ddt:target.value,lines:updated.lines.map(w=>({...w,production:w.production?{...w.production,ddtNumber:target.value.number}:undefined}))};
- }
- return {...store,orders:store.orders.map(o=>o.id===orderId?updated:o)};
+ return {...store,orders:store.orders.map(o=>o.id===orderId?{...o,...changes}:o)};
 }

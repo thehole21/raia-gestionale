@@ -14,7 +14,7 @@ export type Order = { title?: string; planningMonth?: string; customerRequestId?
 export type Draft = { status?: 'draft' | 'validated' | 'creating' | 'created' | 'sending' | 'sent' | 'failed' | 'reconcile'; remoteDocumentId?: number; submissionKey?: string; preparedInvoice?: unknown; id: string; number: string; clientId: string; created: string; workIds: string[] };
 export type Activity = { id: string; at: string; text: string };
 export type Store = { ddtIssuer?:DdtIssuer; operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
-export type WorkRow = Work & { client: Client; order: Order; operator: Operator };
+export type WorkRow = Work & { billingState?: BillingState; client: Client; order: Order; operator: Operator };
 
 export const money = (n: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n || 0);
 export const fmtDate = (date: string) => date ? new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(date + 'T12:00:00')) : '—';
@@ -24,12 +24,19 @@ export const id = () => 'id_' + Math.random().toString(36).slice(2, 8) + '_' + D
 export const initials = (s: string) => s.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join('');
 export const sumWork = (w: Work) => Math.round((Number(w.qty) || 0) * (Number(w.price) || 0) * 100) / 100;
 export const isInvoiced = (w: Work) => !!w.invoiceId || /^(si|sì|true)$/i.test(w.production?.invoicing?.trim() || '');
+export type BillingState='unbilled'|'draft'|'billed';
+export function billingState(work:Work,drafts:Draft[]):BillingState{
+ if(/^(si|sì|true)$/i.test(work.production?.invoicing?.trim()||''))return 'billed';
+ const draft=drafts.find(d=>d.id===work.invoiceId&&d.workIds.includes(work.id));
+ if(draft?.remoteDocumentId&&draft.remoteDocumentId>0&&['created','sending','sent'].includes(draft.status||''))return 'billed';
+ return work.invoiceId?'draft':'unbilled';
+}
 export const isWorkClosed = (w: Work) => !!w.production?.terminated || isClosed(w.status);
 export const isClosed = (s: Status) => ['Consegnato', 'Pronto'].includes(s);
 export function flatten(db: Store): WorkRow[] {
   return db.orders.flatMap(order => {
     const client = db.clients.find(c => c.id === order.clientId) || { id: '', name: 'Cliente non trovato', city: '', email: '', phone: '', vat: '' };
-    return order.lines.map(line => ({ ...line, client, order, operator: db.operators.find(o => o.id === line.operatorId) || db.operatorHistory?.find(o => o.id === line.operatorId) || { id: '', name: '—' } }));
+    return order.lines.map(line => ({ ...line, billingState:billingState(line,db.drafts), client, order, operator: db.operators.find(o => o.id === line.operatorId) || db.operatorHistory?.find(o => o.id === line.operatorId) || { id: '', name: '—' } }));
   });
 }
 export function seeded(): Store {
