@@ -9,12 +9,12 @@ export function DeleteClient({client,orderCount,draftCount,canDelete,getRevision
  const {demo,profile}=useAccess();
  const dialog=useRef<HTMLDialogElement>(null);
  const [open,setOpen]=useState(false),[password,setPassword]=useState(''),[checked,setChecked]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
- useEffect(()=>{const element=dialog.current;if(!element)return;if(open&&!element.open)element.showModal();if(!open&&element.open)element.close();},[open]);
+ useEffect(()=>{if(!open){setPassword('');setChecked(false);}const element=dialog.current;if(!element)return;if(open&&!element.open)element.showModal();if(!open&&element.open)element.close();},[open]);
  if(!demo&&profile.role!=='admin')return null;
  const demoBlocked=demo&&(orderCount>0||draftCount>0);
  return <>
-  <button type="button" className="btn btn-danger client-delete-button" disabled={!canDelete} onClick={()=>{setError('');setOpen(true);}}><Trash2 size={15}/> Elimina cliente</button>
-  <dialog ref={dialog} className="raia-edit-dialog client-delete-dialog" aria-labelledby="delete-client-title" onCancel={()=>{if(!busy)setOpen(false);}}>
+  <button type="button" className="btn btn-danger client-delete-button" disabled={!canDelete} onClick={()=>{setError('');setPassword('');setChecked(false);setOpen(true);}}><Trash2 size={15}/> Elimina cliente</button>
+  {open&&<dialog ref={dialog} className="raia-edit-dialog client-delete-dialog" aria-labelledby="delete-client-title" onCancel={()=>{if(!busy)setOpen(false);}}>
    <header><div><h2 id="delete-client-title">Elimina {client.name}</h2><p className="client-edit-hint">Questa operazione non può essere annullata.</p></div><button type="button" className="icon-btn" aria-label="Chiudi" disabled={busy} onClick={()=>setOpen(false)}><X size={20}/></button></header>
    <div className="client-delete-details"><p>{orderCount?`${orderCount} ${orderCount===1?'ordine verrà archiviato':'ordini verranno archiviati'} in «Ordini annullati».`: 'Il cliente verrà rimosso dall’anagrafica.'}</p>{draftCount>0&&<p role="alert">Il cliente ha {draftCount} bozze di fatturazione collegate. Rimuovile prima di eliminare il cliente.</p>}{demo&&orderCount>0&&<p role="alert">Nella demo non è possibile archiviare ordini collegati. Accedi all’area Supabase per completare l’operazione.</p>}{demo&&draftCount===0&&orderCount===0&&<p>La demo elimina solo il cliente senza ordini e senza bozze collegate.</p>}{error&&<p role="alert" className="error-text">{error}</p>}</div>
    <label className="client-delete-confirm"><input type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/> Confermo l’eliminazione del cliente e l’archiviazione degli ordini indicati</label>
@@ -31,6 +31,6 @@ export function DeleteClient({client,orderCount,draftCount,canDelete,getRevision
      location.reload();
     }catch(e){setError(e instanceof Error?e.message:'Eliminazione non riuscita.');setBusy(false);setPassword('');}
    }}>{busy?'Verifica…':'Conferma eliminazione'}</button></footer>
-  </dialog>
+  </dialog>}
  </>;
 }
