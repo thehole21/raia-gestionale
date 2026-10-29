@@ -190,6 +190,18 @@ function Workspace() {
   const validSelected = selected.length > 0 && selectedClients.size === 1;
   const orderDrawer = db.orders.find(o => o.id === drawerOrderId) || null;
   const workDrawer = drawerWorkId ? indexed.get(drawerWorkId) : null;
+  const drawerOpen=!!(workDrawer||orderDrawer);
+  useEffect(()=>{
+    if(!drawerOpen)return;
+    const root=document.documentElement,body=document.body;
+    const previousRoot=root.style.overflow,previousBody=body.style.overflow;
+    const previousPadding=body.style.paddingRight;
+    const scrollbar=window.innerWidth-root.clientWidth;
+    if(scrollbar>0)body.style.paddingRight=`${parseFloat(getComputedStyle(body).paddingRight)+scrollbar}px`;
+    root.style.overflow='hidden';body.style.overflow='hidden';
+    return ()=>{root.style.overflow=previousRoot;body.style.overflow=previousBody;body.style.paddingRight=previousPadding;};
+  },[drawerOpen]);
+
   const workFingerprint=(work:Partial<Work>)=>JSON.stringify([work.description,work.qty,work.price,work.unit,work.status,work.operatorId,work.notes,work.production?{...work.production,ddtNumber:undefined}:null]);
   const workChangesPending=!!workDrawer&&workFingerprint(editWork)!==workFingerprint(savedEditWork);
 

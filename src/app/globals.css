@@ -216,3 +216,8 @@
 
 .supplier-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px}.supplier-card{display:flex;justify-content:space-between;gap:12px;padding:18px;background:#fff;border:1px solid #eadfe2;border-radius:14px;min-width:0}.supplier-card strong{color:#752939}.supplier-card span,.supplier-card small{display:block;margin-top:5px;overflow-wrap:anywhere}.supplier-actions{display:flex;align-items:flex-start;gap:4px}.supplier-overlay{position:fixed;inset:0;z-index:150;background:#23151a66;display:grid;place-items:center;padding:16px}.supplier-dialog{width:min(620px,100%);max-height:90dvh;overflow:auto}.supplier-dialog h2{margin-bottom:20px}.supplier-dialog .portal-actions{margin-top:20px}.new-line.new-line-with-supplier{grid-template-columns:24px minmax(120px,1fr) 75px 130px 140px 30px}
 @media(max-width:700px){.new-line.new-line-with-supplier{grid-template-columns:24px minmax(0,1fr) 70px 30px}.new-line-with-supplier select{grid-column:2/4}.supplier-dialog .grid-form{grid-template-columns:1fr}.supplier-card{padding:14px}}
+
+/* Keep navigation reachable on short screens without a visible scrollbar. */
+.sidebar{scrollbar-width:none;-ms-overflow-style:none}
+.sidebar::-webkit-scrollbar{display:none}
+.drawer,.drawer-body{overscroll-behavior:contain}
