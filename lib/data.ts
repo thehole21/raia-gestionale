@@ -13,7 +13,7 @@ export type DeliveryNote = { document?:DdtDocument; number: string; date: string
 export type Order = { title?: string; planningMonth?: string; customerRequestId?: string; executionDate?: string; ddt?: DeliveryNote; solicited?: boolean; solicitedAutoDismissedDue?: string; id: string; number: string; clientId: string; created: string; due: string; notes: string; lines: Work[] };
 export type Draft = { status?: 'draft' | 'validated' | 'creating' | 'created' | 'sending' | 'sent' | 'failed' | 'reconcile'; remoteDocumentId?: number; submissionKey?: string; preparedInvoice?: unknown; id: string; number: string; clientId: string; created: string; workIds: string[] };
 export type Activity = { id: string; at: string; text: string };
-export type Store = { ddtIssuer?:DdtIssuer; operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
+export type Store = { suppliers?: import('./suppliers').Supplier[]; ddtIssuer?:DdtIssuer; operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
 export type WorkRow = Work & { billingState?: BillingState; client: Client; order: Order; operator: Operator };
 
 export const money = (n: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n || 0);

@@ -1,4 +1,7 @@
 'use client';
+import {SupplierSelect} from './supplier-select';
+import type {Supplier} from '@/lib/suppliers';
+import {bookProduction} from '@/lib/work-categories';
 import {BillingMark} from './billing-mark';
 import {OrderTitleEditor,type SaveOrderTitle} from './order-title-editor';
 import {type ReactNode} from 'react';
@@ -13,7 +16,7 @@ function EntryDate({date,time,orderNumber}:{date:string;time?:string;orderNumber
  return <div className="register-entry"><div className="register-entry-heading"><span>ENTRATA ORDINE</span><strong>N. {orderNumber}</strong></div>{valid?<time dateTime={date}><strong>{date.slice(8,10)}</strong><span>{new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric'}).format(parsed!)}</span></time>:<strong className="register-date-unknown">Non precisata</strong>}{time&&<small>Ore {time}</small>}</div>;
 }
 function DataCell({label,children}:{label:string;children:ReactNode}){return <div className="register-field"><dt>{label}</dt><dd>{children}</dd></div>;}
-export function OverviewRegister({renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,orderNumbers,now}:{renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;orderNumbers:Map<string,number>;now:number}){
+export function OverviewRegister({suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,orderNumbers,now}:{suppliers:Supplier[];renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;orderNumbers:Map<string,number>;now:number}){
  const groups=groupWork(all,visible);
  function record(r:WorkRow,parent?:WorkRow){
   const p=r.production,books=p?.category==='Libri',due=workDue(r,r.order),historical=!!r.operatorId&&!operators.some(o=>o.id===r.operatorId);
@@ -23,7 +26,7 @@ export function OverviewRegister({renderActions,renderDelete,onTitleSave,all,vis
    <dl className="register-data">
     <DataCell label="Copie / quantità">{quantityLabel(r)}</DataCell>
     <DataCell label="Operatore"><select aria-label={'Operatore di '+r.description} value={r.operatorId} onChange={e=>onUpdate(r.id,{operatorId:e.target.value})}><option value="">Non assegnato</option>{historical&&<option disabled value={r.operatorId}>{r.operator.name} · storico</option>}{operators.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></DataCell>
-    <DataCell label="Fornitore">{p?.supplier||'—'}</DataCell>
+    <DataCell label="Fornitore"><SupplierSelect suppliers={suppliers} label={'Fornitore di '+r.description} value={p?.supplier||''} onChange={supplier=>onUpdate(r.id,{production:{...bookProduction(r,r.order),category:p?.category||'Lavori',supplier}})}/></DataCell>
     <DataCell label="Processo"><select className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s}>{s}</option>)}</select></DataCell>
     <DataCell label="Consegna richiesta">{due?<time dateTime={due}>{fmtDate(due)}</time>:p?.requestedText||'Non precisata'}</DataCell>
     <DataCell label="Consegna">{p?.delivery||'—'}</DataCell>

@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import {flatten,today,type Store,type Order,type Client,type WorkRow} from './data';
+import {suppliersOf} from './suppliers';
 import {workPeriods} from './order-groups';
 import {workCategory} from './work-categories';
 export type ArchivedOrder={id:number;order_data:Order;client_data:Client|null;actor_name:string|null;deleted_at:string};
@@ -40,6 +41,7 @@ export function buildExcelBackup(store:Store,archived:ArchivedOrder[]=[]){
  if(undated.length)add('SENZA PERIODO',[...general,...extra],undated.map(r=>row(r,false)));
  const clientKeys=['name','email','phone','address','postalCode','city','province','country','vat','taxCode','recipientCode','pec','id'] as const;
  add('CLIENTI',['Cliente','Email','Telefono','Indirizzo','CAP','Città','Provincia','Paese','Partita IVA','Codice fiscale','SDI','PEC','ID cliente'],store.clients.map(c=>clientKeys.map(k=>c[k]||'')));
+ add('FORNITORI',['Fornitore','Email','Telefono','Note','Selezionabile','ID'],suppliersOf(store).map(s=>[s.name,s.email,s.phone,s.notes,s.active?'Sì':'No',s.id]));
  add('OPERATORI',['Nome','ID','Selezionabile'],[...store.operators.map(o=>[o.name,o.id,'Sì']),...(store.operatorHistory||[]).filter(o=>!store.operators.some(a=>a.id===o.id)).map(o=>[o.name,o.id,'No · storico'])]);
  add('BOZZE FATTURE',['Numero','Cliente','Data','Stato','Lavorazioni','ID'],store.drafts.map(d=>[d.number,store.clients.find(c=>c.id===d.clientId)?.name||d.clientId,date(d.created),d.status||'draft',d.workIds.join(', '),d.id]));
  add('ORDINI ANNULLATI',['Ordine','Cliente','Lavorazione','Copie','Processo precedente','Annullato il','Annullato da','ID ordine'],archived.flatMap(a=>a.order_data.lines.map(l=>[a.order_data.number,a.client_data?.name||'',l.description,l.production?.quantity??l.qty,l.status,a.deleted_at,a.actor_name||'',a.order_data.id])));
