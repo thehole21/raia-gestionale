@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState, type SetStateAction } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback, type SetStateAction } from 'react';
 import { seeded, migrateV1, type Store } from './data';
 import { cloud } from './supabase';
 import { mergeWorkspace } from './workspace-merge';
@@ -38,9 +38,11 @@ export function useWorkspace(demo: boolean) {
     async function refresh() {
       if (pending.current || blocked.current) return;
       const startRevision = revision.current;
+      const check=await cloud().from('raia_workspace').select('revision').eq('id',1).single();
+      if(!live||check.error||!check.data||check.data.revision<=revision.current||pending.current||blocked.current)return;
       const { data, error } = await cloud().from('raia_workspace').select('payload,revision').eq('id',1).single();
       if (!live || error || !data || pending.current || blocked.current || revision.current !== startRevision) return;
-      if (data.revision >= revision.current) { confirmed.current = data.payload; revision.current = data.revision; roster.current = data.payload.operators; current.current = data.payload; rawSet(data.payload); }
+      if (data.revision > revision.current) { confirmed.current = data.payload; revision.current = data.revision; roster.current = data.payload.operators; current.current = data.payload; rawSet(data.payload); }
     }
     const timer = setInterval(() => { void refresh(); },15000);
     window.addEventListener('focus',refresh);
@@ -78,5 +80,7 @@ export function useWorkspace(demo: boolean) {
       } catch (e) { blocked.current = true; setStatus('Modifiche non salvate'); setFailure(e instanceof Error ? e.message : 'Salvataggio non riuscito.'); }
     }).finally(() => { pending.current--; });
   }
-  return { db: demo ? db : { ...db, operators: roster.current }, setDb, ready, status, failure, getRevision: () => revision.current };
+  const visibleDb=useMemo(()=>demo?db:{...db,operators:roster.current},[db,demo]);
+  const getRevision=useCallback(()=>revision.current,[]);
+  return {db:visibleDb,setDb,ready,status,failure,getRevision};
 }

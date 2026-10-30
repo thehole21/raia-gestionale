@@ -221,3 +221,6 @@
 .sidebar{scrollbar-width:none;-ms-overflow-style:none}
 .sidebar::-webkit-scrollbar{display:none}
 .drawer,.drawer-body{overscroll-behavior:contain}
+
+@supports(content-visibility:auto){.register-group,.day-group{content-visibility:auto;contain-intrinsic-size:auto 400px}}
+@media print{.register-group,.day-group{content-visibility:visible}}

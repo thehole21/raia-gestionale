@@ -16,10 +16,14 @@ export type Activity = { id: string; at: string; text: string };
 export type Store = { suppliers?: import('./suppliers').Supplier[]; ddtIssuer?:DdtIssuer; operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
 export type WorkRow = Work & { billingState?: BillingState; client: Client; order: Order; operator: Operator };
 
-export const money = (n: number) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(n || 0);
-export const fmtDate = (date: string) => date ? new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(date + 'T12:00:00')) : '—';
-export const shortDate = (date: string) => date ? new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: 'short' }).format(new Date(date + 'T12:00:00')) : '—';
-export const today = () => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+const euroFormat=new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'});
+const dateFormat=new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short',year:'numeric'});
+const shortFormat=new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short'});
+const todayFormat=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'});
+export const money = (n: number) => euroFormat.format(n || 0);
+export const fmtDate = (date: string) => date ? dateFormat.format(new Date(date + 'T12:00:00')) : '—';
+export const shortDate = (date: string) => date ? shortFormat.format(new Date(date + 'T12:00:00')) : '—';
+export const today = () => todayFormat.format(new Date());
 export const id = () => 'id_' + Math.random().toString(36).slice(2, 8) + '_' + Date.now().toString(36);
 export const initials = (s: string) => s.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join('');
 export const sumWork = (w: Work) => Math.round((Number(w.qty) || 0) * (Number(w.price) || 0) * 100) / 100;
@@ -34,9 +38,11 @@ export function billingState(work:Work,drafts:Draft[]):BillingState{
 export const isWorkClosed = (w: Work) => !!w.production?.terminated || isClosed(w.status);
 export const isClosed = (s: Status) => ['Consegnato', 'Pronto'].includes(s);
 export function flatten(db: Store): WorkRow[] {
+  const clients=new Map(db.clients.map(c=>[c.id,c]));
+  const operators=new Map([...(db.operatorHistory||[]),...db.operators].map(o=>[o.id,o]));
   return db.orders.flatMap(order => {
-    const client = db.clients.find(c => c.id === order.clientId) || { id: '', name: 'Cliente non trovato', city: '', email: '', phone: '', vat: '' };
-    return order.lines.map(line => ({ ...line, billingState:billingState(line,db.drafts), client, order, operator: db.operators.find(o => o.id === line.operatorId) || db.operatorHistory?.find(o => o.id === line.operatorId) || { id: '', name: '—' } }));
+    const client = clients.get(order.clientId) || { id: '', name: 'Cliente non trovato', city: '', email: '', phone: '', vat: '' };
+    return order.lines.map(line => ({ ...line, billingState:billingState(line,db.drafts), client, order, operator: operators.get(line.operatorId) || { id: '', name: '—' } }));
   });
 }
 export function seeded(): Store {

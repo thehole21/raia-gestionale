@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { FormEvent, ReactNode, ChangeEvent } from 'react';
 import {
   LayoutGrid, ListTodo, Folders, Users, ReceiptText, Settings2, Search, Plus, ChevronRight,
@@ -14,15 +14,17 @@ import {
   STATUSES, money, fmtDate, shortDate, today, id, initials, sumWork, isClosed, flatten, seeded, migrateV1,
 } from '@/lib/data';
 
+import dynamic from 'next/dynamic';
+import {useStableCallback} from '@/lib/use-stable-callback';
 import { ProductionFields } from '@/src/components/production-fields';
 import { quantityLabel, workAmount, workDue, isInvoiced, isWorkClosed } from '@/lib/data';
 import { AccessGate, useAccess } from '@/src/components/access';
-import { StaffQuote } from '@/src/components/staff-quote';
+const StaffQuote=dynamic(()=>import('@/src/components/staff-quote').then(m=>m.StaffQuote),{loading:()=> <p role="status">Caricamento…</p>});
 import { Operators } from '@/src/components/operators';
 import { CustomerRequest } from '@/src/components/quote-components';
 import { Documents } from '@/src/components/documents';
-import {ExcelBackupButton} from '@/src/components/excel-backup-button';
-import { ExcelImport } from '@/src/components/excel-import';
+const ExcelBackupButton=dynamic(()=>import('@/src/components/excel-backup-button').then(m=>m.ExcelBackupButton),{loading:()=> <p role="status">Caricamento…</p>});
+const ExcelImport=dynamic(()=>import('@/src/components/excel-import').then(m=>m.ExcelImport),{loading:()=> <p role="status">Caricamento…</p>});
 import { useWorkspace } from '@/lib/use-workspace';
 import { CancelledOrders } from '@/src/components/cancelled-orders';
 import { DeleteOrder } from '@/src/components/delete-order';
@@ -30,7 +32,7 @@ import {DeleteClient} from '@/src/components/delete-client';
 import {ClientEditor} from '@/src/components/client-editor';
 import {DocumentLauncher} from '@/src/components/document-launcher';
 import {BillingMark} from '@/src/components/billing-mark';
-import {DdtGenerator} from '@/src/components/ddt-generator';
+const DdtGenerator=dynamic(()=>import('@/src/components/ddt-generator').then(m=>m.DdtGenerator),{loading:()=> <p role="status">Caricamento…</p>});
 import type {DeliveryNote} from '@/lib/data';
 import {OrderActions,DeleteWorkButton} from '@/src/components/order-actions';
 import {BookRegister} from '@/src/components/book-register';
@@ -157,6 +159,7 @@ function Workspace() {
   function navigate(s: Section) { requestExit(()=>{setSection(s);setMobileNav(false);setDrawerOrderId(null);setDrawerWorkId(null);if(s!=='work')setSelectedWork([]);}); }
 
   const rows = useMemo(() => flatten(db), [db]);
+  const rowsByOrder=useMemo(()=>{const map=new Map<string,WorkRow[]>();for(const row of rows){const group=map.get(row.order.id)||[];group.push(row);map.set(row.order.id,group);}return map;},[rows]);
   const orderNumbers = useMemo(() => orderRegistrationNumbers(db.orders), [db.orders]);
   const overviewRows = useMemo(()=>rows.filter(r=>workCategory(r,r.order)===category),[rows,category]);
   const indexed = useMemo(() => new Map(rows.map(r => [r.id, r])), [rows]);
@@ -343,8 +346,8 @@ function Workspace() {
   function saveAndExit(){if(pendingSectionSaves.current.size>0)for(const save of pendingSectionSaves.current.values())if(!save())return;if(workChangesPending&&!persistEditWork())return;pendingExitAction.current();}
   function exitWithoutSaving(){pendingExitAction.current();}
 
-  const renderDelete=(order:Order,workId:string)=><DeleteWorkButton order={order} workId={workId} canDelete={!failure&&saveStatus!=="Salvataggio…"} getRevision={getRevision}/>;
-  const renderActions=(order:Order)=><><span className="order-billed">Fatturato <BillingMark rows={rows.filter(r=>r.order.id===order.id)}/></span><OrderActions order={order} selected={selectedWork} onSelectAll={(ids,checked)=>setSelectedWork(previous=>checked?[...new Set([...previous,...ids])]:previous.filter(id=>!ids.includes(id)))} canDelete={!failure&&saveStatus!=="Salvataggio…"} getRevision={getRevision}/></>;
+  const renderDelete=useCallback((order:Order,workId:string)=><DeleteWorkButton order={order} workId={workId} canDelete={!failure&&saveStatus!=="Salvataggio…"} getRevision={getRevision}/>,[failure,saveStatus,getRevision]);
+  const renderActions=useCallback((order:Order)=><><span className="order-billed">Fatturato <BillingMark rows={rowsByOrder.get(order.id)||[]}/></span><OrderActions order={order} selected={selectedWork} onSelectAll={(ids,checked)=>setSelectedWork(previous=>checked?[...new Set([...previous,...ids])]:previous.filter(id=>!ids.includes(id)))} canDelete={!failure&&saveStatus!=="Salvataggio…"} getRevision={getRevision}/></>,[rowsByOrder,selectedWork,failure,saveStatus,getRevision]);
   const workTable = (items: WorkRow[], compact = false) => <div className="table-scroll"><table className={'work-table ' + (compact ? 'table--compact' : '')}>
     <thead><tr><th className="check-col"><input type="checkbox" aria-label="Seleziona lavori visibili" checked={items.filter(r => !isInvoiced(r)).length > 0 && items.filter(r => !isInvoiced(r)).every(r => selectedWork.includes(r.id))} onChange={e => {
       const ids = items.filter(r => !isInvoiced(r)).map(r => r.id);
@@ -366,6 +369,11 @@ function Workspace() {
     </tr>)}</tbody>
   </table></div>;
 
+  const stableOpen=useStableCallback(openWork),stableUpdate=useStableCallback(updateWork),stableSelect=useStableCallback(setSelected),stableTitle=useStableCallback(saveTitle),stableSolicit=useStableCallback(toggleOrderSolicited);
+  const stableActions=renderActions,stableDelete=renderDelete;
+  const stableTable=useCallback((items:WorkRow[])=>workTable(items,true),[db,selectedWork,saveStatus,failure,now]);
+  const interactionVersion=saveStatus+':'+!!failure+':'+selectedWork.join('|');
+  const historyRows=useMemo(()=>rows.filter(r=>(!clientFilter||r.client.id===clientFilter)&&matchesPeriod(r,year,month)&&(!search||hasWorkTerm(r,search.trim().toLocaleLowerCase('it')))),[rows,clientFilter,year,month,search]);
   if (!hydrated) return <main className="auth-screen"><section className="auth-card"><h1>RAIA</h1><p>{failure || 'Caricamento del gestionale…'}</p>{failure && <button className="btn btn-primary" onClick={() => location.reload()}>Riprova</button>}</section></main>;
   const periodFilters = <div className="period-filters"><select aria-label="Anno" value={year} onChange={e=>setYear(e.target.value)}><option value="">Tutti gli anni</option>{[...new Set([...(db.planningPeriods||[]),...rows.flatMap(workPeriods)].map(p=>p.slice(0,4)).filter(Boolean))].sort().reverse().map(y=><option key={y}>{y}</option>)}</select><select aria-label="Mese di programmazione" value={month} onChange={e=>setMonth(e.target.value)}><option value="">Tutti i mesi di programmazione</option>{['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'].map((m,i)=><option key={m} value={String(i+1).padStart(2,'0')}>{m}</option>)}</select>{(year||month)&&<button className="btn btn-plain" onClick={()=>{setYear('');setMonth('');}}>Azzera periodo</button>}</div>;
   return <div className={"app-frame dashboard-refined"+(sidebarCollapsed?" sidebar-compact":"")}>
@@ -397,12 +405,12 @@ function Workspace() {
             {quick==='cancelled'?<CancelledOrders demo={demo} category={category}/>:<>{clientFilter && <div className="client-filter-bar">Lavori di: <strong>{db.clients.find(c => c.id === clientFilter)?.name}</strong><button onClick={() => setClientFilter('')}>Rimuovi filtro <X size={13}/></button></div>}{periodFilters}<div className="filterbar"><form role="search" autoComplete="off" className="search-field" onSubmit={e=>e.preventDefault()}><Search size={18}/><input key="work-search" name="work-search-query" type="search" autoComplete="off" autoCapitalize="none" spellCheck={false} data-lpignore="true" data-1p-ignore="true" ref={searchRef} value={search} onChange={e => setSearch(e.target.value)} placeholder="Cerca azienda, prodotto, lavoro, operatore…" aria-label="Cerca tutti i lavori"/><kbd>Ctrl K</kbd>{search && <button aria-label="Cancella ricerca" onClick={() => setSearch('')}><X size={15}/></button>}</form>
               <div className="filter-controls"><select aria-label="Filtra per stato" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}><option value="">Tutti gli stati</option>{STATUSES.map(s => <option key={s} value={s}>{s}</option>)}</select><select aria-label="Filtra per operatore" value={operatorFilter} onChange={e => setOperatorFilter(e.target.value)}><option value="">Tutti gli operatori</option>{db.operators.map(op => <option key={op.id} value={op.id}>{op.name}</option>)}</select></div>
             </div>
-            {!filtered.length ? <Empty title="Nessun lavoro trovato" detail="Prova a cambiare i filtri o inserisci un nuovo lavoro."/> : category==='books'?<BookRegister renderActions={renderActions} renderDelete={renderDelete} onTitleSave={saveTitle} canDelete={!failure && saveStatus !== "Salvataggio…"} getRevision={getRevision} all={overviewRows} visible={filtered} operators={db.operators} selected={selectedWork} onSelect={setSelected} onUpdate={updateWork} onOpen={openWork} onToggleSolicited={toggleOrderSolicited} now={now}/>:<OverviewRegister suppliers={suppliersOf(db)} renderActions={renderActions} renderDelete={renderDelete} onTitleSave={saveTitle} all={overviewRows} visible={filtered} operators={db.operators} selected={selectedWork} onSelect={setSelected} onUpdate={updateWork} onOpen={openWork} onToggleSolicited={toggleOrderSolicited} orderNumbers={orderNumbers} now={now}/>}
+            {!filtered.length ? <Empty title="Nessun lavoro trovato" detail="Prova a cambiare i filtri o inserisci un nuovo lavoro."/> : category==='books'?<BookRegister interactionVersion={interactionVersion} renderActions={stableActions} renderDelete={stableDelete} onTitleSave={stableTitle} canDelete={!failure && saveStatus !== "Salvataggio…"} getRevision={getRevision} all={overviewRows} visible={filtered} operators={db.operators} selected={selectedWork} onSelect={stableSelect} onUpdate={stableUpdate} onOpen={stableOpen} onToggleSolicited={stableSolicit} now={now}/>:<OverviewRegister interactionVersion={interactionVersion} suppliers={suppliersOf(db)} renderActions={stableActions} renderDelete={stableDelete} onTitleSave={stableTitle} all={overviewRows} visible={filtered} operators={db.operators} selected={selectedWork} onSelect={stableSelect} onUpdate={stableUpdate} onOpen={stableOpen} onToggleSolicited={stableSolicit} orderNumbers={orderNumbers} now={now}/>}
             <div className="table-foot"><span>Mostrate <strong>{filtered.length}</strong> di {overviewRows.length} lavorazioni</span><span><span className="foot-dot"/> Modifica processo e operatore direttamente nel registro</span></div></>}
           </div>
         </>}
 
-        {section === 'orders' && <><div className="eyebrow">ORGANIZZAZIONE</div><div className="titlebar"><div><h1>Storico</h1><p>Ogni richiesta è un ordine distinto, con tutte le sue righe già visibili.</p></div><button className="btn btn-primary" onClick={() => startOrder()}><Plus size={17}/> Nuovo lavoro</button></div><div className="section-filter"><form role="search" autoComplete="off" className="search-field" onSubmit={e=>e.preventDefault()}><Search size={17}/><input key="history-search" name="history-search-query" aria-label="Cerca nello storico" type="search" autoComplete="off" autoCapitalize="none" spellCheck={false} data-lpignore="true" data-1p-ignore="true" placeholder="Cerca per cliente, descrizione o numero lavoro…" value={search} onChange={e => setSearch(e.target.value)}/></form></div>{periodFilters}<div className="workspace-card order-groups-card">{clientFilter&&<div className="client-filter-bar">Lavori di: <strong>{db.clients.find(c=>c.id===clientFilter)?.name}</strong><button onClick={()=>setClientFilter('')}>Mostra tutti i clienti <X size={13}/></button></div>}<WorkGroups renderActions={renderActions} onTitleSave={saveTitle} all={rows} visible={rows.filter(r=>(!clientFilter||r.client.id===clientFilter)&&matchesPeriod(r,year,month)&&(!search||hasWorkTerm(r,search.trim().toLocaleLowerCase('it'))))} renderRows={items=>workTable(items,true)}/></div></>}
+        {section === 'orders' && <><div className="eyebrow">ORGANIZZAZIONE</div><div className="titlebar"><div><h1>Storico</h1><p>Ogni richiesta è un ordine distinto, con tutte le sue righe già visibili.</p></div><button className="btn btn-primary" onClick={() => startOrder()}><Plus size={17}/> Nuovo lavoro</button></div><div className="section-filter"><form role="search" autoComplete="off" className="search-field" onSubmit={e=>e.preventDefault()}><Search size={17}/><input key="history-search" name="history-search-query" aria-label="Cerca nello storico" type="search" autoComplete="off" autoCapitalize="none" spellCheck={false} data-lpignore="true" data-1p-ignore="true" placeholder="Cerca per cliente, descrizione o numero lavoro…" value={search} onChange={e => setSearch(e.target.value)}/></form></div>{periodFilters}<div className="workspace-card order-groups-card">{clientFilter&&<div className="client-filter-bar">Lavori di: <strong>{db.clients.find(c=>c.id===clientFilter)?.name}</strong><button onClick={()=>setClientFilter('')}>Mostra tutti i clienti <X size={13}/></button></div>}<WorkGroups interactionVersion={interactionVersion} renderActions={stableActions} onTitleSave={stableTitle} all={rows} visible={historyRows} renderRows={stableTable}/></div></>}
 
         {section === 'suppliers' && <Suppliers store={db} disabled={!hydrated||!!failure||saveStatus==='Salvataggio…'} onChange={fn=>write(s=>activity(fn(s),'Anagrafica fornitori aggiornata'))}/>}
         {section === 'clients' && <><div className="eyebrow">ANAGRAFICHE</div><div className="titlebar"><div><h1>Clienti</h1><p>Tutte le aziende con storico lavori e lavori sempre collegati.</p></div><button className="btn btn-primary" onClick={() => setShowNewClient(true)}><Plus size={17}/> Nuovo cliente</button></div><div className="section-filter"><form role="search" autoComplete="off" className="search-field" onSubmit={e=>e.preventDefault()}><Search size={17}/><input key="client-search" name="client-search-query" aria-label="Cerca un cliente" type="search" autoComplete="off" autoCapitalize="none" spellCheck={false} data-lpignore="true" data-1p-ignore="true" placeholder="Cerca un cliente…" value={search} onChange={e => setSearch(e.target.value)}/><button type="button" aria-label="Cancella ricerca clienti" onClick={()=>setSearch('')}><X size={15}/></button></form></div><div className="client-grid">{db.clients.filter(c => [c.name, c.email, c.vat].join(' ').toLocaleLowerCase('it').includes(search.toLocaleLowerCase('it'))).map(c => {

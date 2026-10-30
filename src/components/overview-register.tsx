@@ -1,4 +1,5 @@
 'use client';
+import {memo} from 'react';
 import {SupplierSelect} from './supplier-select';
 import type {Supplier} from '@/lib/suppliers';
 import {bookProduction} from '@/lib/work-categories';
@@ -10,13 +11,14 @@ import {type Operator,type Work,type WorkRow,type Status,STATUSES,fmtDate,quanti
 import {groupWork,overallStatus,orderTitle,statusTone} from '@/lib/order-groups';
 import {isOrderSolicited} from '@/lib/order-solicitation';
 
+const monthFormat=new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric'});
 function EntryDate({date,time,orderNumber}:{date:string;time?:string;orderNumber:number|string}){
  const parsed=/^\d{4}-\d{2}-\d{2}$/.test(date)?new Date(date+'T12:00:00'):null;
  const valid=parsed&&Number.isFinite(parsed.getTime());
- return <div className="register-entry"><div className="register-entry-heading"><span>ENTRATA ORDINE</span><strong>N. {orderNumber}</strong></div>{valid?<time dateTime={date}><strong>{date.slice(8,10)}</strong><span>{new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric'}).format(parsed!)}</span></time>:<strong className="register-date-unknown">Non precisata</strong>}{time&&<small>Ore {time}</small>}</div>;
+ return <div className="register-entry"><div className="register-entry-heading"><span>ENTRATA ORDINE</span><strong>N. {orderNumber}</strong></div>{valid?<time dateTime={date}><strong>{date.slice(8,10)}</strong><span>{monthFormat.format(parsed!)}</span></time>:<strong className="register-date-unknown">Non precisata</strong>}{time&&<small>Ore {time}</small>}</div>;
 }
 function DataCell({label,children}:{label:string;children:ReactNode}){return <div className="register-field"><dt>{label}</dt><dd>{children}</dd></div>;}
-export function OverviewRegister({suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,orderNumbers,now}:{suppliers:Supplier[];renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;orderNumbers:Map<string,number>;now:number}){
+function OverviewRegisterView({suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,orderNumbers,now}:{interactionVersion:string;suppliers:Supplier[];renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;orderNumbers:Map<string,number>;now:number}){
  const groups=groupWork(all,visible);
  function record(r:WorkRow,parent?:WorkRow){
   const p=r.production,books=p?.category==='Libri',due=workDue(r,r.order),historical=!!r.operatorId&&!operators.some(o=>o.id===r.operatorId);
@@ -47,3 +49,5 @@ export function OverviewRegister({suppliers,renderActions,renderDelete,onTitleSa
  </section>;
  })}</div>;
 }
+
+export const OverviewRegister=memo(OverviewRegisterView);
