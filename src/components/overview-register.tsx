@@ -1,5 +1,5 @@
 'use client';
-import {QuantityEditor,DueEditor} from './inline-work-fields';
+import {QuantityEditor,DueEditor,DeliveryEditor} from './inline-work-fields';
 import {OperatorPicker} from './operator-picker';
 import {memo} from 'react';
 import {SupplierSelect} from './supplier-select';
@@ -36,6 +36,7 @@ function OverviewRegisterView({suppliers,renderActions,renderDelete,onTitleSave,
     <DataCell label="DDT">{r.order.ddt?.number||p?.ddtNumber||'—'}</DataCell>
     <DataCell label="Terminato">{p?<label className="register-terminated"><input type="checkbox" aria-label={'Terminato: '+r.description} checked={p.terminated} onChange={e=>onUpdate(r.id,{production:{...p,terminated:e.target.checked}})}/>{p.terminated?'Sì':'No'}</label>:['Pronto','Consegnato'].includes(r.status)?'Sì':'No'}</DataCell>
     <DataCell label="Fatturato"><BillingMark rows={[r]}/></DataCell>
+    <DataCell label="Modalità consegna"><DeliveryEditor row={r} onUpdate={onUpdate}/></DataCell>
     {p?.exitTime&&<DataCell label="Orario uscita">{p.exitTime}</DataCell>}
     {r.order.executionDate&&(!parent||parent.order.executionDate!==r.order.executionDate)&&<DataCell label="Esecuzione">{fmtDate(r.order.executionDate)}</DataCell>}
    </dl>

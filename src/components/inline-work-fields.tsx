@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useState,useRef} from 'react';
 import {type WorkRow,type Work,workDue} from '@/lib/data';
-import {bookProduction} from '@/lib/work-categories';
+import {BOOK_DELIVERIES,bookProduction} from '@/lib/work-categories';
 export function QuantityEditor({row,onUpdate}:{row:WorkRow;onUpdate:(id:string,patch:Partial<Work>)=>void}){
  const saved=row.production?.quantity??String(row.qty),[value,setValue]=useState(saved),[error,setError]=useState('');
  useEffect(()=>{setValue(saved);setError('');},[saved]);
@@ -11,4 +11,9 @@ export function QuantityEditor({row,onUpdate}:{row:WorkRow;onUpdate:(id:string,p
 export function DueEditor({row,onUpdate}:{row:WorkRow;onUpdate:(id:string,patch:Partial<Work>)=>void}){
  const input=useRef<HTMLInputElement>(null),due=workDue(row,row.order);
  return <div className="inline-due" onClick={e=>{if((e.target as HTMLElement).closest("button"))return;try{input.current?.showPicker();}catch{}}}><input ref={input} type="date" aria-label={'Consegna richiesta di '+row.description} value={due||''} onClick={()=>{try{input.current?.showPicker();}catch{}}} onChange={e=>{if(!e.target.validity.valid)return;onUpdate(row.id,{production:{...bookProduction(row,row.order),category:row.production?.category||'Lavori',requestedDate:e.target.value,requestedText:''}});}}/>{!due&&<small>Non precisata</small>}{due&&<button type="button" aria-label={'Rimuovi scadenza di '+row.description} onClick={()=>onUpdate(row.id,{production:{...bookProduction(row,row.order),category:row.production?.category||'Lavori',requestedDate:'',requestedText:''}})}>×</button>}</div>;
+}
+
+export function DeliveryEditor({row,onUpdate}:{row:WorkRow;onUpdate:(id:string,patch:Partial<Work>)=>void}){
+ const value=row.production?.delivery||'';
+ return <select className="inline-delivery" aria-label={'Modalità consegna di '+row.description} value={value} onChange={e=>onUpdate(row.id,{production:{...bookProduction(row,row.order),category:row.production?.category||'Lavori',delivery:e.target.value}})}><option value="">Non precisata</option>{value&&!BOOK_DELIVERIES.some(v=>v===value)&&<option value={value}>{value}</option>}{BOOK_DELIVERIES.map(v=><option key={v} value={v}>{v}</option>)}</select>;
 }
