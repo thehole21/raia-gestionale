@@ -1,4 +1,6 @@
 'use client';
+import {QuantityEditor,DueEditor} from './inline-work-fields';
+import {OperatorPicker} from './operator-picker';
 import {memo} from 'react';
 import {SupplierSelect} from './supplier-select';
 import type {Supplier} from '@/lib/suppliers';
@@ -26,12 +28,12 @@ function OverviewRegisterView({suppliers,renderActions,renderDelete,onTitleSave,
   return <article className={'register-work'+(solicited?' register-work-solicited':'')} key={r.id} aria-label={'Lavoro: '+r.description}>
    <div className="register-work-top"><div className="register-job"><div className="register-job-meta"><button type="button" className={'register-solicit'+(solicited?' register-solicit-active':'')} aria-label={solicited?'Rimuovi il sollecito dall’ordine '+r.order.number:'Sollecita ordine '+r.order.number} aria-pressed={solicited} title={solicited?'Ordine sollecitato':'Sollecita ordine'} onClick={()=>onToggleSolicited(r.order.id,!solicited)}><AlertTriangle size={16}/></button>{parent&&parent.order.id===r.order.id&&p?.entryTime&&<span>Ingresso ore {p.entryTime}</span>}{books&&<span>Libro {p?.bookNumber||''}</span>}{p?.urgent&&<strong className="register-urgent">Urgente</strong>}</div><button type="button" className="register-job-link" onClick={()=>onOpen(r)}><strong>{r.description}</strong><ArrowUpRight size={17}/></button>{p?.section&&<p>{p.section}</p>}</div>{renderDelete(r.order,r.id)}<label className="register-select"><input type="checkbox" aria-label={'Seleziona '+r.description} disabled={isInvoiced(r)} checked={selected.includes(r.id)} onChange={e=>onSelect(r.id,e.target.checked)}/><span>Seleziona</span></label></div>
    <dl className="register-data">
-    <DataCell label="Copie / quantità">{quantityLabel(r)}</DataCell>
-    <DataCell label="Operatore"><select aria-label={'Operatore di '+r.description} value={r.operatorId} onChange={e=>onUpdate(r.id,{operatorId:e.target.value})}><option value="">Non assegnato</option>{historical&&<option disabled value={r.operatorId}>{r.operator.name} · storico</option>}{operators.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></DataCell>
+    <DataCell label="Copie / quantità"><QuantityEditor row={r} onUpdate={onUpdate}/></DataCell>
+    <DataCell label="Operatore"><OperatorPicker work={r} operators={operators} label={'Operatori di '+r.description} onChange={patch=>onUpdate(r.id,patch)}/></DataCell>
     <DataCell label="Fornitore"><SupplierSelect suppliers={suppliers} label={'Fornitore di '+r.description} value={p?.supplier||''} onChange={supplier=>onUpdate(r.id,{production:{...bookProduction(r,r.order),category:p?.category||'Lavori',supplier}})}/></DataCell>
     <DataCell label="Processo"><select className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s}>{s}</option>)}</select></DataCell>
-    <DataCell label="Consegna richiesta">{due?<time dateTime={due}>{fmtDate(due)}</time>:p?.requestedText||'Non precisata'}</DataCell>
-    <DataCell label="Consegna">{p?.delivery||'—'}</DataCell>
+    <DataCell label="Consegna richiesta"><DueEditor row={r} onUpdate={onUpdate}/></DataCell>
+    <DataCell label="DDT">{r.order.ddt?.number||p?.ddtNumber||'—'}</DataCell>
     <DataCell label="Terminato">{p?<label className="register-terminated"><input type="checkbox" aria-label={'Terminato: '+r.description} checked={p.terminated} onChange={e=>onUpdate(r.id,{production:{...p,terminated:e.target.checked}})}/>{p.terminated?'Sì':'No'}</label>:['Pronto','Consegnato'].includes(r.status)?'Sì':'No'}</DataCell>
     <DataCell label="Fatturato"><BillingMark rows={[r]}/></DataCell>
     {p?.exitTime&&<DataCell label="Orario uscita">{p.exitTime}</DataCell>}

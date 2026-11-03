@@ -1,3 +1,4 @@
+import {operatorIds} from './assignments';
 import type {DdtDocument,DdtIssuer} from './ddt-document';
 export const STATUSES = ['Sopralluogo', 'Preventivo', 'Da elaborare', 'In lavorazione', 'Bozza', 'Procedere', 'In Stampa', 'In allestimento', 'In attesa File', 'In attesa conferma', 'Sospeso', 'Elaborato', 'Pronto', 'Consegnato'] as const;
 export type Status = typeof STATUSES[number];
@@ -8,7 +9,7 @@ export type Production = { planningMonths?: string[]; category?: string; section
 export const quantityLabel = (w: Pick<Work, 'qty'|'unit'|'production'>) => w.production ? w.production.quantity || 'Non precisata' : w.qty.toLocaleString('it-IT')+' '+w.unit;
 export const workAmount = (w: Work) => w.production?.priceUnspecified || (w.production && !w.qty) ? 'Da definire' : money(sumWork(w));
 export const workDue = (w: Work, o: Order) => w.production ? w.production.requestedDate : o.due;
-export type Work = { production?: Production; vatId?: number; importKey?: string; source?: SourceRecord; sourceHistory?: SourceRecord[]; id: string; description: string; qty: number; unit: string; price: number; status: Status; operatorId: string; invoiceId: string | null; notes: string };
+export type Work = { operatorIds?:string[]; production?: Production; vatId?: number; importKey?: string; source?: SourceRecord; sourceHistory?: SourceRecord[]; id: string; description: string; qty: number; unit: string; price: number; status: Status; operatorId: string; invoiceId: string | null; notes: string };
 export type DeliveryNote = { document?:DdtDocument; number: string; date: string };
 export type Order = { title?: string; planningMonth?: string; customerRequestId?: string; executionDate?: string; ddt?: DeliveryNote; solicited?: boolean; solicitedAutoDismissedDue?: string; id: string; number: string; clientId: string; created: string; due: string; notes: string; lines: Work[] };
 export type Draft = { status?: 'draft' | 'validated' | 'creating' | 'created' | 'sending' | 'sent' | 'failed' | 'reconcile'; remoteDocumentId?: number; submissionKey?: string; preparedInvoice?: unknown; id: string; number: string; clientId: string; created: string; workIds: string[] };
@@ -42,7 +43,7 @@ export function flatten(db: Store): WorkRow[] {
   const operators=new Map([...(db.operatorHistory||[]),...db.operators].map(o=>[o.id,o]));
   return db.orders.flatMap(order => {
     const client = clients.get(order.clientId) || { id: '', name: 'Cliente non trovato', city: '', email: '', phone: '', vat: '' };
-    return order.lines.map(line => ({ ...line, billingState:billingState(line,db.drafts), client, order, operator: operators.get(line.operatorId) || { id: '', name: '—' } }));
+    return order.lines.map(line => ({ ...line, billingState:billingState(line,db.drafts), client, order, operator: {id:line.operatorId,name:operatorIds(line).map(id=>operators.get(id)?.name||'Operatore non disponibile').join(', ')||'—'} }));
   });
 }
 export function seeded(): Store {
