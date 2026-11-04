@@ -20,7 +20,7 @@ export function overallStatus(lines:Pick<Work,'status'|'production'>[]):Status {
  if(lines.every(l=>['Pronto','Consegnato'].includes(l.status)))return 'Pronto';
  if(lines.every(l=>['Elaborato','Pronto','Consegnato'].includes(l.status)))return 'Elaborato';
  if(lines.some(l=>['In lavorazione','In Stampa','In allestimento','Elaborato','Pronto','Consegnato'].includes(l.status)))return 'In lavorazione';
- if(lines.some(l=>['Bozza','Procedere','In attesa File','In attesa conferma','Sospeso'].includes(l.status)))return 'Da elaborare';
+ if(lines.some(l=>['Bozza','Procedere','Attendere','Tassativa per','In attesa File','In attesa conferma','Sospeso'].includes(l.status)))return 'Da elaborare';
  return lines.some(l=>l.status==='Da elaborare')?'Da elaborare':lines.some(l=>l.status==='Preventivo')?'Preventivo':'Sopralluogo';
 }
 export function groupWork(all:WorkRow[],visible:WorkRow[]) {
@@ -32,4 +32,5 @@ export function groupWork(all:WorkRow[],visible:WorkRow[]) {
  return [...map.values()].filter(g=>g.visible.length).sort((a,b)=>b.date.localeCompare(a.date)||a.client.name.localeCompare(b.client.name,'it'));
 }
 
-export const statusTone=(status:Status)=>['Pronto','Consegnato','Elaborato'].includes(status)?'done':['In lavorazione','In Stampa','In allestimento'].includes(status)?'active':['Sospeso','In attesa File','In attesa conferma','Bozza'].includes(status)?'waiting':'planned';
+export const statusText=(status:string)=>status==='In Stampa'?'In stampa':status==='In attesa File'?'In attesa file':status;
+export const statusTone=(status:Status)=>['Preventivo','Sopralluogo','Bozza'].includes(status)?'soft-yellow':['In attesa File','In attesa conferma'].includes(status)?'navy':status==='In Stampa'?'aqua':status==='In allestimento'?'dark-red':status==='Tassativa per'?'orange':status==='Pronto'?'dark-green':['Attendere','Procedere'].includes(status)?'white':['Consegnato','Elaborato'].includes(status)?'done':status==='In lavorazione'?'active':status==='Sospeso'?'waiting':'planned';

@@ -10,7 +10,7 @@ import {OrderTitleEditor,type SaveOrderTitle} from './order-title-editor';
 import {type ReactNode} from 'react';
 import {ChevronRight,ArrowUpRight,AlertTriangle} from 'lucide-react';
 import {type Operator,type Work,type WorkRow,type Status,STATUSES,fmtDate,quantityLabel,workDue,isInvoiced} from '@/lib/data';
-import {groupWork,overallStatus,orderTitle,statusTone} from '@/lib/order-groups';
+import {groupWork,overallStatus,orderTitle,statusTone,statusText} from '@/lib/order-groups';
 import {isOrderSolicited} from '@/lib/order-solicitation';
 
 const monthFormat=new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric'});
@@ -31,7 +31,7 @@ function OverviewRegisterView({suppliers,renderActions,renderDelete,onTitleSave,
     <DataCell label="Copie / quantità"><QuantityEditor row={r} onUpdate={onUpdate}/></DataCell>
     <DataCell label="Operatore"><OperatorPicker work={r} operators={operators} label={'Operatori di '+r.description} onChange={patch=>onUpdate(r.id,patch)}/></DataCell>
     <DataCell label="Fornitore"><SupplierSelect suppliers={suppliers} label={'Fornitore di '+r.description} value={p?.supplier||''} onChange={supplier=>onUpdate(r.id,{production:{...bookProduction(r,r.order),category:p?.category||'Lavori',supplier}})}/></DataCell>
-    <DataCell label="Processo"><select className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s}>{s}</option>)}</select></DataCell>
+    <DataCell label="Processo"><select className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s} value={s}>{statusText(s)}</option>)}</select></DataCell>
     <DataCell label="Consegna richiesta"><DueEditor row={r} onUpdate={onUpdate}/></DataCell>
     <DataCell label="DDT">{r.order.ddt?.number||p?.ddtNumber||'—'}</DataCell>
     <DataCell label="Terminato">{p?<label className="register-terminated"><input type="checkbox" aria-label={'Terminato: '+r.description} checked={p.terminated} onChange={e=>onUpdate(r.id,{production:{...p,terminated:e.target.checked}})}/>{p.terminated?'Sì':'No'}</label>:['Pronto','Consegnato'].includes(r.status)?'Sì':'No'}</DataCell>
@@ -40,13 +40,13 @@ function OverviewRegisterView({suppliers,renderActions,renderDelete,onTitleSave,
     {p?.exitTime&&<DataCell label="Orario uscita">{p.exitTime}</DataCell>}
     {r.order.executionDate&&(!parent||parent.order.executionDate!==r.order.executionDate)&&<DataCell label="Esecuzione">{fmtDate(r.order.executionDate)}</DataCell>}
    </dl>
-   {(p?.comments||p?.additionalNotes||r.notes||r.order.notes)&&<div className="register-notes">{p?.comments&&<p><strong>Commenti</strong>{p.comments}</p>}{p?.additionalNotes&&<p><strong>Annotazioni</strong>{p.additionalNotes}</p>}{r.notes&&<p><strong>Note lavoro</strong>{r.notes}</p>}{r.order.notes&&r.order.notes!==r.notes&&<p><strong>Note ordine</strong>{r.order.notes}</p>}</div>}
+   {(p?.comments||p?.additionalNotes||r.notes||r.notesRight||r.order.notes)&&<div className="register-notes">{p?.comments&&<p><strong>Commenti</strong>{p.comments}</p>}{p?.additionalNotes&&<p><strong>Annotazioni</strong>{p.additionalNotes}</p>}{r.notes&&<p><strong>Note lavoro</strong>{r.notes}</p>}{r.notesRight&&<p><strong>Note lavoro · 2</strong>{r.notesRight}</p>}{r.order.notes&&r.order.notes!==r.notes&&<p><strong>Note ordine</strong>{r.order.notes}</p>}</div>}
   </article>;
  }
  return <div className="overview-register"><div className="register-toolbar"><span>{groups.length} ordini · {visible.length} lavorazioni</span></div>{groups.map(g=>{
  const status=overallStatus(g.rows),orders=[...new Map(g.visible.map(r=>[r.order.id,r.order])).values()];
  return <section className="register-group" key={g.key}>
- <button type="button" className="register-group-heading" onClick={()=>onOpen(g.visible[0])}><span className="register-company"><small>CLIENTE</small><strong>{g.client.name}</strong></span><span data-tone={statusTone(status)} className={'register-overall '+(['Pronto','Consegnato'].includes(status)?'register-done':'')}>{status}</span><span className="register-group-action">Dettagli ordine <ChevronRight size={18}/></span></button>
+ <button type="button" className="register-group-heading" onClick={()=>onOpen(g.visible[0])}><span className="register-company"><small>CLIENTE</small><strong>{g.client.name}</strong></span><span data-tone={statusTone(status)} className={'register-overall '+(['Pronto','Consegnato'].includes(status)?'register-done':'')}>{statusText(status)}</span><span className="register-group-action">Dettagli ordine <ChevronRight size={18}/></span></button>
  {g.visible.length<g.rows.length&&<p className="register-filter-note">{g.visible.length} di {g.rows.length} lavorazioni corrispondono ai filtri. Lo stato generale considera l’intero ordine.</p>}
  {orders.map((order,index)=><div className="register-order" key={order.id}><div className="register-order-title">{(index===0||order.created!==orders[0].created)&&<EntryDate date={order.created} orderNumber={orderNumbers.get(order.id)||'—'}/>}<OrderTitleEditor order={order} onSave={onTitleSave}/><span className="register-count">Tot. Lavori <strong>{order.lines.length}</strong></span>{renderActions(order)}</div><div className="register-products">{g.visible.filter(r=>r.order.id===order.id).map(r=>record(r,g.visible[0]))}</div></div>)}
  </section>;

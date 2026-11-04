@@ -1,0 +1,10 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import {type Order,type Store} from '@/lib/data';
+import {cloud} from '@/lib/supabase';
+export function WorkSheetButton({order,store,disabled,demo}:{order:Order;store:Store;disabled:boolean;demo:boolean}){
+ const [busy,setBusy]=useState(false),[url,setUrl]=useState(''),[code,setCode]=useState(''),[error,setError]=useState('');const dialog=useRef<HTMLDialogElement>(null);
+ useEffect(()=>{if(url)dialog.current?.showModal();return()=>{if(url)URL.revokeObjectURL(url);};},[url]);
+ async function generate(){setBusy(true);setError('');try{let number='DEMO-'+String(store.orders.findIndex(o=>o.id===order.id)+1).padStart(6,'0');if(!demo){const {data,error}=await cloud().rpc('raia_work_sheet_number',{target_order_id:order.id});if(error)throw new Error(error.message);number=data;}const {buildWorkSheetPdf}=await import('@/lib/work-sheet-pdf');const blob=await buildWorkSheetPdf(order,store,number);setCode(number);setUrl(URL.createObjectURL(blob));}catch(e){setError(e instanceof Error?e.message:'Impossibile generare la scheda.');}finally{setBusy(false);}}
+ return <><button type="button" className="btn btn-small btn-plain" disabled={disabled||busy} onClick={generate}>{busy?'Preparo PDF…':'Scheda lavoro A3'}</button>{error&&<span role="alert" className="error-text">{error}</span>}{url&&<dialog ref={dialog} className="work-sheet-dialog" onCancel={()=>setUrl('')}><header><div><h2>Scheda lavoro · {code}</h2><p>A3 orizzontale, scala 100%. Per la cartellina: fronte/retro, ribaltamento sul lato corto, piega centrale.</p></div><button type="button" className="icon-btn" aria-label="Chiudi scheda" onClick={()=>setUrl('')}>×</button></header><div className="work-sheet-toolbar"><a className="btn btn-primary" href={url} download={`Scheda-${code}.pdf`}>Scarica PDF</a><a className="btn btn-plain" href={url} target="_blank" rel="noreferrer">Apri PDF / stampa</a></div><iframe title="Anteprima scheda lavoro A3" src={url}/></dialog>}</>;
+}
