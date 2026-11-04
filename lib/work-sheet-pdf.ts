@@ -14,19 +14,21 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  function font(size:number,bold=false,color=ink){doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.setTextColor(color);}
  function text(value:unknown,x:number,y:number,size=10,bold=false,color=ink){font(size,bold,color);doc.text(clean(value),x,y);}
  function wrap(value:unknown,width:number,size=10){font(size);return doc.splitTextToSize(clean(value),width) as string[];}
- function frame(){doc.setDrawColor(line);doc.setLineWidth(.2);doc.setLineDashPattern([1,2],0);doc.line(210,9,210,288);doc.setLineDashPattern([],0);text('PIEGA CENTRALE',196,291,6,false,muted);}
+ function grid(gx:number,gy:number,width:number,height:number){doc.setDrawColor('#e5dce0');doc.setLineWidth(.15);for(let xx=0;xx<=width;xx+=8)doc.line(gx+xx,gy,gx+xx,gy+height);for(let yy=0;yy<=height;yy+=8)doc.line(gx,gy+yy,gx+width,gy+yy);doc.rect(gx,gy,width,height);}
+ function frame(){for(const px of [7,217]){doc.setDrawColor(line);doc.setLineWidth(.3);doc.roundedRect(px,7,196,276,2,2);doc.setDrawColor(wine);doc.setLineWidth(1);doc.line(px+7,7,px+39,7);}doc.setLineWidth(.2);}
+
  frame();
  // Outer face: back on the left, front cover on the right.
  doc.addImage(logo,'PNG',247,20,126,62.7,undefined,'FAST');
  text('SCHEDA DI LAVORO',228,105,10,true,wine);text(code,228,120,26,true,wine);
  const titleLines=wrap(order.title||order.number,174,22);let cy=139;
  for(const l of titleLines.slice(0,5)){text(l,228,cy,22,true);cy+=9;}
- if(titleLines.length>5)text('Titolo completo nelle schede interne',228,cy+1,9,false,muted);
+ if(titleLines.length>5)text('Riferimento: '+order.number,228,cy+1,9,false,muted);
  cy=Math.max(cy+10,193);const cn=wrap(client?.name||'Cliente non indicato',174,17);for(const l of cn.slice(0,3)){text(l,228,cy,17,true);cy+=7;}
  text('ORDINE',228,240,8,true,muted);text(fmtDate(order.created),228,247,12);
  text('LAVORAZIONI',323,240,8,true,muted);text(String(order.lines.length),323,247,12,true);
  text('Riferimento ordine: '+order.number,228,263,8,false,muted);
- text('A3 / 420 × 297 mm  -  Piegare a metà in formato A4',228,279,8,false,muted);
+
  text('RAIA / PRODUZIONE',14,23,10,true,wine);text('Riepilogo ordine',14,38,22,true);
  text(code,14,49,10,false,muted);doc.setDrawColor(line);doc.line(14,56,196,56);
  let sy=66;
@@ -34,7 +36,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
   const w=order.lines[i],ls=wrap(w.description,135,10);text(String(i+1).padStart(2,'0'),14,sy,10,true,wine);
   ls.slice(0,2).forEach((l,j)=>text(l,27,sy+j*4.5,10));text(quantityLabel(w),168,sy,9,true);sy+=Math.max(13,ls.slice(0,2).length*4.5+5);doc.line(14,sy-4,196,sy-4);
  }
- text('Dettagli completi di tutte le righe nelle pagine interne.',14,Math.min(sy+4,207),9,false,muted);
+ if(sy<190){text('APPUNTI',14,sy+5,8,true,wine);grid(14,sy+10,182,Math.min(48,210-sy-10));}
  text('PASSAGGI / CONTROLLO FINALE',14,228,9,true,wine);
  for(const [i,label] of ['File verificati','Materiali verificati','Quantità e finiture controllate','Imballaggio e consegna'].entries()){doc.rect(14,237+i*9,3,3);text(label,21,240+i*9,10);doc.line(105,241+i*9,196,241+i*9);}
  let panel=-1,x=14,y=0,work:Work=order.lines[0],index=0;
@@ -58,7 +60,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
   do{ensure(55);text('NOTE LAVORAZIONE',x,y,9,true,wine);text('NOTE LAVORAZIONE / 2',x+96,y,9,true,wine);y+=7;const n=Math.min(Math.max(left.length,right.length)-off,Math.floor((259-y)/5));const count=Math.max(n,8);for(let j=0;j<count;j++){if(left[off+j])text(left[off+j],x,y+j*5,10);if(right[off+j])text(right[off+j],x+96,y+j*5,10);doc.setDrawColor(line);doc.line(x,y+j*5+1.7,x+86,y+j*5+1.7);doc.line(x+96,y+j*5+1.7,x+182,y+j*5+1.7);}y+=count*5+9;off+=count;if(off<Math.max(left.length,right.length))newPanel(true);}while(off<Math.max(left.length,right.length));
   ensure(24);text('ALTRI OPERATORI / FIRME',x,y,8,true,wine);doc.line(x,y+9,x+182,y+9);doc.line(x,y+18,x+182,y+18);y+=25;
  }
- if(panel%2===0){x=224;text(code,x,22,10,true,wine);text('Annotazioni di reparto',x,38,19,true);for(let yy=55;yy<274;yy+=10){doc.setDrawColor(line);doc.line(x,yy,x+182,yy);}}
+ if(panel%2===0){x=224;text(code,x,22,10,true,wine);text('Annotazioni di reparto',x,38,19,true);grid(x,49,182,224);}
  for(let p=1;p<=doc.getNumberOfPages();p++){doc.setPage(p);text(`${code}  /  ${p} di ${doc.getNumberOfPages()}`,14,288,7,false,muted);}
  doc.setProperties({title:`Scheda lavoro ${code} - ${order.title||order.number}`,author:'RAIA',subject:'Cartellina di produzione A3 piegabile'});
  return doc.output('blob');

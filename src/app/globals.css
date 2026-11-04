@@ -245,3 +245,9 @@
 select.register-process option,.inline-status option{background:#fff;color:#30343b}@media(max-width:650px){.work-notes-columns{grid-template-columns:1fr}.duplicate-dialog header,.duplicate-dialog footer,.duplicate-body{padding:16px}.duplicate-line h3{gap:12px}.duplicate-dialog input,.duplicate-dialog select,.duplicate-dialog textarea{font-size:16px}}
 
 .work-sheet-dialog{margin:auto;width:min(1200px,calc(100% - 24px));height:92dvh;max-height:92dvh;padding:20px;border:1px solid #e5d6dd;border-radius:16px;color:#392e34}.work-sheet-dialog::backdrop{background:#25131d88}.work-sheet-dialog header{display:flex;justify-content:space-between;gap:16px}.work-sheet-dialog header p{font-size:12px;margin:8px 0;color:#71646b}.work-sheet-toolbar{display:flex;gap:10px;margin:12px 0}.work-sheet-dialog iframe{width:100%;height:calc(100% - 130px);border:1px solid #e6dce0;border-radius:8px}.register-order-title{flex-wrap:wrap}.register-order-title>.btn{white-space:nowrap}@media(max-width:650px){.work-sheet-dialog{padding:12px}.work-sheet-dialog h2{font-size:18px}.work-sheet-dialog iframe{height:calc(100% - 175px)}}
+
+/* Azioni della cartellina di produzione */
+.btn.order-tool-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:7px 11px;border:1px solid #d7c4cc;border-radius:9px;font-size:12px;font-weight:650;line-height:1.2;text-decoration:none;box-shadow:0 1px 2px #4320300a;transition:background .15s,border-color .15s;white-space:nowrap}
+.btn.order-tool-sheet{background:#812c46;color:#fff;border-color:#812c46}.btn.order-tool-sheet:hover:not(:disabled){background:#672138;border-color:#672138}
+.btn.order-tool-repeat{background:#f7eff2;color:#70273e}.btn.order-tool-repeat:hover:not(:disabled){background:#ecdce3;border-color:#b68a9a}
+.btn.order-tool-button:focus-visible{outline:3px solid #ba849a;outline-offset:3px}.btn.order-tool-button:disabled{opacity:.5;cursor:wait}.order-tool-button svg{flex-shrink:0}
