@@ -1,5 +1,5 @@
 'use client';
-import {ProcessContext, ProcessBadge, ProcessText, ProcessSelect, ProcessFilter} from '@/src/components/process-controls';
+import {ProcessContext, ProcessBadge, ProcessText, ProcessSelect} from '@/src/components/process-controls';
 const ProcessSettings=dynamic(()=>import('@/src/components/process-settings').then(m=>m.ProcessSettings));
 import {processesOf, processLabel} from '@/lib/processes';
 import {OrderClientEditor} from '@/src/components/order-client-editor';
@@ -190,11 +190,7 @@ function Workspace() {
   const overdue = rows.filter(r => !isWorkClosed(r) && r.order.due && r.order.due < today()).length;
   const hasWorkTerm = (r: WorkRow, term: string) => [r.description, r.order.title, r.client.name, r.order.number, workDdtNumber(r,r.order), r.operator.name, processLabel(db,r.status), r.order.notes, r.notes, r.order.created, r.order.executionDate, r.production?.supplier, r.production?.ddtNumber, r.production?.delivery, r.production?.invoicing, r.production?.section, r.production?.category, r.production?.comments].join(' ').toLocaleLowerCase('it').includes(term);
   const filtered = useMemo(() => overviewRows.filter(r => {
-    if (!matchesPeriod(r,year,month)) return false;
-    if (search && !hasWorkTerm(r, search.trim().toLocaleLowerCase('it'))) return false;
-    if (statusFilter && r.status !== statusFilter) return false;
-    if (operatorFilter && !operatorIds(r).includes(operatorFilter)) return false;
-    if (clientFilter && r.client.id !== clientFilter) return false;
+    if (search.trim() && ![r.order.title, r.description].join(' ').toLocaleLowerCase('it').includes(search.trim().toLocaleLowerCase('it'))) return false;
     if (quick === 'active' && isWorkClosed(r)) return false;
     if (quick === 'solicited' && !isOrderSolicited(r.order, now)) return false;
     if (quick === 'planned' && !isPlanned(r)) return false;
@@ -203,7 +199,7 @@ function Workspace() {
     if (quick === 'unbilled' && isInvoiced(r)) return false;
     if (quick === 'delivered' && r.status !== 'Consegnato') return false;
     return true;
-  }).sort((a, b) => executionDay(b.order).localeCompare(executionDay(a.order)) || b.order.number.localeCompare(a.order.number)), [overviewRows, search, statusFilter, operatorFilter, clientFilter, quick, year, month, now]);
+  }).sort((a, b) => executionDay(b.order).localeCompare(executionDay(a.order)) || b.order.number.localeCompare(a.order.number)), [overviewRows, search, quick, now]);
   const selected = rows.filter(r=>selectedWork.includes(r.id)&&!isInvoiced(r));
   const selectedClients = new Set(selected.map(r => r.client.id));
   const validSelected = selected.length > 0 && selectedClients.size === 1;
@@ -426,11 +422,10 @@ function Workspace() {
           </div>
           <div className="workspace-card">
             <div className="card-top"><div><h2>{category==='books'?'Registro libri':'Registro lavorazioni generali'} {quick!=='cancelled'&&<span className="head-count">{filtered.length}</span>}</h2><p>Ogni ordine ha le proprie righe, anche per lo stesso cliente nella stessa giornata.</p></div><button disabled={quick==='cancelled'} className="btn btn-small btn-plain" onClick={exportCSV}><Download size={15}/> Esporta CSV</button></div>
-            <div className="tabs" role="tablist" aria-label="Filtra lavorazioni">{tabSet.map(t => <button key={t.id} role="tab" aria-selected={quick === t.id} className={'tab ' + (quick === t.id ? 'tab-active' : '')} onClick={() => setQuick(t.id)}>{t.label}<span>{t.count}</span></button>)}<button role="tab" aria-selected={quick==='cancelled'} className={'tab '+(quick==='cancelled'?'tab-active':'')} onClick={()=>setQuick('cancelled')}>Ordini annullati</button></div>
-            {quick==='cancelled'?<CancelledOrders demo={demo} category={category}/>:<>{clientFilter && <div className="client-filter-bar">Lavori di: <strong>{[...db.clients,...(db.clientHistory||[])].find(c => c.id === clientFilter)?.name}</strong><button onClick={() => setClientFilter('')}>Rimuovi filtro <X size={13}/></button></div>}{periodFilters}<div className="filterbar"><form role="search" autoComplete="off" className="search-field" onSubmit={e=>e.preventDefault()}><Search size={18}/><input key="work-search" name="work-search-query" type="search" autoComplete="off" autoCapitalize="none" spellCheck={false} data-lpignore="true" data-1p-ignore="true" ref={searchRef} value={search} onChange={e => setSearch(e.target.value)} placeholder="Cerca azienda, prodotto, lavoro, operatore…" aria-label="Cerca tutti i lavori"/><kbd>Ctrl K</kbd>{search && <button aria-label="Cancella ricerca" onClick={() => setSearch('')}><X size={15}/></button>}</form>
-              <div className="filter-controls"><ProcessFilter value={statusFilter} onChange={setStatusFilter}/><SearchableSelect aria-label="Filtra per operatore" value={operatorFilter} onChange={e => setOperatorFilter(e.target.value)}><option value="">Tutti gli operatori</option>{db.operators.map(op => <option key={op.id} value={op.id}>{op.name}</option>)}</SearchableSelect></div>
-            </div>
-            {!filtered.length ? <Empty title="Nessun lavoro trovato" detail="Prova a cambiare i filtri o inserisci un nuovo lavoro."/> : category==='books'?<BookRegister suppliers={suppliersOf(db)} interactionVersion={interactionVersion} renderActions={stableActions} renderDelete={stableDelete} onTitleSave={stableTitle} canDelete={!failure && saveStatus !== "Salvataggio…"} getRevision={getRevision} all={overviewRows} visible={filtered} operators={db.operators} selected={selectedWork} onSelect={stableSelect} onUpdate={stableUpdate} onOpen={stableOpen} onToggleSolicited={stableSolicit} now={now}/>:<OverviewRegister interactionVersion={interactionVersion} suppliers={suppliersOf(db)} renderActions={stableActions} renderDelete={stableDelete} onTitleSave={stableTitle} all={overviewRows} visible={filtered} operators={db.operators} selected={selectedWork} onSelect={stableSelect} onUpdate={stableUpdate} onOpen={stableOpen} onToggleSolicited={stableSolicit} orderNumbers={orderNumbers} now={now}/>}
+            <div className="filterbar"><form role="search" autoComplete="off" className="search-field" onSubmit={e=>e.preventDefault()}><Search size={18}/><input key="work-search" name="work-search-query" type="search" autoComplete="off" autoCapitalize="none" spellCheck={false} data-lpignore="true" data-1p-ignore="true" ref={searchRef} value={search} onChange={e => {setSearch(e.target.value);setQuick('all');}} placeholder="Cerca titolo del lavoro o nome della lavorazione…" aria-label="Cerca titolo del lavoro o nome della lavorazione"/><kbd>Ctrl K</kbd>{search && <button aria-label="Cancella ricerca" onClick={() => setSearch('')}><X size={15}/></button>}</form></div>
+            <div className="card-top">{quick!=='all'&&<button className="btn btn-small btn-plain" onClick={()=>setQuick('all')}>Mostra tutti i lavori</button>}<button className="btn btn-small btn-plain" onClick={()=>setQuick(quick==='cancelled'?'all':'cancelled')}>{quick==='cancelled'?'Torna al registro':'Ordini annullati'}</button></div>
+            {quick==='cancelled'?<CancelledOrders demo={demo} category={category}/>:<>
+            {!filtered.length ? <Empty title="Nessun lavoro trovato" detail="Prova un altro titolo o nome della lavorazione, oppure inserisci un nuovo lavoro."/> : category==='books'?<BookRegister suppliers={suppliersOf(db)} interactionVersion={interactionVersion} renderActions={stableActions} renderDelete={stableDelete} onTitleSave={stableTitle} canDelete={!failure && saveStatus !== "Salvataggio…"} getRevision={getRevision} all={overviewRows} visible={filtered} operators={db.operators} selected={selectedWork} onSelect={stableSelect} onUpdate={stableUpdate} onOpen={stableOpen} onToggleSolicited={stableSolicit} now={now}/>:<OverviewRegister interactionVersion={interactionVersion} suppliers={suppliersOf(db)} renderActions={stableActions} renderDelete={stableDelete} onTitleSave={stableTitle} all={overviewRows} visible={filtered} operators={db.operators} selected={selectedWork} onSelect={stableSelect} onUpdate={stableUpdate} onOpen={stableOpen} onToggleSolicited={stableSolicit} orderNumbers={orderNumbers} now={now}/>}
             <div className="table-foot"><span>Mostrate <strong>{filtered.length}</strong> di {overviewRows.length} lavorazioni</span><span><span className="foot-dot"/> Modifica processo e operatore direttamente nel registro</span></div></>}
           </div>
         </>}
