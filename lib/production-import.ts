@@ -1,3 +1,4 @@
+import {processFromText} from './processes';
 import { type Store, type Work, type Status, STATUSES } from './data';
 
 export const productionHeaders = ['entrata','cliente','lavoro','copie','operatore','fornitore','processo','consegna richiesta','ddt','consegna','terminato','fatturato'];
@@ -52,8 +53,8 @@ export function prepareProductionImport(store: Store, data: unknown[][], sheet: 
     const rawQty=get('copie'), quantity=text(rawQty);
     const qty=typeof rawQty==='number'?rawQty:/^\d+(?:[.,]\d+)?$/.test(quantity)?Number(quantity.replace(',','.')):0;
     const process=text(get('processo'));
-    const status=STATUSES.find(s=>norm(s)===norm(process)) || 'Da elaborare';
-    if(process&&!STATUSES.some(s=>norm(s)===norm(process))){errors.push(`Riga ${i+1}: processo non riconosciuto «${process}».`);continue;}
+    const status=processFromText(store,process) || 'Da elaborare';
+    if(process&&!processFromText(store,process)){errors.push(`Riga ${i+1}: processo non riconosciuto «${process}».`);continue;}
     const rawDue=get('consegna richiesta');
     const line:Work={
       id:`excel_${key(norm(sheet))}_row_${i+1}`,importKey,description,qty,unit:'pz',price:0,status:status as Status,

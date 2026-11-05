@@ -1,3 +1,5 @@
+import {matchesRequestedDocument} from '@/lib/fic-document-match';
+import {orderRegistrationNumbers} from '@/lib/order-groups';
 import {randomUUID} from 'node:crypto';
 import {ddtContext} from '@/lib/fic-ddt-server';
 import {bearer,connection,ficGet,FicError,failure,sameOrigin,seal,unseal} from '@/lib/fic-server';
@@ -25,7 +27,7 @@ export async function GET(request:Request){try{
   const remoteId=op.remote_id||Number(q.get('remoteId'));
   if(!Number.isSafeInteger(remoteId)||remoteId<1)throw new FicError('Esito da verificare in Fatture in Cloud: inserisci l’ID del documento se già presente.',409);
   const doc=(await ficGet(c.tokens.access_token,`/c/${op.company_id}/issued_documents/${remoteId}`)).data;
-  if(doc.type!=='delivery_note'||doc.subject!==op.request_data.subject||doc.entity?.id!==op.request_data.entity?.id)throw new FicError('DDT non corrispondente alla richiesta.');
+  if(!op.remote_id&&!matchesRequestedDocument(doc,op.request_data))throw new FicError('DDT non corrispondente alla richiesta.');
   const number=String(doc.number)+(doc.numeration||'');
   const {error:saveError}=await ctx.db.from(table).update({remote_id:doc.id,remote_number:number,status:'created'}).eq(key,value);if(saveError)throw saveError;
   const {error:finish}=await ctx.userDb.rpc(legacy?'raia_finish_fic_ddt':'raia_finish_delivery',{...(legacy?{target_order:orderId}:{operation_id:operationId}),document_id:doc.id,document_number:number});
@@ -54,7 +56,7 @@ export async function POST(request:Request){let ctx:Awaited<ReturnType<typeof dd
   const entity=(await ficGet(c.tokens.access_token,`/c/${c.row.company_id}/entities/clients/${body.clientId}`)).data;if(!entity?.name)throw new FicError('Cliente non valido.');
   for(const field of ['destination','carrier','packages','reason'])if(typeof body[field]!=='string'||body[field].length>500)throw new FicError('Dati di trasporto non validi.');
   if(!body.destination.trim()||!body.reason.trim())throw new FicError('Inserisci destinazione e causale.');
-  payload={type:'delivery_note',entity,date:body.date,subject:'RAIA-DDT/'+operationId,visible_subject:order.title||order.number,e_invoice:false,show_totals:'none',dn_ai_destination:body.destination,dn_ai_transporter:body.carrier,dn_ai_packages_number:body.packages,dn_ai_causal:body.reason,items_list:lines.map(l=>({name:l.description,qty:l.qty,measure:l.unit,net_price:0}))};
+  payload={type:'delivery_note',entity,date:body.date,subject:'Ordine n. '+(orderRegistrationNumbers((ws.payload as Store).orders).get(order.id)||order.number),visible_subject:'Ordine n. '+(orderRegistrationNumbers((ws.payload as Store).orders).get(order.id)||order.number)+(order.title?' · '+order.title:''),e_invoice:false,show_totals:'none',dn_ai_destination:body.destination,dn_ai_transporter:body.carrier,dn_ai_packages_number:body.packages,dn_ai_causal:body.reason,items_list:lines.map(l=>({name:l.description,qty:l.qty,measure:l.unit,net_price:0}))};
   return json({confirmation:seal({payload,workIds,operationId,user:ctx.userId,orderId,revision:ws.revision,companyId:c.row.company_id,expires:Date.now()+600000},'ddt-preview-v2'),customer:entity.name,lines:payload.items_list});
  }
  const {data:claim,error:claimError}=await ctx.userDb.rpc('raia_claim_delivery',{operation_id:operationId,target_order:orderId,selected_ids:workIds,expected_revision:ws.revision,target_company:c.row.company_id,document_data:payload});

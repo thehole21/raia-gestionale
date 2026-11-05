@@ -1,4 +1,5 @@
 'use client';
+import {ProcessSelect, ProcessBadge} from './process-controls';
 import {SearchableSelect} from './searchable-select';
 import {workDdtNumber} from '@/lib/delivery-selection';
 
@@ -11,9 +12,9 @@ import {BillingMark} from './billing-mark';
 import {OrderTitleEditor,type SaveOrderTitle} from './order-title-editor';
 import {Fragment,type ReactNode} from 'react';
 import {ChevronRight,ArrowUpRight,AlertTriangle,Trash2,X} from 'lucide-react';
-import {type Work,type WorkRow,type Operator,type Status,STATUSES,fmtDate,isInvoiced,quantityLabel,workDue} from '@/lib/data';
+import {type Work,type WorkRow,type Operator,type Status,fmtDate,isInvoiced,quantityLabel,workDue} from '@/lib/data';
 import {BOOK_DELIVERIES,bookProduction} from '@/lib/work-categories';
-import {groupWork,overallStatus,orderTitle,statusTone,statusText} from '@/lib/order-groups';
+import {groupWork,overallStatus,orderTitle} from '@/lib/order-groups';
 import {isOrderSolicited} from '@/lib/order-solicitation';
 import {DeleteOrder} from './delete-order';
 const columns=['N.','Cliente','Data ingresso','Orario ingresso','Titolo lavoro','Copie','Operatore','Fornitori','Processo','Commenti','Consegna richiesta','Urgenza','Orario uscita','DDT','Terminato','Fatturato','Modalità consegna'];
@@ -22,7 +23,7 @@ function BookRegisterView({suppliers,renderActions,renderDelete,onTitleSave,all,
  const change=(r:WorkRow,patch:Partial<ReturnType<typeof bookProduction>>)=>onUpdate(r.id,{production:{...bookProduction(r,r.order),...patch}});
  return <div className="overview-register books-register"><div className="register-toolbar"><span>{visible.length} libri · {groups.length} ordini</span></div>{groups.map(g=>{
   const main=g.visible[0];
-  return <section className="register-group" key={g.key}><button type="button" className="register-group-heading" onClick={()=>onOpen(main)}><span className="register-company"><small>CLIENTE · LIBRI</small><strong>{g.client.name}</strong></span><span className="register-overall" data-tone={statusTone(overallStatus(g.rows))}>{statusText(overallStatus(g.rows))}</span><span className="register-group-action">Dettagli ordine <ChevronRight size={18}/></span></button>{g.visible.length<g.rows.length&&<p className="register-filter-note">{g.visible.length} di {g.rows.length} libri corrispondono ai filtri. Stato generale calcolato sull’intero ordine.</p>}
+  return <section className="register-group" key={g.key}><button type="button" className="register-group-heading" onClick={()=>onOpen(main)}><span className="register-company"><small>CLIENTE · LIBRI</small><strong>{g.client.name}</strong></span><ProcessBadge className="register-overall" status={overallStatus(g.rows)}/><span className="register-group-action">Dettagli ordine <ChevronRight size={18}/></span></button>{g.visible.length<g.rows.length&&<p className="register-filter-note">{g.visible.length} di {g.rows.length} libri corrispondono ai filtri. Stato generale calcolato sull’intero ordine.</p>}
   <div className="book-register-scroll" tabIndex={0} role="region" aria-label={'Registro libri di '+g.client.name}><table className="book-register-table"><caption className="sr-only">Registro libri di {g.client.name}</caption><thead><tr><th aria-label="Selezione"/>{columns.map(c=><th key={c}>{c}</th>)}<th aria-label="Dettagli"/></tr></thead><tbody>{g.visible.map((r,i)=>{
    const p=bookProduction(r,r.order),historic=!!r.operatorId&&!operators.some(o=>o.id===r.operatorId),sameDate=i>0&&r.order.created===main.order.created,due=workDue(r,r.order);
    const solicited=isOrderSolicited(r.order,now);
@@ -34,7 +35,7 @@ function BookRegisterView({suppliers,renderActions,renderDelete,onTitleSave,all,
     <td data-label="Titolo lavoro" className="book-title-cell"><button type="button" className={'register-solicit'+(solicited?' register-solicit-active':'')} aria-label={solicited?'Rimuovi il sollecito dall’ordine '+r.order.number:'Sollecita ordine '+r.order.number} aria-pressed={solicited} title={solicited?'Ordine sollecitato':'Sollecita ordine'} onClick={()=>onToggleSolicited(r.order.id,!solicited)}><AlertTriangle size={16}/></button><button type="button" className="register-job-link" onClick={()=>onOpen(r)}><strong>{r.description}</strong></button>{renderDelete(r.order,r.id)}</td>
     <td data-label="Copie"><QuantityEditor row={r} onUpdate={onUpdate}/></td>
     <td data-label="Operatore"><OperatorPicker work={r} operators={operators} label={'Operatori di '+r.description} onChange={patch=>onUpdate(r.id,patch)}/></td>
-    <td data-label="Fornitori"><SupplierSelect suppliers={suppliers} label={'Fornitori di '+r.description} value={p.supplier} onChange={supplier=>change(r,{supplier})}/></td><td data-label="Processo"><SearchableSelect className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s} value={s}>{statusText(s)}</option>)}</SearchableSelect></td>
+    <td data-label="Fornitori"><SupplierSelect suppliers={suppliers} label={'Fornitori di '+r.description} value={p.supplier} onChange={supplier=>change(r,{supplier})}/></td><td data-label="Processo"><ProcessSelect value={r.status} label={'Processo di '+r.description} onChange={status=>onUpdate(r.id,{status})}/></td>
     <td data-label="Commenti" className="book-comments">{p.comments||'—'}</td>
     <td data-label="Consegna richiesta"><DueEditor row={r} onUpdate={onUpdate}/></td>
     <td data-label="Urgenza"><label className={p.urgent?'book-urgent':''}><input type="checkbox" aria-label={'Urgenza: '+r.description} checked={!!p.urgent} onChange={e=>change(r,{urgent:e.target.checked})}/>{p.urgent?'Sì':'No'}</label></td>

@@ -1,3 +1,4 @@
+import {processFromText} from './processes';
 import {type Store,type Work,type Order,type SourceRecord,type Production,STATUSES} from './data';
 
 export type InputSheet={sheet:string;rows:{row:number;values:unknown[];comments?:Record<string,string>}[]};
@@ -107,8 +108,8 @@ export function prepareWorkbookImport(store:Store,sheets:InputSheet[]){
     if(!old.some(h=>comparable(h.values)===comparable(serialized))){changed++;warnings.push(`${sheet.sheet}, riga ${i}: lavoro già presente con dati diversi; conservati i dati del gestionale.`);}
     continue;
    }
-   const process=text(v[7]),status=STATUSES.find(s=>norm(s)===norm(process))||'Da elaborare';
-   if(process&&!STATUSES.some(s=>norm(s)===norm(process))){errors.push(`${sheet.sheet}, riga ${i}: processo non riconosciuto «${process}».`);continue;}
+   const process=text(v[7]),status=processFromText(store,process)||'Da elaborare';
+   if(process&&!processFromText(store,process)){errors.push(`${sheet.sheet}, riga ${i}: processo non riconosciuto «${process}».`);continue;}
    let client=next.clients.find(c=>clientKey(c.name)===clientKey(clientName));
    if(!client){client={id:'excel_client_'+key(clientKey(clientName)),name:clientName,email:'',phone:'',vat:'',city:''};next.clients.push(client);}
    const operatorName=text(v[oi]);let operator=next.operators.find(o=>norm(o.name)===norm(operatorName));

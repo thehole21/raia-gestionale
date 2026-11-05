@@ -1,3 +1,4 @@
+import {processFromText} from './processes';
 import { STATUSES, id, type Store, type Status } from './data';
 export const fields = [['ddtNumber','Numero DDT'],['ddtDate','Data DDT'],['number','Commessa'],['client','Cliente *'],['description','Lavorazione *'],['date','Data ordine'],['execution','Data esecuzione'],['due','Consegna'],['qty','Quantità'],['unit','Unità'],['price','Prezzo unitario'],['status','Stato'],['operator','Operatore'],['notes','Note']] as const;
 export type Mapping = Record<string, string>;
@@ -27,7 +28,7 @@ export function prepareImport(store:Store,rows:unknown[][],mapping:Mapping,fallb
   const created=dateValue(get('date')||fallbackDate),due=/^non precisata$/i.test(text(get('due')))?'':dateValue(get('due'));
   const executionDate=dateValue(get('execution')); if(get('execution')&&!executionDate){errors.push('Riga '+(index+headerRow+2)+': data esecuzione non valida.');return;}
   const qty=numberValue(get('qty'),1),price=numberValue(get('price'),0);
-  const state=text(get('status')) || 'Da elaborare';const status=STATUSES.find(s=>s.toLocaleLowerCase('it')===state.toLocaleLowerCase('it'));
+  const state=text(get('status')) || 'Da elaborare';const status=processFromText(store,state);
   const rowNumber=index+headerRow+2;
   if(!clientName||!description||!created||(!due&&get('due')&&!/^non precisata$/i.test(text(get('due'))))||!Number.isFinite(qty)||qty<=0||!Number.isFinite(price)||price<0||!status){errors.push('Riga '+rowNumber+': verifica cliente, lavorazione, date, quantità, prezzo e stato.');return;}
   const importKey=JSON.stringify([sheet,rowNumber,row]);if(known.has(importKey)){duplicates++;return;}known.add(importKey);

@@ -1,0 +1,42 @@
+const fs = require('fs');
+const ts = require('typescript');
+const assert = require('node:assert/strict');
+require.extensions['.ts'] = (module, file) => module._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), {compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022}}).outputText, file);
+const {changeOrderClient} = require('../lib/order-client.ts');
+const {processesOf, processLabel, processFromText, validateProcesses} = require('../lib/processes.ts');
+const {matchesRequestedDocument} = require('../lib/fic-document-match.ts');
+
+const work = {id:'w', description:'Stampa', qty:10, price:2, unit:'pz', operatorId:'', invoiceId:'draft', status:'Pronto'};
+const store = {version:2, clients:[{id:'old', name:'Vecchio'},{id:'new', name:'Nuovo'}], orders:[{id:'order', clientId:'old', lines:[work]}], operators:[], drafts:[{id:'draft', clientId:'old', workIds:['w'], status:'draft'}]};
+const changed = changeOrderClient(store, 'order', 'new');
+assert.equal(changed.orders[0].clientId, 'new');
+assert.equal(changed.drafts[0].clientId, 'new');
+assert.equal(changed.drafts[0].preparedInvoice.customer.name, 'Nuovo');
+assert.equal(store.orders[0].clientId, 'old');
+assert.throws(() => changeOrderClient(store, 'order', 'missing'));
+const issued = structuredClone(store);
+issued.drafts[0] = {...issued.drafts[0], status:'created', remoteDocumentId:42};
+assert.equal(changeOrderClient(issued, 'order', 'new').drafts[0].clientId, 'old');
+issued.drafts[0].status = 'reconcile';
+assert.throws(() => changeOrderClient(issued, 'order', 'new'), /esito/);
+const mixed = structuredClone(store);
+mixed.orders.push({id:'other', clientId:'old', lines:[{...work,id:'w2'}]});
+mixed.drafts[0].workIds.push('w2');
+assert.throws(() => changeOrderClient(mixed, 'order', 'new'), /Separa/);
+
+const processes = processesOf({}).map(p => ({...p}));
+processes.find(p => p.id === 'Pronto').label = 'Pronto al ritiro';
+processes.push({id:'custom', label:'Taglio laser', background:'#123456', foreground:'#ffffff', active:true});
+validateProcesses(processes);
+assert.equal(processLabel({processes}, 'Pronto'), 'Pronto al ritiro');
+assert.equal(processFromText({processes}, 'TAGLIO LASER'), 'custom');
+processes.find(p => p.id === 'custom').active = false;
+assert.equal(processLabel({processes}, 'custom'), 'Taglio laser');
+assert.throws(() => validateProcesses(processes.map(p => ({...p,active:false}))));
+assert.throws(() => validateProcesses([...processes,{...processes[0],id:'duplicate'}]));
+
+const request = {type:'invoice',subject:'Ordine n. 1',entity:{id:1},date:'2026-11-05',items_list:[{name:'Stampa',qty:10,net_price:2}]};
+assert(matchesRequestedDocument(structuredClone(request),request));
+assert(!matchesRequestedDocument({...request,date:'2026-11-06'},request));
+assert(!matchesRequestedDocument({...request,items_list:[{name:'Stampa',qty:20,net_price:2}]},request));
+console.log('PASS client reassignment, draft consistency, issued document preservation, custom processes and document recovery matching.');

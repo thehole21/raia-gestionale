@@ -1,3 +1,4 @@
+import {processLabel} from './processes';
 import {workDdtNumber} from './delivery-selection';
 import * as XLSX from 'xlsx';
 import {flatten,today,type Store,type Order,type Client,type WorkRow} from './data';
@@ -10,11 +11,11 @@ const general=['','Entrata','Cliente','Lavoro','copie','Operatore','Fornitore','
 const books=['N.','Cliente','Data ingresso','Orario ingresso','Titolo Lavoro','Copie','Operatore','Processo','Commenti','Consegna','URGENZA','Orario uscita','DDT','Consegna','Terminato','Fatturato'];
 const extra=['Numero ordine','Data esecuzione','Note lavoro','Note ordine','Sezione','Annotazioni','Prezzo unitario','Unità','Sollecitato','ID ordine','ID lavorazione','Commenti lavorazione','Fornitore lavorazione','Data DDT','Titolo ordine'];
 const date=(value:string|undefined):Date|string=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')?new Date(value+'T12:00:00'):value||'';
-function row(r:WorkRow,book:boolean){
+function row(r:WorkRow,book:boolean,store:Store){
  const p=r.production,qty=p?.quantity??r.qty,op=r.operator.name==='—'?'':r.operator.name;
  const due=date(p?.requestedDate||(!p?r.order.due:''))||p?.requestedText||'Non precisata';
  const ended=p?p.terminated:['Pronto','Consegnato'].includes(r.status),billed=p?.invoicing||(r.invoiceId?'In bozza':'');
- const common=book?[p?.bookNumber||'',r.client.name,date(r.order.created),p?.entryTime||'',r.description,qty,op,r.status,p?.comments||'',due,p?.urgent||false,p?.exitTime||'',workDdtNumber(r,r.order),p?.delivery||'',ended,billed]:['',date(r.order.created),r.client.name,r.description,qty,op,p?.supplier||'',r.status,due,workDdtNumber(r,r.order),p?.delivery||'',ended,billed];
+ const common=book?[p?.bookNumber||'',r.client.name,date(r.order.created),p?.entryTime||'',r.description,qty,op,processLabel(store,r.status),p?.comments||'',due,p?.urgent||false,p?.exitTime||'',workDdtNumber(r,r.order),p?.delivery||'',ended,billed]:['',date(r.order.created),r.client.name,r.description,qty,op,p?.supplier||'',processLabel(store,r.status),due,workDdtNumber(r,r.order),p?.delivery||'',ended,billed];
  return [...common,r.order.number,date(r.order.executionDate),r.notes,r.order.notes,p?.section||'',p?.additionalNotes||'',p?.priceUnspecified?'Da definire':r.price,r.unit,r.order.solicited||false,r.order.id,r.id,p?.comments||'',p?.supplier||'',date(r.order.ddt?.date),r.order.title||''];
 }
 export function buildExcelBackup(store:Store,archived:ArchivedOrder[]=[]){
@@ -35,17 +36,17 @@ export function buildExcelBackup(store:Store,archived:ArchivedOrder[]=[]){
  const bookYear=(r:WorkRow)=>r.source?.sheet.match(/^libri\s+(\d{4})/i)?.[1]||r.order.created.slice(0,4)||workPeriods(r).find(Boolean)?.slice(0,4)||years[0];
  for(const r of rows.filter(r=>workCategory(r,r.order)==='books'))if(!years.includes(bookYear(r)))years.push(bookYear(r));
  for(const year of years.sort()){
-  months.forEach((month,index)=>{const period=year+'-'+String(index+1).padStart(2,'0');add(month+' '+year,[...general,...extra],rows.filter(r=>workCategory(r,r.order)==='general'&&workPeriods(r).includes(period)).map(r=>row(r,false)));});
-  add('LIBRI '+year,[...books,...extra],rows.filter(r=>workCategory(r,r.order)==='books'&&bookYear(r)===year).map(r=>row(r,true)),true);
+  months.forEach((month,index)=>{const period=year+'-'+String(index+1).padStart(2,'0');add(month+' '+year,[...general,...extra],rows.filter(r=>workCategory(r,r.order)==='general'&&workPeriods(r).includes(period)).map(r=>row(r,false,store)));});
+  add('LIBRI '+year,[...books,...extra],rows.filter(r=>workCategory(r,r.order)==='books'&&bookYear(r)===year).map(r=>row(r,true,store)),true);
  }
  const undated=rows.filter(r=>workCategory(r,r.order)==='general'&&!workPeriods(r).some(p=>/^\d{4}-\d{2}$/.test(p)));
- if(undated.length)add('SENZA PERIODO',[...general,...extra],undated.map(r=>row(r,false)));
+ if(undated.length)add('SENZA PERIODO',[...general,...extra],undated.map(r=>row(r,false,store)));
  const clientKeys=['name','email','phone','address','postalCode','city','province','country','vat','taxCode','recipientCode','pec','id'] as const;
  add('CLIENTI',['Cliente','Email','Telefono','Indirizzo','CAP','Città','Provincia','Paese','Partita IVA','Codice fiscale','SDI','PEC','ID cliente'],store.clients.map(c=>clientKeys.map(k=>c[k]||'')));
  add('FORNITORI',['Fornitore','Email','Telefono','Note','Selezionabile','ID'],suppliersOf(store).map(s=>[s.name,s.email,s.phone,s.notes,s.active?'Sì':'No',s.id]));
  add('OPERATORI',['Nome','ID','Selezionabile'],[...store.operators.map(o=>[o.name,o.id,'Sì']),...(store.operatorHistory||[]).filter(o=>!store.operators.some(a=>a.id===o.id)).map(o=>[o.name,o.id,'No · storico'])]);
  add('BOZZE FATTURE',['Numero','Cliente','Data','Stato','Lavorazioni','ID'],store.drafts.map(d=>[d.number,store.clients.find(c=>c.id===d.clientId)?.name||d.clientId,date(d.created),d.status||'draft',d.workIds.join(', '),d.id]));
- add('ORDINI ANNULLATI',['Ordine','Cliente','Lavorazione','Copie','Processo precedente','Annullato il','Annullato da','ID ordine'],archived.flatMap(a=>a.order_data.lines.map(l=>[a.order_data.number,a.client_data?.name||'',l.description,l.production?.quantity??l.qty,l.status,a.deleted_at,a.actor_name||'',a.order_data.id])));
+ add('ORDINI ANNULLATI',['Ordine','Cliente','Lavorazione','Copie','Processo precedente','Annullato il','Annullato da','ID ordine'],archived.flatMap(a=>a.order_data.lines.map(l=>[a.order_data.number,a.client_data?.name||'',l.description,l.production?.quantity??l.qty,processLabel(store,l.status),a.deleted_at,a.actor_name||'',a.order_data.id])));
  const annotations:unknown[][]=[];
  for(const register of store.productionRegisters||[])for(const note of register.notes)annotations.push([register.sheet,note.row,note.values.map(v=>v??'').join(' | '),Object.values(note.comments||{}).join('\n')]);
  for(const r of rows)for(const source of r.sourceHistory?.length?r.sourceHistory:r.source?[r.source]:[])if(Object.keys(source.comments||{}).length)annotations.push([source.sheet,source.row,r.description,Object.entries(source.comments||{}).map(([cell,value])=>cell+': '+value).join('\n')]);
