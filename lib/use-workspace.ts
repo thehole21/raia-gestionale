@@ -80,7 +80,7 @@ export function useWorkspace(demo: boolean) {
       } catch (e) { blocked.current = true; setStatus('Modifiche non salvate'); setFailure(e instanceof Error ? e.message : 'Salvataggio non riuscito.'); }
     }).finally(() => { pending.current--; });
   }
-  const visibleDb=useMemo(()=>demo?db:{...db,operators:roster.current},[db,demo]);
+  const visibleDb=db;
   const getRevision=useCallback(()=>revision.current,[]);
   return {db:visibleDb,setDb,ready,status,failure,getRevision};
 }

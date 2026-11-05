@@ -18,7 +18,7 @@ import {TechnicalSettings} from '@/src/components/technical-settings';
 import {WorkSheetButton} from '@/src/components/work-sheet-button';
 import {TechnicalFields,WorkNotes} from '@/src/components/technical-fields';
 const DuplicateOrderDialog=dynamic(()=>import('@/src/components/duplicate-order-dialog').then(m=>m.DuplicateOrderDialog));
-import {OperatorPicker} from '@/src/components/operator-picker';
+import {OperatorPicker,OperatorHistoryContext} from '@/src/components/operator-picker';
 import {operatorIds} from '@/lib/assignments';
 import dynamic from 'next/dynamic';
 import {useStableCallback} from '@/lib/use-stable-callback';
@@ -26,6 +26,7 @@ import { ProductionFields } from '@/src/components/production-fields';
 import { quantityLabel, workAmount, workDue, isInvoiced, isWorkClosed } from '@/lib/data';
 import { AccessGate, useAccess } from '@/src/components/access';
 const StaffQuote=dynamic(()=>import('@/src/components/staff-quote').then(m=>m.StaffQuote),{loading:()=> <p role="status">Caricamento…</p>});
+import {OperatorNames} from '@/src/components/operator-names';
 import { Operators } from '@/src/components/operators';
 import { CustomerRequest } from '@/src/components/quote-components';
 import { Documents } from '@/src/components/documents';
@@ -94,7 +95,7 @@ function Workspace() {
   const [duplicateSource,setDuplicateSource]=useState<Order|null>(null);
   const [showImport, setShowImport] = useState(false);
   const [settingsTab,setSettingsTab]=useState('account');
-  const defaultAssignee = profile.title === 'Tecnico' ? '' : db.operators.some(o=>o.id===profile.id) ? profile.id : ''; 
+  const defaultAssignee = ''; 
   const [year, setYear] = useState('');
   const [month, setMonth] = useState('');
   const [section, setSection] = useState<Section>('work');
@@ -220,7 +221,7 @@ function Workspace() {
     const previousWork=db.orders.flatMap(o=>o.lines).find(w=>w.id===workId);
     const previous=previousWork?.operatorId||'';
     if(changes.operatorIds?.some(id=>!db.operators.some(o=>o.id===id)&&!operatorIds(previousWork||{}).includes(id))){notify('Operatore non più disponibile.');return;}
-    if (changes.operatorId !== undefined && !validAssignee(changes.operatorId,previous)) { notify('Operatore non più disponibile. Scegli un account attivo dalle Impostazioni.'); return; }
+    if (changes.operatorId !== undefined && !validAssignee(changes.operatorId,previous)) { notify('Operatore non più disponibile. Scegli un nominativo dalle Impostazioni.'); return; }
     write(current => activity({ ...current, orders: current.orders.map(order => ({ ...order, lines: order.lines.map(w => w.id === workId ? { ...w, ...changes, production:changes.production?{...changes.production,ddtNumber:order.ddt?.number||w.production?.ddtNumber||''}:w.production } : w) })) }, `Lavorazione aggiornata`));
   }
   function updateClient(clientId: string, changes: Partial<Client>) {
@@ -385,7 +386,7 @@ function Workspace() {
   const historyRows=useMemo(()=>rows.filter(r=>(!clientFilter||r.client.id===clientFilter)&&matchesPeriod(r,year,month)&&(!search||hasWorkTerm(r,search.trim().toLocaleLowerCase('it')))),[rows,clientFilter,year,month,search]);
   if (!hydrated) return <main className="auth-screen"><section className="auth-card"><h1>RAIA</h1><p>{failure || 'Caricamento del gestionale…'}</p>{failure && <button className="btn btn-primary" onClick={() => location.reload()}>Riprova</button>}</section></main>;
   const periodFilters = <div className="period-filters"><select aria-label="Anno" value={year} onChange={e=>setYear(e.target.value)}><option value="">Tutti gli anni</option>{[...new Set([...(db.planningPeriods||[]),...rows.flatMap(workPeriods)].map(p=>p.slice(0,4)).filter(Boolean))].sort().reverse().map(y=><option key={y}>{y}</option>)}</select><select aria-label="Mese di programmazione" value={month} onChange={e=>setMonth(e.target.value)}><option value="">Tutti i mesi di programmazione</option>{['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'].map((m,i)=><option key={m} value={String(i+1).padStart(2,'0')}>{m}</option>)}</select>{(year||month)&&<button className="btn btn-plain" onClick={()=>{setYear('');setMonth('');}}>Azzera periodo</button>}</div>;
-  return <div className={"app-frame dashboard-refined"+(sidebarCollapsed?" sidebar-compact":"")}>
+  return <OperatorHistoryContext.Provider value={db.operatorHistory||[]}><div className={"app-frame dashboard-refined"+(sidebarCollapsed?" sidebar-compact":"")}>
     {mobileNav && <button className="mobile-cover" onClick={() => setMobileNav(false)} aria-label="Chiudi menu" />}
     <aside className={'sidebar ' + (mobileNav ? 'sidebar-open' : '')}>
       <div className="brand"><img className="sidebar-full-logo" src="/images/raia-logo-transparent.png" alt="RAIA"/><img className="sidebar-small-logo" src="/images/raia-monogram-transparent.png" alt="RAIA"/></div>
@@ -433,7 +434,7 @@ function Workspace() {
         }) : <Empty title="Nessuna bozza ancora" detail="Vai su Tutti i lavori, seleziona le righe di un cliente e scegli Prepara bozza." icon={<ReceiptText size={25}/>} />}</div></>}
 
         {section === 'estimator' && <StaffQuote db={db} canSubmit={!failure && saveStatus !== 'Salvataggio…'} onCreated={()=>window.dispatchEvent(new Event('focus'))}/>}
-        {section === 'settings' && <><div className="eyebrow">CONFIGURAZIONE</div><div className="titlebar"><div><h1>Impostazioni</h1><p>Il tuo account e le impostazioni del gestionale.</p></div></div><nav className="settings-nav" aria-label="Sezioni impostazioni">{[{id:'account',label:'Il mio account'},...(profile.role==='admin'?[{id:'technical',label:'Caratteristiche tecniche'},{id:'users',label:'Utenti e permessi'},{id:'backup',label:'Backup e dati'}]:[])].map(t=><button type="button" key={t.id} aria-current={settingsTab===t.id?'page':undefined} className={settingsTab===t.id?'active':''} onClick={()=>setSettingsTab(t.id)}>{t.label}</button>)}</nav><div className="settings-grid settings-organized">{settingsTab==='account'&&<section className="workspace-card settings-panel"><div className="card-top"><div><h2>Il tuo account</h2><p>{profile.name} · {profile.email}</p></div></div><p className="settings-footnote">Ruolo: {profile.title || (profile.role === "admin" ? "Amministratore" : "Operatore")}</p></section>}{profile.role === "admin" && <>{settingsTab==='technical'&&<TechnicalSettings store={db} disabled={!!failure||saveStatus==='Salvataggio…'} onSave={technicalFields=>write(current=>({...current,technicalFields}))}/>} {settingsTab==='users'&&<Operators onCreated={()=>{window.dispatchEvent(new Event("focus"));notify("Elenco operatori aggiornato.");}}/>}{settingsTab==='backup'&&<section className="workspace-card settings-panel"><div className="card-top"><div><h2>Backup e dati</h2><p>{demo ? "I dati della demo rimangono su questo dispositivo." : "Esporta una copia dei dati del gestionale. I PDF si archiviano separatamente."}</p></div></div><div className="backup-actions"><ExcelBackupButton store={db} demo={demo} pending={!hydrated || saveStatus === "Salvataggio…"}/><button className="btn btn-plain" onClick={() => download(JSON.stringify(db, null, 2), 'raia-backup-v2.json', 'application/json')}><Download size={17}/> Esporta backup JSON</button><button className="btn btn-plain" onClick={() => fileRef.current?.click()}><Upload size={17}/> Importa backup JSON</button><input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={importBackup}/></div><p className="settings-footnote">Excel esporta i registri mensili, i libri e le anagrafiche. Per ripristinare il gestionale usa il backup JSON; i PDF vanno archiviati separatamente.</p><div className="settings-footnote">{demo ? "Configura Supabase per attivare accessi e dati condivisi." : "Gli account revocati non possono più leggere o modificare dati e documenti."}</div></section>}</>}</div></>}
+        {section === 'settings' && <><div className="eyebrow">CONFIGURAZIONE</div><div className="titlebar"><div><h1>Impostazioni</h1><p>Il tuo account e le impostazioni del gestionale.</p></div></div><nav className="settings-nav" aria-label="Sezioni impostazioni">{[{id:'account',label:'Il mio account'},...(profile.role==='admin'?[{id:'operatorNames',label:'Operatori dei lavori'},{id:'technical',label:'Caratteristiche tecniche'},{id:'users',label:'Utenti e permessi'},{id:'backup',label:'Backup e dati'}]:[])].map(t=><button type="button" key={t.id} aria-current={settingsTab===t.id?'page':undefined} className={settingsTab===t.id?'active':''} onClick={()=>setSettingsTab(t.id)}>{t.label}</button>)}</nav><div className="settings-grid settings-organized">{settingsTab==='account'&&<section className="workspace-card settings-panel"><div className="card-top"><div><h2>Il tuo account</h2><p>{profile.name} · {profile.email}</p></div></div><p className="settings-footnote">Ruolo: {profile.title || (profile.role === "admin" ? "Amministratore" : "Operatore")}</p></section>}{profile.role === "admin" && <>{settingsTab==='operatorNames'&&<OperatorNames store={db} write={write} disabled={!!failure||saveStatus==='Salvataggio…'}/>} {settingsTab==='technical'&&<TechnicalSettings store={db} disabled={!!failure||saveStatus==='Salvataggio…'} onSave={technicalFields=>write(current=>({...current,technicalFields}))}/>} {settingsTab==='users'&&<Operators onCreated={()=>{window.dispatchEvent(new Event("focus"));notify("Elenco operatori aggiornato.");}}/>}{settingsTab==='backup'&&<section className="workspace-card settings-panel"><div className="card-top"><div><h2>Backup e dati</h2><p>{demo ? "I dati della demo rimangono su questo dispositivo." : "Esporta una copia dei dati del gestionale. I PDF si archiviano separatamente."}</p></div></div><div className="backup-actions"><ExcelBackupButton store={db} demo={demo} pending={!hydrated || saveStatus === "Salvataggio…"}/><button className="btn btn-plain" onClick={() => download(JSON.stringify(db, null, 2), 'raia-backup-v2.json', 'application/json')}><Download size={17}/> Esporta backup JSON</button><button className="btn btn-plain" onClick={() => fileRef.current?.click()}><Upload size={17}/> Importa backup JSON</button><input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={importBackup}/></div><p className="settings-footnote">Excel esporta i registri mensili, i libri e le anagrafiche. Per ripristinare il gestionale usa il backup JSON; i PDF vanno archiviati separatamente.</p><div className="settings-footnote">{demo ? "Configura Supabase per attivare accessi e dati condivisi." : "Gli account revocati non possono più leggere o modificare dati e documenti."}</div></section>}</>}</div></>}
       </fieldset></main>
     </div>
 
@@ -452,5 +453,5 @@ function Workspace() {
     {editingClient && <ClientEditor key={editingClient.id} client={editingClient} onClose={()=>setEditingClient(null)} onSave={changes=>{if(JSON.stringify(db.clients.find(c=>c.id===editingClient.id))!==JSON.stringify(editingClient)){notify('Il cliente è stato aggiornato nel frattempo. Copia le modifiche e riapri la scheda.');return;}updateClient(editingClient.id,changes);setEditingClient(null);notify("Dati cliente aggiornati e preparazioni di fatturazione riallineate.");}}/>}
     {showImport && <ExcelImport store={db} onClose={()=>setShowImport(false)} onImport={next=>{setDb(next);setShowImport(false);setSearch('');setYear('');setMonth('');notify('Importazione applicata. Controlla lo stato del salvataggio in alto.');}}/>}
     {toastMessage && <div className="toast"><CheckCircle2 size={18}/>{toastMessage}<button onClick={() => setToastMessage('')}><X size={15}/></button></div>}
-  </div>;
+  </div></OperatorHistoryContext.Provider>;
 }
