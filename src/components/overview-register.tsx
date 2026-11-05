@@ -40,7 +40,7 @@ function OverviewRegisterView({suppliers,renderActions,renderDelete,onTitleSave,
     {p?.exitTime&&<DataCell label="Orario uscita">{p.exitTime}</DataCell>}
     {r.order.executionDate&&(!parent||parent.order.executionDate!==r.order.executionDate)&&<DataCell label="Esecuzione">{fmtDate(r.order.executionDate)}</DataCell>}
    </dl>
-   {(p?.comments||p?.additionalNotes||r.notes||r.notesRight||r.order.notes)&&<div className="register-notes">{p?.comments&&<p><strong>Commenti</strong>{p.comments}</p>}{p?.additionalNotes&&<p><strong>Annotazioni</strong>{p.additionalNotes}</p>}{r.notes&&<p><strong>Note lavoro</strong>{r.notes}</p>}{r.notesRight&&<p><strong>Note lavoro · 2</strong>{r.notesRight}</p>}{r.order.notes&&r.order.notes!==r.notes&&<p><strong>Note ordine</strong>{r.order.notes}</p>}</div>}
+   {(p?.comments||p?.additionalNotes||r.order.notes)&&<div className="register-notes">{p?.comments&&<p><strong>Commenti</strong>{p.comments}</p>}{p?.additionalNotes&&<p><strong>Annotazioni</strong>{p.additionalNotes}</p>}{r.order.notes&&r.order.notes!==r.notes&&<p><strong>Note ordine</strong>{r.order.notes}</p>}</div>}
   </article>;
  }
  return <div className="overview-register"><div className="register-toolbar"><span>{groups.length} ordini · {visible.length} lavorazioni</span></div>{groups.map(g=>{

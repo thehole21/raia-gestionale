@@ -74,7 +74,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
   }
   let size=11.5;while(size>9&&layout(false,size)>274)size-=.5;
   if(layout(false,size)>274)throw new Error(`La lavorazione ${index+1} contiene troppo testo per una sola facciata leggibile. Riduci le note o suddividi la lavorazione prima di stampare la cartellina.`);
-  doc.addPage('a3','landscape');doc.setDrawColor(line);doc.setLineWidth(.3);doc.roundedRect(217,7,196,276,2,2);doc.setDrawColor(wine);doc.setLineWidth(1);doc.line(224,7,256,7);doc.setLineWidth(.2);layout(true,size,Math.max(0,272-layout(false,size)));
+  doc.addPage('a3','landscape');doc.addImage(logo,'PNG',83,12,44,21.9,undefined,'FAST');grid(15,43,180,230);doc.setDrawColor(line);doc.setLineWidth(.3);doc.roundedRect(217,7,196,276,2,2);doc.setDrawColor(wine);doc.setLineWidth(1);doc.line(224,7,256,7);doc.setLineWidth(.2);layout(true,size,Math.max(0,272-layout(false,size)));
  }
  const sheets=doc.getNumberOfPages();
  for(let p=1;p<=sheets;p++){doc.setPage(p);text(`Entrata ordine n. ${code}  /  ${p} di ${sheets}`,p===1?14:224,288,8,false,muted);}
