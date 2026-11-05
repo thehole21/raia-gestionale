@@ -22,10 +22,10 @@ export function ProcessBadge({status, className = 'status', children}: {status: 
 export function ProcessSelect({value, onChange, label, className = 'register-process'}: {value: string; onChange: (value: string) => void; label: string; className?: string}) {
   const processes = useContext(ProcessContext);
   const current = processes.find(p => p.id === value);
-  return <SearchableSelect aria-label={label} className={className} value={value} onChange={e => onChange(e.target.value)} style={current ? {background: current.background, color: current.foreground, borderColor: current.background} : undefined}>
+  return <select aria-label={label} className={className} value={value} onChange={e => onChange(e.target.value)} style={current ? {background: current.background, color: current.foreground, borderColor: current.background} : undefined}>
     {!current?.active && <option value={value} disabled>{current?.label || statusText(value)} · storico</option>}
     {processes.filter(p => p.active).map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-  </SearchableSelect>;
+  </select>;
 }
 
 export function ProcessFilter({value, onChange}: {value: string; onChange: (value: string) => void}) {
