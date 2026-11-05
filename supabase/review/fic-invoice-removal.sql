@@ -26,6 +26,7 @@ begin
    case when jsonb_typeof(l->'production')='object' then jsonb_set(l||jsonb_build_object('invoiceId',null),'{production,invoicing}','""'::jsonb) else l||jsonb_build_object('invoiceId',null) end
    else l end order by k),'[]'::jsonb) from jsonb_array_elements(o->'lines') with ordinality e(l,k))) order by n),'[]'::jsonb)
  into orders from jsonb_array_elements(ws.payload->'orders') with ordinality e(o,n);
+ update public.raia_fic_documents set status='removed',updated_at=now() where company_id=target_company and remote_id=document_id and target_type='invoice';
  delete from public.raia_fic_invoices where draft_id=target_draft;
  update public.raia_workspace set payload=jsonb_set(jsonb_set(payload,'{orders}',orders),'{drafts}',drafts),revision=revision+1 where id=1;
  insert into public.raia_audit(actor,revision) values(actor_id,ws.revision+1);

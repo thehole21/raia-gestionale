@@ -1,6 +1,6 @@
 import {createClient} from '@supabase/supabase-js';
 import {createCipheriv,createDecipheriv,hkdfSync,randomBytes} from 'node:crypto';
-export const FIC_SCOPES='entity.clients:a issued_documents.delivery_notes:a issued_documents.invoices:a settings:r';
+export const FIC_SCOPES='entity.clients:a issued_documents.delivery_notes:a issued_documents.invoices:a issued_documents.quotes:a issued_documents.orders:a issued_documents.proformas:a issued_documents.receipts:a issued_documents.credit_notes:a issued_documents.work_reports:a issued_documents.supplier_orders:a issued_documents.self_invoices:a settings:r';
 const base='https://api-v2.fattureincloud.it';
 export class FicError extends Error {constructor(message:string,public status=400){super(message);}}
 export function config(){const clientId=process.env.FIC_CLIENT_ID,secret=process.env.FIC_CLIENT_SECRET,redirect=process.env.FIC_REDIRECT_URI;if(!clientId||!secret||!redirect)throw new FicError('Configura FIC_CLIENT_ID, FIC_CLIENT_SECRET e FIC_REDIRECT_URI sul server.',503);const url=new URL(redirect);if(url.protocol!=='https:'&&url.hostname!=='localhost')throw new FicError('Redirect OAuth non valido.',503);return {clientId,secret,redirect,origin:url.origin};}

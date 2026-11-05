@@ -1,0 +1,1469 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Issued document id",
+      "nullable": true
+    },
+    "entity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Entity id",
+          "nullable": true
+        },
+        "code": {
+          "type": "string",
+          "description": "Entity code",
+          "nullable": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Entity name",
+          "nullable": true
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "company",
+            "person",
+            "pa",
+            "condo"
+          ],
+          "description": "Entity type",
+          "nullable": true
+        },
+        "first_name": {
+          "type": "string",
+          "description": "Entity first name",
+          "nullable": true
+        },
+        "last_name": {
+          "type": "string",
+          "description": "Entity last name",
+          "nullable": true
+        },
+        "contact_person": {
+          "type": "string",
+          "description": "Entity contact person",
+          "nullable": true
+        },
+        "vat_number": {
+          "type": "string",
+          "description": "Entity vat number",
+          "nullable": true
+        },
+        "tax_code": {
+          "type": "string",
+          "description": "Entity tax code",
+          "nullable": true
+        },
+        "address_street": {
+          "type": "string",
+          "description": "Entitity address street",
+          "nullable": true
+        },
+        "address_postal_code": {
+          "type": "string",
+          "description": "Entity address postal code",
+          "nullable": true
+        },
+        "address_city": {
+          "type": "string",
+          "description": "Entity address city",
+          "nullable": true
+        },
+        "address_province": {
+          "type": "string",
+          "description": "Entity address province",
+          "nullable": true
+        },
+        "address_extra": {
+          "type": "string",
+          "description": "Entity address extra info",
+          "nullable": true
+        },
+        "country": {
+          "type": "string",
+          "description": "Entity country",
+          "nullable": true
+        },
+        "country_iso": {
+          "type": "string",
+          "description": "Entity country iso code",
+          "nullable": true
+        },
+        "email": {
+          "type": "string",
+          "description": "Entity email",
+          "nullable": true
+        },
+        "certified_email": {
+          "type": "string",
+          "description": "Entity certified email",
+          "nullable": true
+        },
+        "phone": {
+          "type": "string",
+          "description": "Entity phone",
+          "nullable": true
+        },
+        "fax": {
+          "type": "string",
+          "description": "Entity fax",
+          "nullable": true
+        },
+        "notes": {
+          "type": "string",
+          "description": "Entity extra",
+          "nullable": true
+        },
+        "default_payment_terms": {
+          "type": "integer",
+          "description": "[Only for client]\nClient default payment terms",
+          "nullable": true
+        },
+        "default_vat": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "Vat type id",
+              "nullable": true
+            },
+            "value": {
+              "type": "number",
+              "description": "[Read Only] Vat type percentual value",
+              "nullable": true
+            },
+            "description": {
+              "type": "string",
+              "description": "Vat type short description",
+              "nullable": true
+            },
+            "notes": {
+              "type": "string",
+              "description": "Vat type notes shown in documents",
+              "nullable": true
+            },
+            "e_invoice": {
+              "type": "boolean",
+              "description": "Vat type is usable for e-invoices",
+              "nullable": true
+            },
+            "ei_type": {
+              "type": "string",
+              "description": "Vat type e-invoice type (natura)",
+              "nullable": true
+            },
+            "ei_description": {
+              "type": "string",
+              "description": "Vat type e-invoice description",
+              "nullable": true
+            },
+            "editable": {
+              "type": "boolean",
+              "description": "[Read Only]\nIs the vat type is editable.",
+              "readOnly": true,
+              "nullable": true
+            },
+            "is_disabled": {
+              "type": "boolean",
+              "description": "Is the vat type disabled",
+              "nullable": true
+            },
+            "default": {
+              "type": "boolean",
+              "description": "If the vat type is default",
+              "nullable": true
+            }
+          }
+        },
+        "default_payment_terms_type": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "end_of_month"
+          ],
+          "description": "Payment terms type"
+        },
+        "default_payment_method": {
+          "type": "object",
+          "description": "",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "Payment method id",
+              "nullable": true
+            },
+            "name": {
+              "type": "string",
+              "description": "Payment method name",
+              "nullable": true
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "standard",
+                "riba"
+              ],
+              "description": "Payment method type"
+            },
+            "is_default": {
+              "type": "boolean",
+              "description": "Payment method is default",
+              "nullable": true
+            },
+            "default_payment_account": {
+              "type": "object",
+              "nullable": true,
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "Payment account id",
+                  "nullable": true
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Payment account name",
+                  "nullable": true
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "standard",
+                    "bank"
+                  ],
+                  "description": "Payment account type"
+                },
+                "iban": {
+                  "type": "string",
+                  "description": "Payment account iban",
+                  "nullable": true
+                },
+                "sia": {
+                  "type": "string",
+                  "description": "Payment account sia",
+                  "nullable": true
+                },
+                "cuc": {
+                  "type": "string",
+                  "description": "Payment account cuc",
+                  "nullable": true
+                },
+                "virtual": {
+                  "type": "boolean",
+                  "description": "Payment method is virtual",
+                  "nullable": true
+                }
+              }
+            },
+            "details": {
+              "type": "array",
+              "description": "Payment method details",
+              "nullable": true,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Payment method details title",
+                    "nullable": true
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Payment method details description",
+                    "nullable": true
+                  }
+                }
+              }
+            },
+            "bank_iban": {
+              "type": "string",
+              "description": "Payment method bank iban",
+              "nullable": true
+            },
+            "bank_name": {
+              "type": "string",
+              "description": "Payment method bank name",
+              "nullable": true
+            },
+            "bank_beneficiary": {
+              "type": "string",
+              "description": "Payment method bank beneficiary",
+              "nullable": true
+            },
+            "ei_payment_method": {
+              "type": "string",
+              "description": "E-invoice payment method",
+              "nullable": true
+            }
+          }
+        },
+        "bank_name": {
+          "type": "string",
+          "description": "[Only for client]\nClient bank name",
+          "nullable": true
+        },
+        "bank_iban": {
+          "type": "string",
+          "description": "[Only for client]\nClient bank iban",
+          "nullable": true
+        },
+        "bank_swift_code": {
+          "type": "string",
+          "description": "[Only for client]\nClient bank swift code",
+          "nullable": true
+        },
+        "shipping_address": {
+          "type": "string",
+          "description": "[Only for client]\nClient Shipping address",
+          "nullable": true
+        },
+        "e_invoice": {
+          "type": "boolean",
+          "description": "[Only for client]\nUse e-invoices.",
+          "nullable": true
+        },
+        "ei_code": {
+          "type": "string",
+          "description": "[Only for client]\nE-invoices code.",
+          "nullable": true
+        },
+        "has_intent_declaration": {
+          "type": "boolean",
+          "description": "[Only for client]\nHas intent declaration.",
+          "nullable": true
+        },
+        "intent_declaration_protocol_number": {
+          "type": "string",
+          "description": "[Only for client]\nClient intent declaration protocol number",
+          "nullable": true
+        },
+        "intent_declaration_protocol_date": {
+          "type": "string",
+          "format": "date",
+          "description": "[Only for client]\nClient intent declaration protocol date",
+          "nullable": true
+        },
+        "created_at": {
+          "type": "string",
+          "description": "Entity creation date",
+          "nullable": true
+        },
+        "updated_at": {
+          "type": "string",
+          "description": "Entity last update date",
+          "nullable": true
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "invoice",
+        "quote",
+        "proforma",
+        "receipt",
+        "delivery_note",
+        "credit_note",
+        "order",
+        "work_report",
+        "supplier_order",
+        "self_own_invoice",
+        "self_supplier_invoice"
+      ],
+      "description": "Issued document type"
+    },
+    "number": {
+      "type": "integer",
+      "description": "Issued document number\n[If not specified, next number is used]",
+      "nullable": true
+    },
+    "numeration": {
+      "type": "string",
+      "description": "Issued document numeration\n[Not available if type=delivery_note]",
+      "nullable": true
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Issued document date\n[defaults to today's date]",
+      "nullable": true
+    },
+    "year": {
+      "type": "integer",
+      "description": "Issued document year",
+      "nullable": true
+    },
+    "currency": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Currency code",
+          "nullable": true
+        },
+        "symbol": {
+          "type": "string",
+          "description": "Currency symbol",
+          "nullable": true
+        },
+        "exchange_rate": {
+          "type": "string",
+          "description": "Currency exchange rate (EUR to this)",
+          "nullable": true
+        },
+        "html_symbol": {
+          "type": "string",
+          "description": "Currency html code",
+          "nullable": true
+        }
+      }
+    },
+    "language": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Language code",
+          "nullable": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Language extended name",
+          "nullable": true
+        }
+      }
+    },
+    "subject": {
+      "type": "string",
+      "description": "Issued document subject [not shown on the PDF]",
+      "nullable": true
+    },
+    "visible_subject": {
+      "type": "string",
+      "description": "Issued document visible subject",
+      "nullable": true
+    },
+    "rc_center": {
+      "type": "string",
+      "description": "Issued document revenue center [or cost center if type=supplier_order].",
+      "nullable": true
+    },
+    "notes": {
+      "type": "string",
+      "description": "Issued document extra notes",
+      "nullable": true
+    },
+    "rivalsa": {
+      "type": "number",
+      "description": "Issued document \"Rivalsa INPS\" percentual value",
+      "nullable": true
+    },
+    "cassa": {
+      "type": "number",
+      "description": "Issued document \"Cassa previdenziale\" percentual value",
+      "nullable": true
+    },
+    "amount_cassa": {
+      "type": "number",
+      "description": "[Read Only]\nIssued document cassa amount.",
+      "readOnly": true,
+      "nullable": true
+    },
+    "cassa_taxable": {
+      "type": "number",
+      "description": "Issued document cassa taxable percentage",
+      "nullable": true
+    },
+    "amount_cassa_taxable": {
+      "type": "number",
+      "description": "[Can be set only if cassa_taxable is NULL]\nIssued document cassa taxable amount",
+      "nullable": true
+    },
+    "cassa2": {
+      "type": "number",
+      "description": "Issued document \"Cassa previdenziale 2\" percentual value",
+      "nullable": true
+    },
+    "amount_cassa2": {
+      "type": "number",
+      "description": "[Read Only]\nIssued document cassa2 amount",
+      "readOnly": true,
+      "nullable": true
+    },
+    "cassa2_taxable": {
+      "type": "number",
+      "description": "Issued document cassa2 taxable percentage",
+      "nullable": true
+    },
+    "amount_cassa2_taxable": {
+      "type": "number",
+      "description": "[Can be set only if cassa2_taxable is NULL]\nIssued document cassa2 taxable amount",
+      "nullable": true
+    },
+    "global_cassa_taxable": {
+      "type": "number",
+      "description": "Issued document global cassa taxable percentage",
+      "nullable": true
+    },
+    "amount_global_cassa_taxable": {
+      "type": "number",
+      "description": "[Can be set only if global_cassa_taxable is NULL]\nIssued document global cassa taxable amount",
+      "nullable": true
+    },
+    "withholding_tax": {
+      "type": "number",
+      "description": "Issued document withholding tax (ritenuta d'acconto) percentual value",
+      "nullable": true
+    },
+    "withholding_tax_taxable": {
+      "type": "number",
+      "description": "Issued document withholding tax taxable (imponibile) percentual value",
+      "nullable": true
+    },
+    "other_withholding_tax": {
+      "type": "number",
+      "description": "Issued document other withholding tax (altra ritenuta) percentual value",
+      "nullable": true
+    },
+    "stamp_duty": {
+      "type": "number",
+      "description": "Issued document stamp duty value\n[0 if not present]",
+      "nullable": true
+    },
+    "payment_method": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Payment method id",
+          "nullable": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Payment method name",
+          "nullable": true
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "riba"
+          ],
+          "description": "Payment method type"
+        },
+        "is_default": {
+          "type": "boolean",
+          "description": "Payment method is default",
+          "nullable": true
+        },
+        "default_payment_account": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "Payment account id",
+              "nullable": true
+            },
+            "name": {
+              "type": "string",
+              "description": "Payment account name",
+              "nullable": true
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "standard",
+                "bank"
+              ],
+              "description": "Payment account type"
+            },
+            "iban": {
+              "type": "string",
+              "description": "Payment account iban",
+              "nullable": true
+            },
+            "sia": {
+              "type": "string",
+              "description": "Payment account sia",
+              "nullable": true
+            },
+            "cuc": {
+              "type": "string",
+              "description": "Payment account cuc",
+              "nullable": true
+            },
+            "virtual": {
+              "type": "boolean",
+              "description": "Payment method is virtual",
+              "nullable": true
+            }
+          }
+        },
+        "details": {
+          "type": "array",
+          "description": "Payment method details",
+          "nullable": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "Payment method details title",
+                "nullable": true
+              },
+              "description": {
+                "type": "string",
+                "description": "Payment method details description",
+                "nullable": true
+              }
+            }
+          }
+        },
+        "bank_iban": {
+          "type": "string",
+          "description": "Payment method bank iban",
+          "nullable": true
+        },
+        "bank_name": {
+          "type": "string",
+          "description": "Payment method bank name",
+          "nullable": true
+        },
+        "bank_beneficiary": {
+          "type": "string",
+          "description": "Payment method bank beneficiary",
+          "nullable": true
+        },
+        "ei_payment_method": {
+          "type": "string",
+          "description": "E-invoice payment method",
+          "nullable": true
+        }
+      }
+    },
+    "use_split_payment": {
+      "type": "boolean",
+      "description": "Issued document uses split payment",
+      "nullable": true
+    },
+    "use_gross_prices": {
+      "type": "boolean",
+      "description": "Issued document uses gross prices",
+      "nullable": true
+    },
+    "e_invoice": {
+      "type": "boolean",
+      "description": "Issued document is an e-invoice.",
+      "nullable": true
+    },
+    "ei_data": {
+      "type": "object",
+      "description": "Issued document e-invoice data\n[Only if e_invoice=true]",
+      "nullable": true,
+      "properties": {
+        "vat_kind": {
+          "type": "string",
+          "enum": [
+            null,
+            "I",
+            "D",
+            "S"
+          ],
+          "description": "Vat kind [esigibilità IVA]",
+          "nullable": true
+        },
+        "original_document_type": {
+          "type": "string",
+          "enum": [
+            "ordine",
+            "contratto",
+            "convenzione"
+          ],
+          "description": "Issued document original document type",
+          "nullable": true
+        },
+        "od_number": {
+          "type": "string",
+          "description": "E-invoice original document number",
+          "nullable": true
+        },
+        "od_date": {
+          "type": "string",
+          "format": "date",
+          "description": "E-invoice original document date",
+          "nullable": true
+        },
+        "cig": {
+          "type": "string",
+          "description": "E-invoice CIG",
+          "nullable": true
+        },
+        "cup": {
+          "type": "string",
+          "description": "E-invoice CUP",
+          "nullable": true
+        },
+        "payment_method": {
+          "type": "string",
+          "description": "E-invoice payment method [required for e-invoices] (see [here](https://www.fatturapa.gov.it/export/documenti/fatturapa/v1.2.2/Rappresentazione_Tabellare_FattOrdinaria_V1.2.2.pdf) for the accepted values of ModalitaPagamento)",
+          "nullable": true
+        },
+        "bank_name": {
+          "type": "string",
+          "description": "E-invoice bank name",
+          "nullable": true
+        },
+        "bank_iban": {
+          "type": "string",
+          "description": "E-invoice bank IBAN",
+          "nullable": true
+        },
+        "bank_beneficiary": {
+          "type": "string",
+          "description": "E-invoice bank beneficiary",
+          "nullable": true
+        },
+        "invoice_number": {
+          "type": "string",
+          "description": "E-invoice invoice number",
+          "nullable": true
+        },
+        "invoice_date": {
+          "type": "string",
+          "format": "date",
+          "description": "E-invoice invoice date",
+          "nullable": true
+        }
+      }
+    },
+    "ei_cassa_type": {
+      "type": "string",
+      "description": "E-invoice cassa type",
+      "nullable": true
+    },
+    "ei_cassa2_type": {
+      "type": "string",
+      "description": "E-invoice cassa2 type",
+      "nullable": true
+    },
+    "ei_withholding_tax_causal": {
+      "type": "string",
+      "description": "E-invoice withholding tax causal",
+      "nullable": true
+    },
+    "ei_other_withholding_tax_type": {
+      "type": "string",
+      "description": "E-invoice other withholding tax type",
+      "nullable": true
+    },
+    "ei_other_withholding_tax_causal": {
+      "type": "string",
+      "description": "E-invoice other withholding tax causal",
+      "nullable": true
+    },
+    "items_list": {
+      "type": "array",
+      "nullable": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Issued document item id",
+            "nullable": true
+          },
+          "product_id": {
+            "type": "integer",
+            "description": "Issued document item product id",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "Issued document item product code",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "Issued document item product name",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "Issued document item product category",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Issued document product description",
+            "nullable": true
+          },
+          "qty": {
+            "type": "number",
+            "description": "Issued document item quantity",
+            "nullable": true
+          },
+          "measure": {
+            "type": "string",
+            "description": "Issued document item measure",
+            "nullable": true
+          },
+          "net_price": {
+            "type": "number",
+            "description": "Issued document item net price",
+            "nullable": true
+          },
+          "gross_price": {
+            "type": "number",
+            "description": "Issued document item gross price",
+            "nullable": true
+          },
+          "vat": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "Vat type id",
+                "nullable": true
+              },
+              "value": {
+                "type": "number",
+                "description": "[Read Only] Vat type percentual value",
+                "nullable": true
+              },
+              "description": {
+                "type": "string",
+                "description": "Vat type short description",
+                "nullable": true
+              },
+              "notes": {
+                "type": "string",
+                "description": "Vat type notes shown in documents",
+                "nullable": true
+              },
+              "e_invoice": {
+                "type": "boolean",
+                "description": "Vat type is usable for e-invoices",
+                "nullable": true
+              },
+              "ei_type": {
+                "type": "string",
+                "description": "Vat type e-invoice type (natura)",
+                "nullable": true
+              },
+              "ei_description": {
+                "type": "string",
+                "description": "Vat type e-invoice description",
+                "nullable": true
+              },
+              "editable": {
+                "type": "boolean",
+                "description": "[Read Only]\nIs the vat type is editable.",
+                "readOnly": true,
+                "nullable": true
+              },
+              "is_disabled": {
+                "type": "boolean",
+                "description": "Is the vat type disabled",
+                "nullable": true
+              },
+              "default": {
+                "type": "boolean",
+                "description": "If the vat type is default",
+                "nullable": true
+              }
+            }
+          },
+          "not_taxable": {
+            "type": "boolean",
+            "description": "Issued document item is not taxable",
+            "nullable": true
+          },
+          "apply_withholding_taxes": {
+            "type": "boolean",
+            "description": "Issued document item apply withholding taxes, rivalsa and cassa",
+            "nullable": true
+          },
+          "discount": {
+            "type": "number",
+            "description": "Issued document item discount percentual value",
+            "nullable": true
+          },
+          "discount_highlight": {
+            "type": "boolean",
+            "description": "Issued document item highlight discount",
+            "nullable": true
+          },
+          "in_dn": {
+            "type": "boolean",
+            "description": "Issued document item add in delivery note",
+            "nullable": true
+          },
+          "stock": {
+            "type": "boolean",
+            "description": "Issued document item move stock",
+            "nullable": true
+          },
+          "ei_raw": {
+            "type": "object",
+            "description": "Issued document advanced raw attributes for e-invoices",
+            "nullable": true
+          }
+        }
+      }
+    },
+    "payments_list": {
+      "type": "array",
+      "nullable": true,
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Issued document payment item id",
+            "nullable": true
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Issued document payment due date",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "description": "Issued document payment amount",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_paid",
+              "paid",
+              "reversed"
+            ],
+            "description": "Issued document status"
+          },
+          "payment_account": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "Payment account id",
+                "nullable": true
+              },
+              "name": {
+                "type": "string",
+                "description": "Payment account name",
+                "nullable": true
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "standard",
+                  "bank"
+                ],
+                "description": "Payment account type"
+              },
+              "iban": {
+                "type": "string",
+                "description": "Payment account iban",
+                "nullable": true
+              },
+              "sia": {
+                "type": "string",
+                "description": "Payment account sia",
+                "nullable": true
+              },
+              "cuc": {
+                "type": "string",
+                "description": "Payment account cuc",
+                "nullable": true
+              },
+              "virtual": {
+                "type": "boolean",
+                "description": "Payment method is virtual",
+                "nullable": true
+              }
+            }
+          },
+          "paid_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Issued document payment date\n[Only if status is paid]",
+            "nullable": true
+          },
+          "ei_raw": {
+            "type": "object",
+            "description": "Issued document payment advanced raw attributes for e-invoices",
+            "nullable": true
+          },
+          "payment_terms": {
+            "type": "object",
+            "properties": {
+              "days": {
+                "type": "integer",
+                "description": "Issued document payment number of days by which the payment must be made",
+                "nullable": true
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "standard",
+                  "end_of_month"
+                ],
+                "description": "Payment terms type"
+              }
+            }
+          }
+        }
+      }
+    },
+    "template": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Template id"
+        },
+        "privacy": {
+          "type": "string",
+          "description": "Template privacy"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "delivery_note",
+            "accompanying_invoice"
+          ],
+          "description": "Template type"
+        },
+        "name": {
+          "type": "string",
+          "description": "Template name"
+        },
+        "can_disable_watermark": {
+          "type": "boolean",
+          "description": "Can disable watermark"
+        },
+        "author": {
+          "type": "string",
+          "description": "Template author"
+        },
+        "content": {
+          "type": "string",
+          "description": "Template definition content"
+        },
+        "supports_custom_taxable": {
+          "type": "boolean",
+          "description": "Supports custom taxable"
+        }
+      }
+    },
+    "delivery_note_template": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Template id"
+        },
+        "privacy": {
+          "type": "string",
+          "description": "Template privacy"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "delivery_note",
+            "accompanying_invoice"
+          ],
+          "description": "Template type"
+        },
+        "name": {
+          "type": "string",
+          "description": "Template name"
+        },
+        "can_disable_watermark": {
+          "type": "boolean",
+          "description": "Can disable watermark"
+        },
+        "author": {
+          "type": "string",
+          "description": "Template author"
+        },
+        "content": {
+          "type": "string",
+          "description": "Template definition content"
+        },
+        "supports_custom_taxable": {
+          "type": "boolean",
+          "description": "Supports custom taxable"
+        }
+      }
+    },
+    "acc_inv_template": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Template id"
+        },
+        "privacy": {
+          "type": "string",
+          "description": "Template privacy"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "delivery_note",
+            "accompanying_invoice"
+          ],
+          "description": "Template type"
+        },
+        "name": {
+          "type": "string",
+          "description": "Template name"
+        },
+        "can_disable_watermark": {
+          "type": "boolean",
+          "description": "Can disable watermark"
+        },
+        "author": {
+          "type": "string",
+          "description": "Template author"
+        },
+        "content": {
+          "type": "string",
+          "description": "Template definition content"
+        },
+        "supports_custom_taxable": {
+          "type": "boolean",
+          "description": "Supports custom taxable"
+        }
+      }
+    },
+    "h_margins": {
+      "type": "integer",
+      "description": "Issued document PDF horizontal margins",
+      "nullable": true
+    },
+    "v_margins": {
+      "type": "integer",
+      "description": "Issued document PDF vertical margins",
+      "nullable": true
+    },
+    "show_payments": {
+      "type": "boolean",
+      "description": "Show the expiration dates of the payments on the document",
+      "nullable": true
+    },
+    "show_payment_method": {
+      "type": "boolean",
+      "description": "Show the payment method details on the document",
+      "nullable": true
+    },
+    "show_totals": {
+      "type": "string",
+      "enum": [
+        "none",
+        "nets",
+        "all"
+      ],
+      "description": "Show totals mode"
+    },
+    "show_notification_button": {
+      "type": "boolean",
+      "description": "Show notification button in the PDF",
+      "nullable": true
+    },
+    "show_tspay_button": {
+      "type": "boolean",
+      "description": "Show ts pay button in the PDF",
+      "nullable": true
+    },
+    "delivery_note": {
+      "type": "boolean",
+      "description": "Issued document has delivery note",
+      "nullable": true
+    },
+    "accompanying_invoice": {
+      "type": "boolean",
+      "description": "Issued document has an accompanying invoice",
+      "nullable": true
+    },
+    "dn_number": {
+      "type": "integer",
+      "description": "Issued document attached delivery note number",
+      "nullable": true
+    },
+    "dn_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Issued document attached delivery note date",
+      "nullable": true
+    },
+    "dn_ai_packages_number": {
+      "type": "string",
+      "description": "Issued document attached delivery note number of packages",
+      "nullable": true
+    },
+    "dn_ai_weight": {
+      "type": "string",
+      "description": "Issued document attached delivery note package weight",
+      "nullable": true
+    },
+    "dn_ai_causal": {
+      "type": "string",
+      "description": "Issued document attached delivery note causal",
+      "nullable": true
+    },
+    "dn_ai_destination": {
+      "type": "string",
+      "description": "Issued document attached delivery note destination",
+      "nullable": true
+    },
+    "dn_ai_transporter": {
+      "type": "string",
+      "description": "Issued document attached delivery note transporter",
+      "nullable": true
+    },
+    "dn_ai_notes": {
+      "type": "string",
+      "description": "Issued document attached delivery note notes",
+      "nullable": true
+    },
+    "is_marked": {
+      "type": "boolean",
+      "description": "Issued document is marked",
+      "nullable": true
+    },
+    "amount_net": {
+      "type": "number",
+      "description": "[Read only]\nIssued document total net amount",
+      "readOnly": true,
+      "nullable": true
+    },
+    "amount_vat": {
+      "type": "number",
+      "description": "[Read Only]\nIssued document total vat amount",
+      "readOnly": true,
+      "nullable": true
+    },
+    "amount_gross": {
+      "type": "number",
+      "description": "[Read Only]\nIssued document total gross amount",
+      "readOnly": true,
+      "nullable": true
+    },
+    "amount_due_discount": {
+      "type": "number",
+      "description": "Issued document amount due discount",
+      "nullable": true
+    },
+    "amount_rivalsa": {
+      "type": "number",
+      "description": "[Read Only]\nIssued document rivalsa amount",
+      "readOnly": true,
+      "nullable": true
+    },
+    "amount_rivalsa_taxable": {
+      "type": "number",
+      "description": "Issued document taxable rivalsa amount",
+      "nullable": true
+    },
+    "amount_withholding_tax": {
+      "type": "number",
+      "description": "[Read Only]\nIssued document withholding tax amount (ritenuta d'acconto).",
+      "readOnly": true,
+      "nullable": true
+    },
+    "amount_withholding_tax_taxable": {
+      "type": "number",
+      "description": "Issued document taxable withholding tax amount",
+      "nullable": true
+    },
+    "amount_other_withholding_tax": {
+      "type": "number",
+      "description": "[Read Only]\nIssued document other withholding tax amount (altra ritenuta)",
+      "readOnly": true,
+      "nullable": true
+    },
+    "amount_other_withholding_tax_taxable": {
+      "type": "number",
+      "description": "Issued document taxable other withholding tax amount",
+      "nullable": true
+    },
+    "amount_enasarco_taxable": {
+      "type": "number",
+      "description": "Issued document taxable enasarco amount",
+      "nullable": true
+    },
+    "extra_data": {
+      "type": "object",
+      "description": "Issued document extra data [TS fields follow the technical specifications provided by \"Sistema Tessera Sanitaria\"]",
+      "nullable": true,
+      "properties": {
+        "multifatture_sent": {
+          "type": "integer",
+          "nullable": true
+        },
+        "ts_communication": {
+          "type": "boolean",
+          "description": "Send issued document to \"Sistema Tessera Sanitaria\"",
+          "nullable": true
+        },
+        "ts_flag_tipo_spesa": {
+          "type": "number",
+          "description": "Issued document ts \"tipo spesa\" [TK, FC, FV, SV,SP, AD, AS, ECG, SR]",
+          "nullable": true
+        },
+        "ts_pagamento_tracciato": {
+          "type": "boolean",
+          "description": "Issued document ts traced payment",
+          "nullable": true
+        },
+        "ts_tipo_spesa": {
+          "type": "string",
+          "description": "Can be [ 'TK', 'FC', 'FV', 'SV', 'SP', 'AD', 'AS', 'SR', 'CT', 'PI', 'IC', 'AA' ]. Refer to the technical specifications to learn more.",
+          "nullable": true
+        },
+        "ts_opposizione": {
+          "type": "boolean",
+          "description": "Issued document ts \"opposizione\"",
+          "nullable": true
+        },
+        "ts_status": {
+          "type": "integer",
+          "description": "Issued document ts status",
+          "nullable": true
+        },
+        "ts_file_id": {
+          "type": "string",
+          "description": "Issued document ts file id",
+          "nullable": true
+        },
+        "ts_sent_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Issued document ts sent date",
+          "nullable": true
+        },
+        "ts_full_amount": {
+          "type": "boolean",
+          "description": "Issued document ts total amount",
+          "nullable": true
+        },
+        "imported_by": {
+          "type": "string",
+          "description": "Issued document imported by software",
+          "nullable": true
+        },
+        "debt_vat_detect": {
+          "type": "boolean",
+          "description": "Issued document debt VAT detect",
+          "nullable": true
+        },
+        "revenue_detect": {
+          "type": "boolean",
+          "description": "Issued document revenue detect",
+          "nullable": true
+        }
+      }
+    },
+    "seen_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Issued document seen date",
+      "nullable": true
+    },
+    "next_due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Issued document date of the next not paid payment",
+      "nullable": true
+    },
+    "url": {
+      "type": "string",
+      "description": "[Temporary] [Read Only]\nIssued document url of the document PDF file",
+      "nullable": true
+    },
+    "dn_url": {
+      "type": "string",
+      "description": "[Temporary] [Read Only]\nIssued document url of the attached delivery note PDF file",
+      "nullable": true
+    },
+    "ai_url": {
+      "type": "string",
+      "description": "[Temporary] [Read Only]\nIssued document url of the accompanying invoice PDF file",
+      "nullable": true
+    },
+    "attachment_url": {
+      "type": "string",
+      "description": "[Temporary] [Read Only]\nIssued document url of the attached file",
+      "readOnly": true,
+      "nullable": true
+    },
+    "attachment_token": {
+      "type": "string",
+      "description": "[Write Only]\nIssued document attachment token returned by POST /issued_documents/attachment",
+      "nullable": true
+    },
+    "ei_raw": {
+      "type": "object",
+      "description": "Issued document advanced raw attributes for e-invoices",
+      "nullable": true
+    },
+    "ei_status": {
+      "type": "string",
+      "enum": [
+        "attempt",
+        "missing",
+        "not_sent",
+        "sent",
+        "pending",
+        "processing",
+        "error",
+        "discarded",
+        "not_delivered",
+        "accepted",
+        "rejected",
+        "no_response",
+        "manual_accepted",
+        "manual_rejected"
+      ],
+      "description": "[Read only] Status of the e-invoice.\n  * **attempt** - We are trying to send the invoice, please wait up to 2 hours\n  * **missing** - The invoice is missing\n  * **not_sent** - The invoice has yet to be sent\n  * **sent** - The invoice was sent\n  * **pending** - The checks for the digital signature and sending are in progress\n  * **processing** - The SDI is delivering the invoice to the customer\n  * **error** - An error occurred while handling the invoice, please try to resend it or contact support\n  * **discarded** - The invoice has been rejected by the SDI, so it must be corrected and re-sent\n  * **not_delivered** - The SDI was unable to deliver the invoice\n  * **accepted** - The customer accepted the invoice\n  * **rejected** - The customer rejected the invoice, so it must be corrected\n  * **no_response** - A response has not yet been received whithin the deadline, contact the customer to ascertain the status of the invoice\n  * **manual_accepted** - The customer accepted the invoice\n  * **manual_rejected** - The customer rejected the invoice\n",
+      "nullable": true
+    },
+    "price_list_id": {
+      "type": "string",
+      "description": "Price list id",
+      "nullable": true
+    },
+    "locked": {
+      "type": "boolean",
+      "description": "Issued Document can't be edited",
+      "nullable": true
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Issued document creation date",
+      "nullable": true
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Issued document last update date",
+      "nullable": true
+    }
+  }
+}
