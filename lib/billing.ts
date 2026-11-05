@@ -20,7 +20,7 @@ export function prepareInvoice(rows: WorkRow[]) {
   if(row.production?.priceUnspecified)issues.push('Prezzo da definire: '+row.description+'.');
   if(row.qty<=0)issues.push('Quantità numerica da precisare: '+row.description+'.');
  }
- issues.push('Collegamento Fatture in Cloud e condizioni di pagamento da configurare.');
+ issues.push('Cliente fiscale, IVA e pagamento si confermano nel passaggio Crea fattura in Cloud.');
  return {version:1,provider:'fatture-in-cloud',readyToSend:false,issues,customer:client?{...client}:null,
   deliveryNotes:[...new Map(orders.map(o=>[JSON.stringify([o.ddt?.number||o.id,o.ddt?.date||'']),{orderId:o.id,orderNumber:o.number,orderIds:orders.filter(x=>x.ddt?.number===o.ddt?.number&&x.ddt?.date===o.ddt?.date).map(x=>x.id),number:o.ddt?.number||'',date:o.ddt?.date||''}])).values()],
   lines:rows.map(r=>({workId:r.id,orderId:r.order.id,description:r.description,orderTitle:r.order.title||'',deliveryNoteNumber:r.order.ddt?.number||r.production?.ddtNumber||'',quantity:r.qty,unit:r.unit,netUnitPrice:r.price,vatId:r.vatId??null})),

@@ -2,7 +2,7 @@ import {operatorIds} from './assignments';
 import type {DdtDocument,DdtIssuer} from './ddt-document';
 export const STATUSES = ['Sopralluogo', 'Preventivo', 'Da elaborare', 'In lavorazione', 'Bozza', 'Procedere', 'In Stampa', 'In allestimento', 'In attesa File', 'In attesa conferma', 'Sospeso', 'Attendere', 'Tassativa per', 'Elaborato', 'Pronto', 'Consegnato'] as const;
 export type Status = typeof STATUSES[number];
-export type Client = { taxCode?: string; recipientCode?: string; pec?: string; address?: string; postalCode?: string; province?: string; country?: string; ficEntityId?: number; id: string; name: string; email: string; phone: string; vat: string; city: string };
+export type Client = { ficCompanyId?:number; ficSnapshot?:Record<string,unknown>; taxCode?: string; recipientCode?: string; pec?: string; address?: string; postalCode?: string; province?: string; country?: string; ficEntityId?: number; id: string; name: string; email: string; phone: string; vat: string; city: string };
 export type Operator = { id: string; name: string };
 export type SourceRecord = { identity?: string; sheet: string; row: number; values: unknown[]; headers?: string[]; comments?: Record<string,string> };
 export type Production = { planningMonths?: string[]; category?: string; section?: string; bookNumber?: string; entryTime?: string; exitTime?: string; urgent?: boolean; comments?: string; additionalNotes?: string; quantity: string; priceUnspecified: boolean; supplier: string; requestedDate: string; requestedText: string; ddtNumber: string; delivery: string; terminated: boolean; invoicing: string };
@@ -10,11 +10,11 @@ export const quantityLabel = (w: Pick<Work, 'qty'|'unit'|'production'>) => w.pro
 export const workAmount = (w: Work) => w.production?.priceUnspecified || (w.production && !w.qty) ? 'Da definire' : money(sumWork(w));
 export const workDue = (w: Work, o: Order) => w.production ? w.production.requestedDate : o.due;
 export type Work = { notesRight?:string; technical?:Record<string,string>; operatorIds?:string[]; production?: Production; vatId?: number; importKey?: string; source?: SourceRecord; sourceHistory?: SourceRecord[]; id: string; description: string; qty: number; unit: string; price: number; status: Status; operatorId: string; invoiceId: string | null; notes: string };
-export type DeliveryNote = { document?:DdtDocument; number: string; date: string };
+export type DeliveryNote = { remoteDocumentId?:number;remoteCompanyId?:number; document?:DdtDocument; number: string; date: string };
 export type Order = { title?: string; planningMonth?: string; customerRequestId?: string; executionDate?: string; ddt?: DeliveryNote; solicited?: boolean; solicitedAutoDismissedDue?: string; id: string; number: string; clientId: string; created: string; due: string; notes: string; lines: Work[] };
-export type Draft = { status?: 'draft' | 'validated' | 'creating' | 'created' | 'sending' | 'sent' | 'failed' | 'reconcile'; remoteDocumentId?: number; submissionKey?: string; preparedInvoice?: unknown; id: string; number: string; clientId: string; created: string; workIds: string[] };
+export type Draft = { remoteCompanyId?:number; remoteNumber?:string; status?: 'draft' | 'validated' | 'creating' | 'created' | 'sending' | 'sent' | 'failed' | 'reconcile'; remoteDocumentId?: number; submissionKey?: string; preparedInvoice?: unknown; id: string; number: string; clientId: string; created: string; workIds: string[] };
 export type Activity = { id: string; at: string; text: string };
-export type Store = { technicalFields?: import('./technical-fields').TechnicalField[]; suppliers?: import('./suppliers').Supplier[]; ddtIssuer?:DdtIssuer; operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
+export type Store = { clientHistory?:Client[]; technicalFields?: import('./technical-fields').TechnicalField[]; suppliers?: import('./suppliers').Supplier[]; ddtIssuer?:DdtIssuer; operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
 export type WorkRow = Work & { billingState?: BillingState; client: Client; order: Order; operator: Operator };
 
 const euroFormat=new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'});
@@ -39,7 +39,7 @@ export function billingState(work:Work,drafts:Draft[]):BillingState{
 export const isWorkClosed = (w: Work) => !!w.production?.terminated || isClosed(w.status);
 export const isClosed = (s: Status) => ['Consegnato', 'Pronto'].includes(s);
 export function flatten(db: Store): WorkRow[] {
-  const clients=new Map(db.clients.map(c=>[c.id,c]));
+  const clients=new Map([...(db.clientHistory||[]),...db.clients].map(c=>[c.id,c]));
   const operators=new Map([...(db.operatorHistory||[]),...db.operators].map(o=>[o.id,o]));
   return db.orders.flatMap(order => {
     const client = clients.get(order.clientId) || { id: '', name: 'Cliente non trovato', city: '', email: '', phone: '', vat: '' };

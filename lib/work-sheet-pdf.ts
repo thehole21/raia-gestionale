@@ -10,7 +10,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a3',compress:true});
  const logo=logoBytes||new Uint8Array(await (await fetch('/images/raia-logo-transparent.png')).arrayBuffer());
  const monogram=monogramBytes||new Uint8Array(await (await fetch('/images/raia-monogram-transparent.png')).arrayBuffer());
- const client=store.clients.find(c=>c.id===order.clientId),roster=[...store.operators,...(store.operatorHistory||[])];
+ const client=[...(store.clientHistory||[]),...store.clients].reverse().find(c=>c.id===order.clientId),roster=[...store.operators,...(store.operatorHistory||[])];
  const assigned=(w:Work)=>operatorIds(w).map(id=>roster.find(o=>o.id===id)?.name||'Non disponibile').join(', ');
  const ink='#28282c',wine='#812c46',muted='#79767a',line='#a8a8a8';
  function font(size:number,bold=false,color=ink){doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.setTextColor(color);}

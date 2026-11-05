@@ -1,0 +1,16 @@
+alter function public.raia_claim_fic_invoice(text,integer,bigint,jsonb) set schema raia_private;
+create function public.raia_claim_fic_invoice(target_draft text,expected_revision integer,target_company bigint,invoice_data jsonb) returns jsonb language sql security invoker set search_path='' as $$ select raia_private.raia_claim_fic_invoice(target_draft,expected_revision,target_company,invoice_data) $$;
+revoke all on function public.raia_claim_fic_invoice(text,integer,bigint,jsonb) from public,anon;
+grant execute on function public.raia_claim_fic_invoice(text,integer,bigint,jsonb) to authenticated;
+alter function public.raia_finish_fic_invoice(text,bigint,text) set schema raia_private;
+create function public.raia_finish_fic_invoice(target_draft text,document_id bigint,document_number text) returns void language sql security invoker set search_path='' as $$ select raia_private.raia_finish_fic_invoice(target_draft,document_id,document_number) $$;
+revoke all on function public.raia_finish_fic_invoice(text,bigint,text) from public,anon;
+grant execute on function public.raia_finish_fic_invoice(text,bigint,text) to authenticated;
+alter function public.raia_claim_fic_ddt(text,integer,bigint,jsonb) set schema raia_private;
+create function public.raia_claim_fic_ddt(target_order text,expected_revision integer,target_company bigint,document_data jsonb) returns jsonb language sql security invoker set search_path='' as $$ select raia_private.raia_claim_fic_ddt(target_order,expected_revision,target_company,document_data) $$;
+revoke all on function public.raia_claim_fic_ddt(text,integer,bigint,jsonb) from public,anon;
+grant execute on function public.raia_claim_fic_ddt(text,integer,bigint,jsonb) to authenticated;
+alter function public.raia_finish_fic_ddt(text,bigint,text) set schema raia_private;
+create function public.raia_finish_fic_ddt(target_order text,document_id bigint,document_number text) returns void language sql security invoker set search_path='' as $$ select raia_private.raia_finish_fic_ddt(target_order,document_id,document_number) $$;
+revoke all on function public.raia_finish_fic_ddt(text,bigint,text) from public,anon;
+grant execute on function public.raia_finish_fic_ddt(text,bigint,text) to authenticated;

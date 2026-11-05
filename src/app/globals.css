@@ -253,3 +253,7 @@ select.register-process option,.inline-status option{background:#fff;color:#3034
 .btn.order-tool-button:focus-visible{outline:3px solid #ba849a;outline-offset:3px}.btn.order-tool-button:disabled{opacity:.5;cursor:wait}.order-tool-button svg{flex-shrink:0}
 
 .technical-settings-list{display:grid;gap:10px;margin:20px 0}.technical-settings-row{display:flex;align-items:center;gap:8px}.technical-settings-row>input{min-width:0;flex:1}.technical-settings-row>label{display:flex;align-items:center;gap:5px;white-space:nowrap}.technical-settings-row .icon-btn{flex-shrink:0}@media(max-width:600px){.technical-settings-row{flex-wrap:wrap}.technical-settings-row>input{flex-basis:100%}}
+
+.admin-cifra{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:650;color:#70273e}.admin-cifra input{width:94px;min-width:0;padding:6px 8px;border:1px solid #d7c4cc;border-radius:7px;font-size:12px}.admin-cifra small{max-width:180px;color:#a12638}
+
+.fic-document-dialog[open]{display:flex;flex-direction:column;max-height:94dvh;overflow:hidden}.fic-document-dialog>.duplicate-body{min-height:0;overflow:auto}.fic-document-dialog>header,.fic-document-dialog>footer{flex-shrink:0}.fic-document-dialog>footer{flex-wrap:wrap}
