@@ -24,9 +24,10 @@ export function overallStatus(lines:Pick<Work,'status'|'production'>[]):Status {
  return lines.some(l=>l.status==='Da elaborare')?'Da elaborare':lines.some(l=>l.status==='Preventivo')?'Preventivo':'Sopralluogo';
 }
 export function groupWork(all:WorkRow[],visible:WorkRow[]) {
+ const visibleOrders=new Set(visible.map(r=>r.order.id));
  const visibleIds=new Set(visible.map(r=>r.id));
  const map=new Map<string,{key:string;date:string;isExecution:boolean;client:WorkRow['client'];rows:WorkRow[];visible:WorkRow[]}>();
- for(const r of all){const date=executionDay(r.order);const key=orderGroupKey(r.order);
+ for(const r of all){if(!visibleOrders.has(r.order.id))continue;const date=executionDay(r.order);const key=orderGroupKey(r.order);
   let group=map.get(key);if(!group){group={key,date,isExecution:!!r.order.executionDate,client:r.client,rows:[],visible:[]};map.set(key,group);}group.rows.push(r);if(visibleIds.has(r.id))group.visible.push(r);
  }
  return [...map.values()].filter(g=>g.visible.length).sort((a,b)=>b.date.localeCompare(a.date)||a.client.name.localeCompare(b.client.name,'it'));

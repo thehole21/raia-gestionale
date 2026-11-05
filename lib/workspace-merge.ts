@@ -1,5 +1,5 @@
 import type { Store } from './data';
-const same=(a:unknown,b:unknown):boolean=>JSON.stringify(a)===JSON.stringify(b);
+const same=(a:unknown,b:unknown):boolean=>a===b||JSON.stringify(a)===JSON.stringify(b);
 export class WorkspaceConflict extends Error {
  constructor(path:string){super('Modifiche contemporanee sullo stesso elemento ('+path+'). Le tue modifiche sono conservate qui: esportale prima di ricaricare i dati condivisi.');}
 }

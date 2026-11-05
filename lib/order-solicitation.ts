@@ -3,6 +3,8 @@ import { isWorkClosed, type Order, workDue } from './data';
 const SOLICITATION_NOTICE_MS = 48 * 60 * 60 * 1000;
 
 export function automaticSolicitationKey(order: Order, now = Date.now()): string | null {
+  // Legacy/imported orders do not opt in merely by being opened or edited.
+  if (!order.automaticSolicitationEnabled) return null;
   const dueDates = [...new Set(order.lines
     .filter(line => !isWorkClosed(line))
     .map(line => workDue(line, order))
@@ -15,7 +17,7 @@ export function automaticSolicitationKey(order: Order, now = Date.now()): string
       const day = Number(match[3]);
       const dueStart = new Date(year, month - 1, day);
       if (dueStart.getFullYear() !== year || dueStart.getMonth() !== month - 1 || dueStart.getDate() !== day) return false;
-      const deadline = new Date(year, month - 1, day + 1).getTime() - 1;
+      const deadline = dueStart.getTime();
       return now >= deadline - SOLICITATION_NOTICE_MS;
     }))].sort();
 

@@ -1,6 +1,6 @@
 'use client';
 import {ProcessContext, ProcessBadge, ProcessText, ProcessSelect, ProcessFilter} from '@/src/components/process-controls';
-import {ProcessSettings} from '@/src/components/process-settings';
+const ProcessSettings=dynamic(()=>import('@/src/components/process-settings').then(m=>m.ProcessSettings));
 import {processesOf, processLabel} from '@/lib/processes';
 import {OrderClientEditor} from '@/src/components/order-client-editor';
 import {changeOrderClient} from '@/lib/order-client';
@@ -22,7 +22,7 @@ import {
   money, fmtDate, shortDate, today, id, initials, sumWork, isClosed, flatten, seeded, migrateV1,
 } from '@/lib/data';
 
-import {TechnicalSettings} from '@/src/components/technical-settings';
+const TechnicalSettings=dynamic(()=>import('@/src/components/technical-settings').then(m=>m.TechnicalSettings));
 import {WorkSheetButton} from '@/src/components/work-sheet-button';
 import {TechnicalFields,WorkNotes} from '@/src/components/technical-fields';
 const DuplicateOrderDialog=dynamic(()=>import('@/src/components/duplicate-order-dialog').then(m=>m.DuplicateOrderDialog));
@@ -38,21 +38,20 @@ import {FicDdtButton} from '@/src/components/fic-ddt-button';
 import {AdminCifraProvider,AdminCifra} from '@/src/components/admin-cifra';
 import {FicClientImportButton} from '@/src/components/fic-client-import-button';
 import {FicInvoiceButton} from '@/src/components/fic-invoice-button';
-import {FicSettings} from '@/src/components/fic-settings';
-import {OperatorNames} from '@/src/components/operator-names';
-import { Operators } from '@/src/components/operators';
+const FicSettings=dynamic(()=>import('@/src/components/fic-settings').then(m=>m.FicSettings));
+const OperatorNames=dynamic(()=>import('@/src/components/operator-names').then(m=>m.OperatorNames));
+const Operators=dynamic(()=>import('@/src/components/operators').then(m=>m.Operators));
 import { CustomerRequest } from '@/src/components/quote-components';
 import { Documents } from '@/src/components/documents';
 const ExcelBackupButton=dynamic(()=>import('@/src/components/excel-backup-button').then(m=>m.ExcelBackupButton),{loading:()=> <p role="status">Caricamento…</p>});
 const ExcelImport=dynamic(()=>import('@/src/components/excel-import').then(m=>m.ExcelImport),{loading:()=> <p role="status">Caricamento…</p>});
 import { useWorkspace } from '@/lib/use-workspace';
-import { CancelledOrders } from '@/src/components/cancelled-orders';
+const CancelledOrders=dynamic(()=>import('@/src/components/cancelled-orders').then(m=>m.CancelledOrders));
 import { DeleteOrder } from '@/src/components/delete-order';
 import {DeleteClient} from '@/src/components/delete-client';
 import {ClientEditor} from '@/src/components/client-editor';
 import {DocumentLauncher} from '@/src/components/document-launcher';
 import {BillingMark} from '@/src/components/billing-mark';
-const DdtGenerator=dynamic(()=>import('@/src/components/ddt-generator').then(m=>m.DdtGenerator),{loading:()=> <p role="status">Caricamento…</p>});
 import type {DeliveryNote} from '@/lib/data';
 import {OrderActions,DeleteWorkButton} from '@/src/components/order-actions';
 import {BookRegister} from '@/src/components/book-register';
@@ -167,7 +166,7 @@ function Workspace() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  useEffect(() => { if (drawerWorkId) {const w=flatten(db).find(w=>w.id===drawerWorkId);const initial=w?{...w,...(workCategory(w,w.order)==='books'?{production:bookProduction(w,w.order)}:{})}:{};setEditWork(initial);setSavedEditWork(initial);} }, [drawerWorkId]); // intentional initial snapshot
+  useEffect(() => { if (drawerWorkId) {const w=rows.find(w=>w.id===drawerWorkId);const initial=w?{...w,...(workCategory(w,w.order)==='books'?{production:bookProduction(w,w.order)}:{})}:{};setEditWork(initial);setSavedEditWork(initial);} }, [drawerWorkId]); // intentional initial snapshot
   useEffect(() => () => { if (toastTimeout.current) clearTimeout(toastTimeout.current); }, []);
 
   function notify(msg: string) { setToastMessage(msg); if (toastTimeout.current) clearTimeout(toastTimeout.current); toastTimeout.current = setTimeout(() => setToastMessage(''), 3800); }
@@ -175,7 +174,7 @@ function Workspace() {
   function activity(current: Store, message: string): Store { return { ...current, activity: [{ id: id(), at: today(), text: message }, ...current.activity].slice(0, 80) }; }
   function navigate(s: Section) { if(profile.role!=='admin'&&['settings','billing'].includes(s))return; requestExit(()=>{setSection(s);setMobileNav(false);setDrawerOrderId(null);setDrawerWorkId(null);if(s!=='work')setSelectedWork([]);}); }
 
-  const rows = useMemo(() => flatten(db), [db]);
+  const rows = useMemo(() => flatten(db), [db.orders,db.clients,db.clientHistory,db.operators,db.operatorHistory,db.drafts]);
   const rowsByOrder=useMemo(()=>{const map=new Map<string,WorkRow[]>();for(const row of rows){const group=map.get(row.order.id)||[];group.push(row);map.set(row.order.id,group);}return map;},[rows]);
   const orderNumbers = useMemo(() => orderRegistrationNumbers(db.orders), [db.orders]);
   const overviewRows = useMemo(()=>rows.filter(r=>workCategory(r,r.order)===category),[rows,category]);
@@ -285,7 +284,7 @@ function Workspace() {
     if (lines.some(l=>operatorIds(l).some(id=>!validAssignee(id)))) { notify('Un operatore non è più disponibile. Aggiorna l’assegnazione prima di salvare.'); return; }
     const max = Math.max(0, ...db.orders.map(o => Number(o.number.replace(/\D/g, '')) || 0));
     const number = 'R-' + String(max + 1).padStart(6, '0');
-    const order: Order = { id: id(), title: orderTitle.trim(), number, clientId: orderClient, created: orderDate || today(), executionDate, due: orderDue, notes: orderNotes.trim(), lines: lines.map(l => ({ id: id(), description: l.description.trim(), qty: Number(l.qty), unit: l.unit || 'pz', price: Number(l.price), status: l.status, operatorId: l.operatorId, operatorIds:l.operatorIds, invoiceId: null, notes: '',production:{...bookProduction({qty:Number(l.qty),status:l.status,production:undefined},{due:orderDue} as Order),category:orderCategory==='books'?'Libri':'Lavori',supplier:l.supplier,priceUnspecified:true} })) };
+    const order: Order = { automaticSolicitationEnabled:true, id: id(), title: orderTitle.trim(), number, clientId: orderClient, created: orderDate || today(), executionDate, due: orderDue, notes: orderNotes.trim(), lines: lines.map(l => ({ id: id(), description: l.description.trim(), qty: Number(l.qty), unit: l.unit || 'pz', price: Number(l.price), status: l.status, operatorId: l.operatorId, operatorIds:l.operatorIds, invoiceId: null, notes: '',production:{...bookProduction({qty:Number(l.qty),status:l.status,production:undefined},{due:orderDue} as Order),category:orderCategory==='books'?'Libri':'Lavori',supplier:l.supplier,priceUnspecified:true} })) };
     write(s => activity({ ...s, orders: [inheritGroupDDT(s.orders,order), ...s.orders] }, `Creato lavoro ${number} con ${lines.length} lavorazioni`));
     setShowNewOrder(false); setCategory(orderCategory); setSection('work'); setQuick('all'); setSearch(''); setClientFilter(''); setStatusFilter(''); setOperatorFilter(''); notify(`${number} creata: ${lines.length} lavorazioni visibili nell’elenco.`);
   }
@@ -456,7 +455,7 @@ function Workspace() {
 
     {section === 'work' && profile.role==='admin' && selected.length > 0 && <div className="selection-bar"><span className="selection-badge">{selected.length}</span><div><strong>{selected.length} {selected.length === 1 ? 'lavorazione selezionata' : 'lavorazioni selezionate'}</strong><small>{selectedClients.size > 1 ? 'Seleziona lavori dello stesso cliente per creare una bozza.' : money(selected.reduce((s, r) => s + sumWork(r), 0)) + ' · importo imponibile indicativo'}</small></div><button className="btn btn-plain" onClick={() => setSelectedWork([])}>Deseleziona</button><button className="btn btn-primary" disabled={!validSelected} onClick={() => setShowDraft(true)}><ReceiptText size={17}/> Prepara bozza</button></div>}
 
-      {duplicateSource&&<DuplicateOrderDialog source={duplicateSource} store={db} onClose={()=>setDuplicateSource(null)} onCreate={order=>{const max=Math.max(0,...db.orders.map(o=>/^R-\d{1,9}$/.test(o.number)?Number(o.number.slice(2)):0));const fresh={...order,number:'R-'+String(max+1).padStart(6,'0')};write(s=>activity({...s,orders:[fresh,...s.orders]},'Duplicato ordine '+fresh.number));setDuplicateSource(null);setSection('work');setYear('');setMonth('');setCategory(order.lines[0]?.production?.category==='Libri'?'books':'general');setSearch('');setClientFilter('');setStatusFilter('');setOperatorFilter('');setQuick('all');notify('Nuovo ordine creato. DDT e fattura da generare.');}}/>}
+      {duplicateSource&&<DuplicateOrderDialog source={duplicateSource} store={db} onClose={()=>setDuplicateSource(null)} onCreate={order=>{const max=Math.max(0,...db.orders.map(o=>/^R-\d{1,9}$/.test(o.number)?Number(o.number.slice(2)):0));const fresh={...order,automaticSolicitationEnabled:true,number:'R-'+String(max+1).padStart(6,'0')};write(s=>activity({...s,orders:[fresh,...s.orders]},'Duplicato ordine '+fresh.number));setDuplicateSource(null);setSection('work');setYear('');setMonth('');setCategory(order.lines[0]?.production?.category==='Libri'?'books':'general');setSearch('');setClientFilter('');setStatusFilter('');setOperatorFilter('');setQuick('all');notify('Nuovo ordine creato. DDT e fattura da generare.');}}/>}
     {(showNewOrder || showNewClient || showDraft || workDrawer || orderDrawer) && <div className="overlay" onMouseDown={e => { if (e.target === e.currentTarget) closeOverlay(); }}>
       {showNewClient && <section className="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="new-client-title"><div className="modal-head"><div><span className="eyebrow">ANAGRAFICA</span><h2 id="new-client-title">Nuovo cliente</h2><p>Completa i dati di contatto e fatturazione.</p></div><button className="icon-btn" onClick={closeOverlay}><X size={20}/></button></div><form onSubmit={e=>{e.preventDefault();if(!newClient.name.trim())return;const client={...newClient,id:id(),name:newClient.name.trim()};write(s=>activity({...s,clients:[...s.clients,client]},`Aggiunto cliente ${client.name}`));setNewClient({name:'',email:'',phone:'',address:'',postalCode:'',city:'',province:'',country:'IT',vat:'',taxCode:'',recipientCode:'',pec:''});setShowNewClient(false);notify('Cliente creato. Puoi subito associargli un lavoro.');}}><div className="modal-body grid-form"><Field label="Nome / ragione sociale *"><input required autoFocus maxLength={160} value={newClient.name} onChange={e=>setNewClient(s=>({...s,name:e.target.value}))} placeholder="Nome azienda"/></Field><Field label="Partita IVA"><input maxLength={32} value={newClient.vat} onChange={e=>setNewClient(s=>({...s,vat:e.target.value}))}/></Field><Field label="Codice fiscale"><input maxLength={32} value={newClient.taxCode} onChange={e=>setNewClient(s=>({...s,taxCode:e.target.value}))}/></Field><Field label="Email"><input type="email" maxLength={254} value={newClient.email} onChange={e=>setNewClient(s=>({...s,email:e.target.value}))}/></Field><Field label="Telefono"><input type="tel" maxLength={60} value={newClient.phone} onChange={e=>setNewClient(s=>({...s,phone:e.target.value}))}/></Field><Field label="Indirizzo"><input maxLength={200} value={newClient.address} onChange={e=>setNewClient(s=>({...s,address:e.target.value}))}/></Field><Field label="CAP"><input maxLength={16} value={newClient.postalCode} onChange={e=>setNewClient(s=>({...s,postalCode:e.target.value}))}/></Field><Field label="Città"><input maxLength={120} value={newClient.city} onChange={e=>setNewClient(s=>({...s,city:e.target.value}))}/></Field><Field label="Provincia"><input maxLength={80} value={newClient.province} onChange={e=>setNewClient(s=>({...s,province:e.target.value}))}/></Field><Field label="Paese"><input maxLength={80} value={newClient.country} onChange={e=>setNewClient(s=>({...s,country:e.target.value}))} placeholder="IT"/></Field><Field label="Codice destinatario SDI"><input maxLength={16} value={newClient.recipientCode} onChange={e=>setNewClient(s=>({...s,recipientCode:e.target.value}))}/></Field><Field label="PEC"><input type="email" maxLength={254} value={newClient.pec} onChange={e=>setNewClient(s=>({...s,pec:e.target.value}))}/></Field></div><div className="modal-foot"><button type="button" className="btn btn-plain" onClick={closeOverlay}>Annulla</button><button type="submit" className="btn btn-primary"><Plus size={16}/> Crea cliente</button></div></form></section>}
 

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState, useMemo, useCallback, type SetStateAction } from 'react';
+import { useEffect, useRef, useState, useCallback, type SetStateAction } from 'react';
 import { seeded, migrateV1, type Store } from './data';
 import { cloud } from './supabase';
 import { mergeWorkspace } from './workspace-merge';
@@ -7,7 +7,6 @@ export function useWorkspace(demo: boolean) {
   const [db, rawSet] = useState<Store>(demo ? seeded : () => ({ version: 2, clients: [], operators: [], orders: [], drafts: [], activity: [] }));
   const [ready, setReady] = useState(false); const [status, setStatus] = useState('Caricamento…');
   const [failure, setFailure] = useState('');
-  const roster = useRef(db.operators);
   const confirmed = useRef(db);
   const current = useRef(db); const revision = useRef(0); const queue = useRef(Promise.resolve()); const blocked = useRef(false);
   useEffect(() => {
@@ -25,7 +24,7 @@ export function useWorkspace(demo: boolean) {
           if (error) throw new Error('Database non disponibile. Verifica la configurazione Supabase.');
           initial = data.payload; revision.current = data.revision;
         }
-        if (live) { confirmed.current = initial; roster.current = initial.operators; current.current = initial; rawSet(initial); setReady(true); setStatus(demo ? 'Demo · salvato nel browser' : 'Tutte le modifiche salvate'); }
+        if (live) { confirmed.current = initial; current.current = initial; rawSet(initial); setReady(true); setStatus(demo ? 'Demo · salvato nel browser' : 'Tutte le modifiche salvate'); }
       } catch (e) { if (live) setFailure(e instanceof Error ? e.message : 'Caricamento non riuscito.'); }
     })();
     return () => { live = false; };
@@ -35,23 +34,30 @@ export function useWorkspace(demo: boolean) {
   useEffect(() => {
     if (demo || !ready) return;
     let live = true;
+    let refreshing=false;
     async function refresh() {
-      if (pending.current || blocked.current) return;
+      if (refreshing || document.hidden || pending.current || blocked.current) return;
+      refreshing=true;
+      try {
       const startRevision = revision.current;
       const check=await cloud().from('raia_workspace').select('revision').eq('id',1).single();
       if(!live||check.error||!check.data||check.data.revision<=revision.current||pending.current||blocked.current)return;
       const { data, error } = await cloud().from('raia_workspace').select('payload,revision').eq('id',1).single();
       if (!live || error || !data || pending.current || blocked.current || revision.current !== startRevision) return;
-      if (data.revision > revision.current) { confirmed.current = data.payload; revision.current = data.revision; roster.current = data.payload.operators; current.current = data.payload; rawSet(data.payload); }
+      if (data.revision > revision.current) { confirmed.current = data.payload; revision.current = data.revision; current.current = data.payload; rawSet(data.payload); }
+      } catch { /* Retry on the next refresh without disturbing local edits. */ }
+      finally { refreshing=false; }
     }
     const timer = setInterval(() => { void refresh(); },15000);
     window.addEventListener('focus',refresh);
-    return () => { live=false;clearInterval(timer);window.removeEventListener('focus',refresh); };
+    document.addEventListener('visibilitychange',refresh);
+    return () => { live=false;clearInterval(timer);window.removeEventListener('focus',refresh);document.removeEventListener('visibilitychange',refresh); };
   },[demo,ready]);
   function setDb(action: SetStateAction<Store>) {
     if (!ready || blocked.current) return;
     const base = current.current;
     const next = typeof action === 'function' ? action(current.current) : action;
+    if(next===base)return;
     current.current = next; rawSet(next); setStatus('Salvataggio…'); pending.current++;
     queue.current = queue.current.then(async () => {
       if (blocked.current) return;
@@ -66,7 +72,7 @@ export function useWorkspace(demo: boolean) {
               revision.current=data; confirmed.current=candidate;
               // Rebase changes queued while this request was in flight.
               const visible=mergeWorkspace(next,current.current,candidate);
-              current.current=visible;roster.current=candidate.operators;rawSet(visible);
+              current.current=visible;rawSet(visible);
               saved=true;break;
             }
             if(!error.message.includes('CONFLICT'))throw new Error('Salvataggio non riuscito. Esporta le modifiche in sospeso prima di ricaricare.');

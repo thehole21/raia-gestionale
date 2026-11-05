@@ -11,7 +11,7 @@ export const workAmount = (w: Work) => w.production?.priceUnspecified || (w.prod
 export const workDue = (w: Work, o: Order) => w.production ? w.production.requestedDate : o.due;
 export type Work = { ddt?:DeliveryNote; notesRight?:string; technical?:Record<string,string>; operatorIds?:string[]; production?: Production; vatId?: number; importKey?: string; source?: SourceRecord; sourceHistory?: SourceRecord[]; id: string; description: string; qty: number; unit: string; price: number; status: Status; operatorId: string; invoiceId: string | null; notes: string };
 export type DeliveryNote = { id?:string;workIds?:string[]; remoteDocumentId?:number;remoteCompanyId?:number; document?:DdtDocument; number: string; date: string };
-export type Order = { deliveryNotes?:DeliveryNote[]; title?: string; planningMonth?: string; customerRequestId?: string; executionDate?: string; ddt?: DeliveryNote; solicited?: boolean; solicitedAutoDismissedDue?: string; id: string; number: string; clientId: string; created: string; due: string; notes: string; lines: Work[] };
+export type Order = { automaticSolicitationEnabled?: boolean; deliveryNotes?:DeliveryNote[]; title?: string; planningMonth?: string; customerRequestId?: string; executionDate?: string; ddt?: DeliveryNote; solicited?: boolean; solicitedAutoDismissedDue?: string; id: string; number: string; clientId: string; created: string; due: string; notes: string; lines: Work[] };
 export type Draft = { remoteCompanyId?:number; remoteNumber?:string; status?: 'draft' | 'validated' | 'creating' | 'created' | 'sending' | 'sent' | 'failed' | 'reconcile'; remoteDocumentId?: number; submissionKey?: string; preparedInvoice?: unknown; id: string; number: string; clientId: string; created: string; workIds: string[] };
 export type Activity = { id: string; at: string; text: string };
 export type Store = { processes?: import('./processes').ProcessDefinition[]; clientHistory?:Client[]; technicalFields?: import('./technical-fields').TechnicalField[]; suppliers?: import('./suppliers').Supplier[]; ddtIssuer?:DdtIssuer; operatorHistory?: Operator[]; planningPeriods?: string[]; productionRegisters?: {sheet:string;periods:string[];notes:{row:number;values:unknown[];comments?:Record<string,string>}[]}[]; version: 2; clients: Client[]; operators: Operator[]; orders: Order[]; drafts: Draft[]; activity: Activity[] };
@@ -41,9 +41,10 @@ export const isClosed = (s: Status) => ['Consegnato', 'Pronto'].includes(s);
 export function flatten(db: Store): WorkRow[] {
   const clients=new Map([...(db.clientHistory||[]),...db.clients].map(c=>[c.id,c]));
   const operators=new Map([...(db.operatorHistory||[]),...db.operators].map(o=>[o.id,o]));
+  const billedWorkIds=new Set(db.drafts.filter(d=>d.remoteDocumentId && d.remoteDocumentId>0 && ['created','sending','sent'].includes(d.status||'')).flatMap(d=>d.workIds.map(workId=>d.id+'\0'+workId)));
   return db.orders.flatMap(order => {
     const client = clients.get(order.clientId) || { id: '', name: 'Cliente non trovato', city: '', email: '', phone: '', vat: '' };
-    return order.lines.map(line => ({ ...line, billingState:billingState(line,db.drafts), client, order, operator: {id:line.operatorId,name:operatorIds(line).map(id=>operators.get(id)?.name||'Operatore non disponibile').join(', ')||'—'} }));
+    return order.lines.map(line => ({ ...line, billingState:(/^(si|sì|true)$/i.test(line.production?.invoicing?.trim()||'') || billedWorkIds.has(line.invoiceId+'\0'+line.id) ? 'billed' : line.invoiceId ? 'draft' : 'unbilled') as BillingState, client, order, operator: {id:line.operatorId,name:operatorIds(line).map(id=>operators.get(id)?.name||'Operatore non disponibile').join(', ')||'—'} }));
   });
 }
 export function seeded(): Store {
