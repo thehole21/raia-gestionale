@@ -49,7 +49,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
   const work=order.lines[index];
   const fields:[string,string][]=[['QUANTITÀ',quantityLabel(work)],['DATA ORDINE',fmtDate(order.created)],['CONSEGNA RICHIESTA',fmtDate(work.production?work.production.requestedDate:order.due)],['OPERATORI',assigned(work)],['FORNITORI',work.production?.supplier||''],['MODALITÀ CONSEGNA',work.production?.delivery||'']];
   const specs:[string,string][]=[];
-  for(const f of technicalFields(store).filter(f=>f.enabled&&work.technical?.[f.key]?.trim()))specs.push([f.label.toUpperCase(),work.technical![f.key]]);
+  for(const f of technicalFields(store).filter(f=>f.enabled&&f.printable!==false&&work.technical?.[f.key]?.trim()))specs.push([f.label.toUpperCase(),work.technical![f.key]]);
   if(work.production?.category==='Libri')fields.push(['INGRESSO / USCITA',[work.production.entryTime,work.production.exitTime].filter(Boolean).join(' / ')],['URGENZA',work.production.urgent?'Urgente':'No']);
   function layout(draw:boolean,size:number,extra=0){
    let y=19;const leading=size*.44,labelSize=Math.max(8,size-2);
