@@ -251,3 +251,5 @@ select.register-process option,.inline-status option{background:#fff;color:#3034
 .btn.order-tool-sheet{background:#812c46;color:#fff;border-color:#812c46}.btn.order-tool-sheet:hover:not(:disabled){background:#672138;border-color:#672138}
 .btn.order-tool-repeat{background:#f7eff2;color:#70273e}.btn.order-tool-repeat:hover:not(:disabled){background:#ecdce3;border-color:#b68a9a}
 .btn.order-tool-button:focus-visible{outline:3px solid #ba849a;outline-offset:3px}.btn.order-tool-button:disabled{opacity:.5;cursor:wait}.order-tool-button svg{flex-shrink:0}
+
+.technical-settings-list{display:grid;gap:10px;margin:20px 0}.technical-settings-row{display:flex;align-items:center;gap:8px}.technical-settings-row>input{min-width:0;flex:1}.technical-settings-row>label{display:flex;align-items:center;gap:5px;white-space:nowrap}.technical-settings-row .icon-btn{flex-shrink:0}@media(max-width:600px){.technical-settings-row{flex-wrap:wrap}.technical-settings-row>input{flex-basis:100%}}

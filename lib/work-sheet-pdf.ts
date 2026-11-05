@@ -2,9 +2,11 @@ import type {Order,Store,Work} from './data';
 import {fmtDate,quantityLabel,billingState} from './data';
 import {operatorIds} from './assignments';
 import {statusText} from './order-groups';
-const techLabels:Record<string,string>={format:'Formato finito',openFormat:'Formato aperto',material:'Carta / materiale',weight:'Grammatura / spessore',pages:'Pagine / facciate',colors:'Colori / stampa',binding:'Rilegatura',finishing:'Finiture / plastificazione',dimensions:'Dimensioni / sviluppo',files:'File / revisione',packaging:'Imballaggio',instructions:'Altre caratteristiche tecniche'};
+import {technicalFields} from './technical-fields';
+import {orderRegistrationNumbers} from './order-groups';
 const clean=(s:unknown)=>String(s??'').replace(/[–—‑]/g,'-').replace(/[“”]/g,'"').replace(/[’‘]/g,"'").replace(/…/g,'...').replace(/\t/g,'  ');
 export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logoBytes?:Uint8Array,monogramBytes?:Uint8Array):Promise<Blob>{
+ code=String(orderRegistrationNumbers(store.orders).get(order.id)||order.number);
  const {jsPDF}=await import('jspdf');
  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a3',compress:true});
  const logo=logoBytes||new Uint8Array(await (await fetch('/images/raia-logo-transparent.png')).arrayBuffer());
@@ -30,7 +32,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  cy=Math.max(173,cy+13);font(11,true,wine);doc.text('PROGETTO',315,cy,{align:'center'});cy+=12;
  const titleLines=wrap(order.title||order.number,166,25);
  for(const l of titleLines.slice(0,5)){font(25,true);doc.text(l,315,cy,{align:'center'});cy+=10;}
- text('SCHEDA DI LAVORO',232,251,9,true,muted);text(code,232,262,17,true,wine);
+ text('ENTRATA ORDINE N.',232,251,9,true,muted);text(code,232,262,17,true,wine);
  right('LAVORAZIONI',251,9,true,muted);right(String(order.lines.length),265,28,true,wine);
 
  text('RAIA / PRODUZIONE',14,23,10,true,wine);text('Riepilogo ordine',14,38,22,true);
@@ -45,9 +47,9 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  for(const [i,label] of ['File verificati','Materiali verificati','Quantità e finiture controllate','Imballaggio e consegna'].entries()){doc.rect(14,237+i*9,3,3);text(label,21,240+i*9,10);doc.line(105,241+i*9,196,241+i*9);}
  let panel=-1,x=14,y=0,work:Work=order.lines[0],index=0;
  function newPanel(continued=false){
-  // A new job always starts on a new physical sheet; every verso stays empty.
+  // Each job starts on a separate sheet; no artificial blank PDF pages.
   panel++;if(!continued&&panel%2!==0)panel++;
-  if(panel%2===0){doc.addPage('a3','landscape');doc.addPage('a3','landscape');frame();}
+  if(panel%2===0){doc.addPage('a3','landscape');frame();}
   x=panel%2===0?14:224;y=19;
   doc.addImage(monogram,'PNG',x,13,11,11,undefined,'FAST');
   for(const l of wrap([order.title||order.number,client?.name].filter(Boolean).join(' · '),166,9)){text(l,x+16,y,9,false,muted);y+=4;}
@@ -65,16 +67,15 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
   pair('MODALITÀ CONSEGNA',work.production?.delivery,'DDT',order.ddt?.number||work.production?.ddtNumber);
   pair('REGISTRO',work.production?.category==='Libri'?'Libri':'Lavorazioni generali','FATTURATO',billingState(work,store.drafts)==='billed'?'Sì':billingState(work,store.drafts)==='draft'?'In bozza':'No');
   pair('ESECUZIONE',fmtDate(order.executionDate||''),'TERMINATO',work.production?.terminated?'Sì':'No');
-  const entries=Object.entries(techLabels);for(let t=0;t<entries.length;t+=2){const [ka,la]=entries[t],[kb,lb]=entries[t+1];pair(la.toUpperCase(),work.technical?.[ka],lb.toUpperCase(),work.technical?.[kb]);}
+  const entries=technicalFields(store).filter(f=>f.enabled&&work.technical?.[f.key]?.trim());for(let t=0;t<entries.length;t+=2){const a=entries[t],b=entries[t+1];if(b)pair(a.label.toUpperCase(),work.technical?.[a.key],b.label.toUpperCase(),work.technical?.[b.key]);else block(a.label.toUpperCase(),work.technical?.[a.key]);}
   if(work.production?.category==='Libri')pair('INGRESSO / USCITA',[work.production.entryTime,work.production.exitTime].filter(Boolean).join(' / '),'URGENZA',work.production.urgent?'Urgente':'No');
   block('NOTE ORDINE',order.notes);block('GRUPPO / EVENTO',work.production?.section);block('COMMENTI DI PRODUZIONE',work.production?.comments);block('ANNOTAZIONI AGGIUNTIVE',work.production?.additionalNotes);
   const left=wrap(work.notes||'',86,12),rightNotes=wrap(work.notesRight||'',86,12);let off=0;
   do{ensure(80);text('NOTE LAVORAZIONE',x,y,11,true,wine);y+=9;const n=Math.min(Math.max(left.length,rightNotes.length)-off,Math.floor((258-y)/8));const count=Math.max(n,7);for(let j=0;j<count;j++){if(left[off+j])text(left[off+j],x,y+j*8,12);if(rightNotes[off+j])text(rightNotes[off+j],x+96,y+j*8,12);doc.setDrawColor(line);doc.line(x,y+j*8+2.5,x+86,y+j*8+2.5);doc.line(x+96,y+j*8+2.5,x+182,y+j*8+2.5);}y+=count*8+9;off+=count;if(off<Math.max(left.length,rightNotes.length))newPanel(true);}while(off<Math.max(left.length,rightNotes.length));
   ensure(24);text('ALTRI OPERATORI / FIRME',x,y,10,true,wine);doc.line(x,y+9,x+182,y+9);doc.line(x,y+18,x+182,y+18);y+=25;
  }
- doc.addPage('a3','landscape');
- const sheets=doc.getNumberOfPages()/2;
- for(let p=1;p<=doc.getNumberOfPages();p+=2){doc.setPage(p);text(`${code}  /  ${Math.ceil(p/2)} di ${sheets}`,14,288,8,false,muted);}
+ const sheets=doc.getNumberOfPages();
+ for(let p=1;p<=sheets;p++){doc.setPage(p);text(`Entrata ordine n. ${code}  /  ${p} di ${sheets}`,14,288,8,false,muted);}
  doc.setProperties({title:`Scheda lavoro ${code} - ${order.title||order.number}`,author:'RAIA',subject:'Cartellina di produzione A3 piegabile'});
  return doc.output('blob');
 }
