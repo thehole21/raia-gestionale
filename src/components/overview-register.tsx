@@ -1,4 +1,7 @@
 'use client';
+import {SearchableSelect} from './searchable-select';
+import {workDdtNumber} from '@/lib/delivery-selection';
+
 import {QuantityEditor,DueEditor,DeliveryEditor} from './inline-work-fields';
 import {OperatorPicker} from './operator-picker';
 import {memo} from 'react';
@@ -31,9 +34,9 @@ function OverviewRegisterView({suppliers,renderActions,renderDelete,onTitleSave,
     <DataCell label="Copie / quantità"><QuantityEditor row={r} onUpdate={onUpdate}/></DataCell>
     <DataCell label="Operatore"><OperatorPicker work={r} operators={operators} label={'Operatori di '+r.description} onChange={patch=>onUpdate(r.id,patch)}/></DataCell>
     <DataCell label="Fornitore"><SupplierSelect suppliers={suppliers} label={'Fornitore di '+r.description} value={p?.supplier||''} onChange={supplier=>onUpdate(r.id,{production:{...bookProduction(r,r.order),category:p?.category||'Lavori',supplier}})}/></DataCell>
-    <DataCell label="Processo"><select className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s} value={s}>{statusText(s)}</option>)}</select></DataCell>
+    <DataCell label="Processo"><SearchableSelect className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s} value={s}>{statusText(s)}</option>)}</SearchableSelect></DataCell>
     <DataCell label="Consegna richiesta"><DueEditor row={r} onUpdate={onUpdate}/></DataCell>
-    <DataCell label="DDT">{r.order.ddt?.number||p?.ddtNumber||'—'}</DataCell>
+    <DataCell label="DDT">{workDdtNumber(r,r.order)||'—'}</DataCell>
     <DataCell label="Terminato">{p?<label className="register-terminated"><input type="checkbox" aria-label={'Terminato: '+r.description} checked={p.terminated} onChange={e=>onUpdate(r.id,{production:{...p,terminated:e.target.checked}})}/>{p.terminated?'Sì':'No'}</label>:['Pronto','Consegnato'].includes(r.status)?'Sì':'No'}</DataCell>
     <DataCell label="Fatturato"><BillingMark rows={[r]}/></DataCell>
     <DataCell label="Modalità consegna"><DeliveryEditor row={r} onUpdate={onUpdate}/></DataCell>

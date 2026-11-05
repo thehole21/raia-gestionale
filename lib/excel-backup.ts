@@ -1,3 +1,4 @@
+import {workDdtNumber} from './delivery-selection';
 import * as XLSX from 'xlsx';
 import {flatten,today,type Store,type Order,type Client,type WorkRow} from './data';
 import {suppliersOf} from './suppliers';
@@ -13,7 +14,7 @@ function row(r:WorkRow,book:boolean){
  const p=r.production,qty=p?.quantity??r.qty,op=r.operator.name==='—'?'':r.operator.name;
  const due=date(p?.requestedDate||(!p?r.order.due:''))||p?.requestedText||'Non precisata';
  const ended=p?p.terminated:['Pronto','Consegnato'].includes(r.status),billed=p?.invoicing||(r.invoiceId?'In bozza':'');
- const common=book?[p?.bookNumber||'',r.client.name,date(r.order.created),p?.entryTime||'',r.description,qty,op,r.status,p?.comments||'',due,p?.urgent||false,p?.exitTime||'',p?.ddtNumber||r.order.ddt?.number||'',p?.delivery||'',ended,billed]:['',date(r.order.created),r.client.name,r.description,qty,op,p?.supplier||'',r.status,due,p?.ddtNumber||r.order.ddt?.number||'',p?.delivery||'',ended,billed];
+ const common=book?[p?.bookNumber||'',r.client.name,date(r.order.created),p?.entryTime||'',r.description,qty,op,r.status,p?.comments||'',due,p?.urgent||false,p?.exitTime||'',workDdtNumber(r,r.order),p?.delivery||'',ended,billed]:['',date(r.order.created),r.client.name,r.description,qty,op,p?.supplier||'',r.status,due,workDdtNumber(r,r.order),p?.delivery||'',ended,billed];
  return [...common,r.order.number,date(r.order.executionDate),r.notes,r.order.notes,p?.section||'',p?.additionalNotes||'',p?.priceUnspecified?'Da definire':r.price,r.unit,r.order.solicited||false,r.order.id,r.id,p?.comments||'',p?.supplier||'',date(r.order.ddt?.date),r.order.title||''];
 }
 export function buildExcelBackup(store:Store,archived:ArchivedOrder[]=[]){

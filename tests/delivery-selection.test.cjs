@@ -1,0 +1,18 @@
+const fs=require('fs'),ts=require('typescript'),assert=require('node:assert/strict');
+require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,f);
+const {deliverySelection,workDdtNumber}=require('../lib/delivery-selection.ts');
+const {prepareInvoice}=require('../lib/billing.ts');
+const {flatten}=require('../lib/data.ts');
+const {duplicateOrder}=require('../lib/duplicate-order.ts');
+const order={id:'o',clientId:'c',number:'1',created:'2026-11-05',notes:'',lines:[{id:'a',description:'A',qty:10,unit:'pz',price:1},{id:'b',description:'B',qty:2,unit:'pz',price:1},{id:'c',description:'C',qty:0,unit:'pz',price:1}]};
+assert.deepEqual(deliverySelection(order,['a']).map(w=>w.id),['a']);
+assert.throws(()=>deliverySelection(order,[]));assert.throws(()=>deliverySelection(order,['a','a']));assert.throws(()=>deliverySelection(order,['foreign']));assert.throws(()=>deliverySelection(order,['a'],['a']));assert.throws(()=>deliverySelection(order,['c']));
+order.lines[0].ddt={number:'1',date:'2026-11-05'};
+assert.throws(()=>deliverySelection(order,['a']));assert.equal(deliverySelection(order,['b']).length,1);
+order.lines[1].ddt={number:'2',date:'2026-11-06'};
+assert.equal(workDdtNumber(order.lines[0],order),'1');assert.equal(workDdtNumber(order.lines[1],order),'2');assert.equal(workDdtNumber(order.lines[2],order),'');
+const store={orders:[order],clients:[{id:'c',name:'C'}],operators:[],drafts:[]};
+const prep=prepareInvoice(flatten(store));assert.equal(prep.deliveryNotes.length,2);assert.deepEqual(prep.lines.map(l=>l.deliveryNoteNumber),['1','2','']);assert(!prep.issues.some(i=>i.includes('uniformare')));
+const copied=duplicateOrder(order,[]);assert(copied.lines.every(l=>!l.ddt));assert(!copied.deliveryNotes);
+assert.throws(()=>deliverySelection({...order,ddt:{number:'legacy',date:'2026-01-01'}},['c']));
+console.log('PASS DDT: partial selection, remaining rows, duplicates, per-line references, invoice references and clean order duplication.');

@@ -10,6 +10,7 @@ export function sharedDDT(orders:Order[],anchor:Order){
 }
 const editable=(d:Draft)=>!d.remoteDocumentId&&(!d.status||['draft','validated'].includes(d.status));
 export function saveGroupDDT(store:Store,anchor:Order,ddt:DeliveryNote):Store{
+ if(anchor.deliveryNotes?.length||anchor.lines.some(w=>w.ddt))throw new Error('I DDT delle singole lavorazioni si gestiscono dal pulsante DDT.');
  const existing=sharedDDT(store.orders,anchor).value;
  if(!ddt.document&&existing.number===ddt.number&&existing.date===ddt.date&&existing.document)ddt={...ddt,document:existing.document};
  if(ddt.number&&store.orders.some(o=>orderGroupKey(o)!==orderGroupKey(anchor)&&o.ddt?.number===ddt.number&&o.ddt?.date?.slice(0,4)===ddt.date.slice(0,4)))throw new Error('Questo numero DDT è già usato da un altro gruppo nello stesso anno.');

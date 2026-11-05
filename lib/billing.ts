@@ -1,4 +1,4 @@
-import {orderGroupKey} from './order-groups';
+import {workDdt,workDdtNumber} from './delivery-selection';
 import { flatten, type Store, type WorkRow } from './data';
 // Modello interno versionato: NON è il payload pronto per l'API fiscale.
 export function prepareInvoice(rows: WorkRow[]) {
@@ -11,9 +11,6 @@ export function prepareInvoice(rows: WorkRow[]) {
   if(!client.recipientCode&&!client.pec)issues.push('Destinazione elettronica del cliente da verificare.');
  }
  const orders=[...new Map(rows.map(r=>[r.order.id,r.order])).values()];
- const groups=new Set(orders.map(orderGroupKey));
- for(const key of groups){const members=orders.filter(o=>orderGroupKey(o)===key);const numbers=new Set(members.flatMap(o=>[o.ddt?.number||'',...o.lines.map(w=>w.production?.ddtNumber||'')]).filter(Boolean));if(numbers.size>1)issues.push('DDT diversi nello stesso gruppo: uniformare i riferimenti prima della fattura.');}
- for(const order of orders)if(!order.ddt?.number||!order.ddt.date)issues.push('DDT da completare per '+order.number+'.');
  for(const row of rows)if(row.vatId===undefined)issues.push('Aliquota IVA da associare: '+row.description+'.');
  for(const row of rows){
   if(/^(si|sì|true)$/i.test(row.production?.invoicing?.trim()||''))issues.push('Già fatturato nel registro Excel: '+row.description+'.');
@@ -22,8 +19,8 @@ export function prepareInvoice(rows: WorkRow[]) {
  }
  issues.push('Cliente fiscale, IVA e pagamento si confermano nel passaggio Crea fattura in Cloud.');
  return {version:1,provider:'fatture-in-cloud',readyToSend:false,issues,customer:client?{...client}:null,
-  deliveryNotes:[...new Map(orders.map(o=>[JSON.stringify([o.ddt?.number||o.id,o.ddt?.date||'']),{orderId:o.id,orderNumber:o.number,orderIds:orders.filter(x=>x.ddt?.number===o.ddt?.number&&x.ddt?.date===o.ddt?.date).map(x=>x.id),number:o.ddt?.number||'',date:o.ddt?.date||''}])).values()],
-  lines:rows.map(r=>({workId:r.id,orderId:r.order.id,description:r.description,orderTitle:r.order.title||'',deliveryNoteNumber:r.order.ddt?.number||r.production?.ddtNumber||'',quantity:r.qty,unit:r.unit,netUnitPrice:r.price,vatId:r.vatId??null})),
+  deliveryNotes:[...new Map(rows.filter(r=>workDdtNumber(r,r.order)).map(r=>[JSON.stringify([workDdtNumber(r,r.order),workDdt(r,r.order)?.date||'']),{orderId:r.order.id,orderNumber:r.order.number,orderIds:[r.order.id],number:workDdtNumber(r,r.order),date:workDdt(r,r.order)?.date||''}])).values()],
+  lines:rows.map(r=>({workId:r.id,orderId:r.order.id,description:r.description,orderTitle:r.order.title||'',deliveryNoteNumber:workDdtNumber(r,r.order),quantity:r.qty,unit:r.unit,netUnitPrice:r.price,vatId:r.vatId??null})),
   currency:'EUR',paymentMethodId:null,paymentDueDate:null,companyId:null,remoteDocumentId:null};
 }
 export function draftRows(store:Store,workIds:string[]){return flatten(store).filter(r=>workIds.includes(r.id));}

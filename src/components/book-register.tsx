@@ -1,4 +1,7 @@
 'use client';
+import {SearchableSelect} from './searchable-select';
+import {workDdtNumber} from '@/lib/delivery-selection';
+
 import {QuantityEditor,DueEditor,DeliveryEditor} from './inline-work-fields';
 import {OperatorPicker} from './operator-picker';
 import {SupplierSelect} from './supplier-select';
@@ -31,12 +34,12 @@ function BookRegisterView({suppliers,renderActions,renderDelete,onTitleSave,all,
     <td data-label="Titolo lavoro" className="book-title-cell"><button type="button" className={'register-solicit'+(solicited?' register-solicit-active':'')} aria-label={solicited?'Rimuovi il sollecito dall’ordine '+r.order.number:'Sollecita ordine '+r.order.number} aria-pressed={solicited} title={solicited?'Ordine sollecitato':'Sollecita ordine'} onClick={()=>onToggleSolicited(r.order.id,!solicited)}><AlertTriangle size={16}/></button><button type="button" className="register-job-link" onClick={()=>onOpen(r)}><strong>{r.description}</strong></button>{renderDelete(r.order,r.id)}</td>
     <td data-label="Copie"><QuantityEditor row={r} onUpdate={onUpdate}/></td>
     <td data-label="Operatore"><OperatorPicker work={r} operators={operators} label={'Operatori di '+r.description} onChange={patch=>onUpdate(r.id,patch)}/></td>
-    <td data-label="Fornitori"><SupplierSelect suppliers={suppliers} label={'Fornitori di '+r.description} value={p.supplier} onChange={supplier=>change(r,{supplier})}/></td><td data-label="Processo"><select className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s} value={s}>{statusText(s)}</option>)}</select></td>
+    <td data-label="Fornitori"><SupplierSelect suppliers={suppliers} label={'Fornitori di '+r.description} value={p.supplier} onChange={supplier=>change(r,{supplier})}/></td><td data-label="Processo"><SearchableSelect className="register-process" data-tone={statusTone(r.status)} aria-label={'Processo di '+r.description} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value as Status})}>{STATUSES.map(s=><option key={s} value={s}>{statusText(s)}</option>)}</SearchableSelect></td>
     <td data-label="Commenti" className="book-comments">{p.comments||'—'}</td>
     <td data-label="Consegna richiesta"><DueEditor row={r} onUpdate={onUpdate}/></td>
     <td data-label="Urgenza"><label className={p.urgent?'book-urgent':''}><input type="checkbox" aria-label={'Urgenza: '+r.description} checked={!!p.urgent} onChange={e=>change(r,{urgent:e.target.checked})}/>{p.urgent?'Sì':'No'}</label></td>
     <td data-label="Orario uscita">{p.exitTime||'—'}</td>
-    <td data-label="DDT">{r.order.ddt?.number||p.ddtNumber||'—'}</td>
+    <td data-label="DDT">{workDdtNumber(r,r.order)||'—'}</td>
     <td data-label="Terminato"><label><input type="checkbox" aria-label={'Terminato: '+r.description} checked={p.terminated} onChange={e=>change(r,{terminated:e.target.checked})}/>{p.terminated?'Sì':'No'}</label></td>
     <td data-label="Fatturato"><BillingMark rows={[r]}/></td><td data-label="Modalità consegna"><DeliveryEditor row={r} onUpdate={onUpdate}/></td><td data-label="Dettagli"><button type="button" className="icon-btn" aria-label={'Apri '+r.description} onClick={()=>onOpen(r)}><ArrowUpRight size={17}/></button></td>
    </tr></Fragment>;
