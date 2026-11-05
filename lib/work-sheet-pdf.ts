@@ -1,5 +1,5 @@
 import type {Order,Store,Work} from './data';
-import {fmtDate,quantityLabel,billingState} from './data';
+import {fmtDate,quantityLabel} from './data';
 import {operatorIds} from './assignments';
 import {statusText} from './order-groups';
 import {technicalFields} from './technical-fields';
@@ -45,37 +45,36 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  if(sy<190){text('APPUNTI',14,sy+5,8,true,wine);grid(14,sy+10,182,Math.min(48,210-sy-10));}
  text('PASSAGGI / CONTROLLO FINALE',14,228,9,true,wine);
  for(const [i,label] of ['File verificati','Materiali verificati','Quantità e finiture controllate','Imballaggio e consegna'].entries()){doc.rect(14,237+i*9,3,3);text(label,21,240+i*9,10);doc.line(105,241+i*9,196,241+i*9);}
- let panel=-1,x=14,y=0,work:Work=order.lines[0],index=0;
- function newPanel(continued=false){
-  // Each job starts on a separate sheet; no artificial blank PDF pages.
-  panel++;if(!continued&&panel%2!==0)panel++;
-  if(panel%2===0){doc.addPage('a3','landscape');frame();}
-  x=panel%2===0?14:224;y=19;
-  doc.addImage(monogram,'PNG',x,13,11,11,undefined,'FAST');
-  for(const l of wrap([order.title||order.number,client?.name].filter(Boolean).join(' · '),166,9)){text(l,x+16,y,9,false,muted);y+=4;}
-  y=Math.max(y+8,35);text(code,x,y,11,true,wine);text(`LAVORAZIONE ${index+1} / ${order.lines.length}${continued?' - SEGUE':''}`,x+88,y,9,true,muted);
-  y+=12;for(const l of wrap(work.description,182,20).slice(0,3)){text(l,x,y,20,true);y+=8;}y+=6;
- }
- function ensure(height:number){if(y+height>270)newPanel(true);}
- function pair(a:string,av:unknown,b:string,bv:unknown){const al=wrap(av||'________________________',86,12),bl=wrap(bv||'________________________',86,12);let offset=0;while(offset<Math.max(al.length,bl.length)){ensure(23);const capacity=Math.max(1,Math.floor((265-y-8)/5.5));const count=Math.min(capacity,Math.max(al.length,bl.length)-offset);text(a,x,y,9,true,muted);text(b,x+96,y,9,true,muted);y+=7;al.slice(offset,offset+count).forEach((l,i)=>text(l,x,y+i*5.5,12));bl.slice(offset,offset+count).forEach((l,i)=>text(l,x+96,y+i*5.5,12));y+=count*5.5+7;offset+=count;}}
- function block(label:string,value:unknown){if(!value)return;const ls=wrap(value,182,12);ensure(20);text(label,x,y,9,true,wine);y+=7;for(const l of ls){ensure(7);text(l,x,y,12);y+=5.5;}y+=7;}
- for(index=0;index<order.lines.length;index++){
-  work=order.lines[index];newPanel();if(wrap(work.description,182,20).length>3)block('DESCRIZIONE COMPLETA',work.description);
-  pair('QUANTITÀ',quantityLabel(work),'PROCESSO',statusText(work.status));
-  pair('DATA ORDINE',fmtDate(order.created),'CONSEGNA RICHIESTA',fmtDate(work.production?work.production.requestedDate:order.due));
-  pair('OPERATORI',assigned(work),'FORNITORI',work.production?.supplier);
-  pair('MODALITÀ CONSEGNA',work.production?.delivery,'DDT',order.ddt?.number||work.production?.ddtNumber);
-  pair('REGISTRO',work.production?.category==='Libri'?'Libri':'Lavorazioni generali','FATTURATO',billingState(work,store.drafts)==='billed'?'Sì':billingState(work,store.drafts)==='draft'?'In bozza':'No');
-  pair('ESECUZIONE',fmtDate(order.executionDate||''),'TERMINATO',work.production?.terminated?'Sì':'No');
-  const entries=technicalFields(store).filter(f=>f.enabled&&work.technical?.[f.key]?.trim());for(let t=0;t<entries.length;t+=2){const a=entries[t],b=entries[t+1];if(b)pair(a.label.toUpperCase(),work.technical?.[a.key],b.label.toUpperCase(),work.technical?.[b.key]);else block(a.label.toUpperCase(),work.technical?.[a.key]);}
-  if(work.production?.category==='Libri')pair('INGRESSO / USCITA',[work.production.entryTime,work.production.exitTime].filter(Boolean).join(' / '),'URGENZA',work.production.urgent?'Urgente':'No');
-  block('NOTE ORDINE',order.notes);block('GRUPPO / EVENTO',work.production?.section);block('COMMENTI DI PRODUZIONE',work.production?.comments);block('ANNOTAZIONI AGGIUNTIVE',work.production?.additionalNotes);
-  const left=wrap(work.notes||'',86,12),rightNotes=wrap(work.notesRight||'',86,12);let off=0;
-  do{ensure(80);text('NOTE LAVORAZIONE',x,y,11,true,wine);y+=9;const n=Math.min(Math.max(left.length,rightNotes.length)-off,Math.floor((258-y)/8));const count=Math.max(n,7);for(let j=0;j<count;j++){if(left[off+j])text(left[off+j],x,y+j*8,12);if(rightNotes[off+j])text(rightNotes[off+j],x+96,y+j*8,12);doc.setDrawColor(line);doc.line(x,y+j*8+2.5,x+86,y+j*8+2.5);doc.line(x+96,y+j*8+2.5,x+182,y+j*8+2.5);}y+=count*8+9;off+=count;if(off<Math.max(left.length,rightNotes.length))newPanel(true);}while(off<Math.max(left.length,rightNotes.length));
-  ensure(24);text('ALTRI OPERATORI / FIRME',x,y,10,true,wine);doc.line(x,y+9,x+182,y+9);doc.line(x,y+18,x+182,y+18);y+=25;
+ const x=224,width=182;
+ for(let index=0;index<order.lines.length;index++){
+  const work=order.lines[index];
+  const fields:[string,string][]=[['QUANTITÀ',quantityLabel(work)],['PROCESSO',statusText(work.status)],['DATA ORDINE',fmtDate(order.created)],['CONSEGNA RICHIESTA',fmtDate(work.production?work.production.requestedDate:order.due)],['OPERATORI',assigned(work)],['FORNITORI',work.production?.supplier||''],['MODALITÀ CONSEGNA',work.production?.delivery||''],['DDT',order.ddt?.number||work.production?.ddtNumber||'']];
+  for(const f of technicalFields(store).filter(f=>f.enabled&&work.technical?.[f.key]?.trim()))fields.push([f.label.toUpperCase(),work.technical![f.key]]);
+  if(work.production?.category==='Libri')fields.push(['INGRESSO / USCITA',[work.production.entryTime,work.production.exitTime].filter(Boolean).join(' / ')],['URGENZA',work.production.urgent?'Urgente':'No']);
+  function layout(draw:boolean,size:number){
+   let y=19;const leading=size*.44,labelSize=Math.max(8,size-2);
+   const put=(v:unknown,xx:number,yy:number,ss=size,bold=false,color=ink)=>{if(draw)text(v,xx,yy,ss,bold,color);};
+   if(draw)doc.addImage(monogram,'PNG',x,13,10,10,undefined,'FAST');
+   for(const l of wrap([order.title||order.number,client?.name].filter(Boolean).join(' · '),166,9)){put(l,x+15,y,9,false,muted);y+=4;}
+   y=Math.max(y+7,32);put('ENTRATA ORDINE N. '+code,x,y,10,true,wine);put(`LAVORAZIONE ${index+1} / ${order.lines.length}`,x+113,y,9,true,muted);y+=10;
+   for(const l of wrap(work.description,width,18)){put(l,x,y,18,true);y+=7;}y+=3;
+   // Three aligned columns keep the technical summary on the front of the folder.
+   for(let i=0;i<fields.length;i+=3){let height=0;for(let j=0;j<3&&fields[i+j];j++){const [label,value]=fields[i+j],xx=x+j*62;let yy=y;for(const l of wrap(label,58,labelSize)){put(l,xx,yy,labelSize,true,muted);yy+=labelSize*.4;}yy+=1.5;for(const l of wrap(value||'—',58,size)){put(l,xx,yy);yy+=leading;}height=Math.max(height,yy-y);}y+=height+3;}
+   function block(label:string,value:unknown){if(!value)return;put(label,x,y,labelSize,true,wine);y+=5;for(const l of wrap(value,width,size)){put(l,x,y);y+=leading;}y+=3;}
+   block('COMMENTI DI PRODUZIONE',work.production?.comments);block('ANNOTAZIONI AGGIUNTIVE',work.production?.additionalNotes);
+   put('NOTE LAVORAZIONE',x,y,10,true,wine);y+=7;
+   const left=wrap(work.notes||'',86,size),right=wrap(work.notesRight||'',86,size),count=Math.max(4,left.length,right.length),spacing=7;
+   for(let i=0;i<count;i++){if(left[i])put(left[i],x,y);if(right[i])put(right[i],x+96,y);if(draw){doc.setDrawColor(line);doc.setLineWidth(.15);doc.line(x,y+2,x+86,y+2);doc.line(x+96,y+2,x+182,y+2);}y+=spacing;}y+=5;
+   put('ALTRI OPERATORI / FIRME',x,y,labelSize,true,wine);y+=8;if(draw){doc.setDrawColor(line);doc.line(x,y,x+182,y);}y+=8;
+   block('NOTE ORDINE',order.notes);block('GRUPPO / EVENTO',work.production?.section);
+   return y;
+  }
+  let size=11.5;while(size>9&&layout(false,size)>274)size-=.5;
+  if(layout(false,size)>274)throw new Error(`La lavorazione ${index+1} contiene troppo testo per una sola facciata leggibile. Riduci le note o suddividi la lavorazione prima di stampare la cartellina.`);
+  doc.addPage('a3','landscape');doc.setDrawColor(line);doc.setLineWidth(.3);doc.roundedRect(217,7,196,276,2,2);doc.setDrawColor(wine);doc.setLineWidth(1);doc.line(224,7,256,7);doc.setLineWidth(.2);layout(true,size);
  }
  const sheets=doc.getNumberOfPages();
- for(let p=1;p<=sheets;p++){doc.setPage(p);text(`Entrata ordine n. ${code}  /  ${p} di ${sheets}`,14,288,8,false,muted);}
+ for(let p=1;p<=sheets;p++){doc.setPage(p);text(`Entrata ordine n. ${code}  /  ${p} di ${sheets}`,p===1?14:224,288,8,false,muted);}
  doc.setProperties({title:`Scheda lavoro ${code} - ${order.title||order.number}`,author:'RAIA',subject:'Cartellina di produzione A3 piegabile'});
  return doc.output('blob');
 }
