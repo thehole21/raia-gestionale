@@ -11,7 +11,7 @@ import {workDdtNumber} from '@/lib/delivery-selection';
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { FormEvent, ReactNode, ChangeEvent } from 'react';
 import {
-  LayoutGrid, ListTodo, Folders, Users, ReceiptText, Settings2, Search, Plus, ChevronRight,
+  Mail, LayoutGrid, ListTodo, Folders, Users, ReceiptText, Settings2, Search, Plus, ChevronRight,
   ChevronDown, ChevronLeft, ArrowUpRight, Filter, X, Check, CalendarDays, Clock3,
   CheckCircle2, AlertTriangle, ClipboardList, Download, Upload, Trash2,
   ExternalLink, FileText, Menu, Layers3, Building2, Sparkles,
@@ -48,7 +48,8 @@ const Operators=dynamic(()=>import('@/src/components/operators').then(m=>m.Opera
 import { CustomerRequest } from '@/src/components/quote-components';
 import { Documents } from '@/src/components/documents';
 const ExcelBackupButton=dynamic(()=>import('@/src/components/excel-backup-button').then(m=>m.ExcelBackupButton),{loading:()=> <p role="status">Caricamento…</p>});
-const ExcelImport=dynamic(()=>import('@/src/components/excel-import').then(m=>m.ExcelImport),{loading:()=> <p role="status">Caricamento…</p>});
+import {StaffMessagesProvider,MessageBoxes} from '@/src/components/staff-messages';
+const AdminMessages=dynamic(()=>import('@/src/components/staff-messages').then(m=>m.AdminMessages));
 import { useWorkspace } from '@/lib/use-workspace';
 const CancelledOrders=dynamic(()=>import('@/src/components/cancelled-orders').then(m=>m.CancelledOrders));
 import { DeleteOrder } from '@/src/components/delete-order';
@@ -73,7 +74,7 @@ import { cloud } from '@/lib/supabase';
 import {Suppliers} from '@/src/components/suppliers';
 import {SupplierSelect} from '@/src/components/supplier-select';
 import {suppliersOf} from '@/lib/suppliers';
-type Section = 'work' | 'orders' | 'clients' | 'suppliers' | 'billing' | 'ddt' | 'estimator' | 'settings';
+type Section = 'work' | 'orders' | 'clients' | 'suppliers' | 'billing' | 'ddt' | 'messages' | 'estimator' | 'settings';
 type FilterType = 'quote' | 'all' | 'active' | 'solicited' | 'planned' | 'working' | 'ready' | 'unbilled' | 'delivered' | 'cancelled';
 type NewLine = { operatorIds?:string[]; supplier: string; key: string; description: string; qty: string; unit: string; price: string; status: Status; operatorId: string };
 const DATA_KEY = 'raia_workspace_v2_next_demo';
@@ -85,6 +86,7 @@ const sections: { key: Section; label: string; icon: typeof LayoutGrid }[] = [
   { key: 'ddt', label: 'DDT', icon: FileText },
   { key: 'billing', label: 'Fatturazione', icon: ReceiptText },
   { key: 'estimator', label: 'Preventivatore', icon: FileText },
+  { key: 'messages', label: 'Messaggi', icon: Mail },
   { key: 'settings', label: 'Impostazioni', icon: Settings2 },
 ];
 function StatusLabel({ status }: { status: Status }) {
@@ -104,7 +106,6 @@ function Workspace() {
   const { demo, profile } = useAccess();
   const { db, setDb, ready: hydrated, status: saveStatus, failure, getRevision } = useWorkspace(demo);
   const [duplicateSource,setDuplicateSource]=useState<Order|null>(null);
-  const [showImport, setShowImport] = useState(false);
   const [settingsTab,setSettingsTab]=useState('account');
   useEffect(()=>{if(profile.role==='admin'&&new URLSearchParams(window.location.search).has('fic')){setSection('settings');setSettingsTab('fic');}},[]);
   const defaultAssignee = ''; 
@@ -176,7 +177,7 @@ function Workspace() {
   function notify(msg: string) { setToastMessage(msg); if (toastTimeout.current) clearTimeout(toastTimeout.current); toastTimeout.current = setTimeout(() => setToastMessage(''), 3800); }
   function write(update: (current: Store) => Store) { setDb(current => update(current)); }
   function activity(current: Store, message: string): Store { return { ...current, activity: [{ id: id(), at: today(), text: message }, ...current.activity].slice(0, 80) }; }
-  function navigate(s: Section) { if(profile.role!=='admin'&&['settings','billing'].includes(s))return; requestExit(()=>{setSection(s);setMobileNav(false);setDrawerOrderId(null);setDrawerWorkId(null);if(s!=='work')setSelectedWork([]);}); }
+  function navigate(s: Section) { if(profile.role!=='admin'&&['settings','billing','messages'].includes(s))return; requestExit(()=>{setSection(s);setMobileNav(false);setDrawerOrderId(null);setDrawerWorkId(null);if(s!=='work')setSelectedWork([]);}); }
 
   const rows = useMemo(() => flatten(db), [db.orders,db.clients,db.clientHistory,db.operators,db.operatorHistory,db.drafts]);
   const rowsByOrder=useMemo(()=>{const map=new Map<string,WorkRow[]>();for(const row of rows){const group=map.get(row.order.id)||[];group.push(row);map.set(row.order.id,group);}return map;},[rows]);
@@ -403,14 +404,13 @@ function Workspace() {
   const historyRows=useMemo(()=>rows.filter(r=>(!clientFilter||r.client.id===clientFilter)&&matchesPeriod(r,year,month)&&(!search||hasWorkTerm(r,search.trim().toLocaleLowerCase('it')))),[rows,clientFilter,year,month,search]);
   if (!hydrated) return <main className="auth-screen"><section className="auth-card"><h1>RAIA</h1><p>{failure || 'Caricamento del gestionale…'}</p>{failure && <button className="btn btn-primary" onClick={() => location.reload()}>Riprova</button>}</section></main>;
   const periodFilters = <div className="period-filters"><SearchableSelect aria-label="Anno" value={year} onChange={e=>setYear(e.target.value)}><option value="">Tutti gli anni</option>{[...new Set([...(db.planningPeriods||[]),...rows.flatMap(workPeriods)].map(p=>p.slice(0,4)).filter(Boolean))].sort().reverse().map(y=><option key={y}>{y}</option>)}</SearchableSelect><SearchableSelect aria-label="Mese di programmazione" value={month} onChange={e=>setMonth(e.target.value)}><option value="">Tutti i mesi di programmazione</option>{['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'].map((m,i)=><option key={m} value={String(i+1).padStart(2,'0')}>{m}</option>)}</SearchableSelect>{(year||month)&&<button className="btn btn-plain" onClick={()=>{setYear('');setMonth('');}}>Azzera periodo</button>}</div>;
-  return <ProcessContext.Provider value={processesOf(db)}><AdminCifraProvider enabled={profile.role==='admin'&&!demo}><OperatorHistoryContext.Provider value={db.operatorHistory||[]}><div className={"app-frame dashboard-refined"+(sidebarCollapsed?" sidebar-compact":"")}>
+  return <StaffMessagesProvider admin={profile.role==='admin'} demo={demo}><ProcessContext.Provider value={processesOf(db)}><AdminCifraProvider enabled={profile.role==='admin'&&!demo}><OperatorHistoryContext.Provider value={db.operatorHistory||[]}><div className={"app-frame dashboard-refined"+(sidebarCollapsed?" sidebar-compact":"")}>
     <DdtSync disabled={demo||!!failure||saveStatus==='Salvataggio…'}/>{mobileNav && <button className="mobile-cover" onClick={() => setMobileNav(false)} aria-label="Chiudi menu" />}
     <aside className={'sidebar ' + (mobileNav ? 'sidebar-open' : '')}>
       <div className="brand"><img className="sidebar-full-logo" src="/images/raia-logo-transparent.png" alt="RAIA"/><img className="sidebar-small-logo" src="/images/raia-monogram-transparent.png" alt="RAIA"/></div>
       <button type="button" className="sidebar-toggle" onClick={toggleSidebar} aria-expanded={!sidebarCollapsed} aria-label={sidebarCollapsed?"Espandi menu laterale":"Riduci menu laterale"} title={sidebarCollapsed?"Espandi menu":"Riduci menu"}>{sidebarCollapsed?<ChevronRight size={17}/>:<ChevronLeft size={17}/>}<span>Riduci menu</span></button><span className="nav-label">AREA DI LAVORO</span>
-      <nav className="nav-links" aria-label="Navigazione principale">{sections.filter(item=>profile.role==='admin'||!['settings','billing'].includes(item.key)).map(item => <button key={item.key} title={item.label} aria-label={item.label} aria-current={section===item.key?"page":undefined} className={'nav-link ' + (section === item.key ? 'active' : '')} onClick={() => navigate(item.key)}><item.icon size={18} strokeWidth={1.8}/><span>{item.label}</span>{item.key === 'work' && <span className="nav-count">{rows.length}</span>}</button>)}</nav>
+      <nav className="nav-links" aria-label="Navigazione principale">{sections.filter(item=>profile.role==='admin'||!['settings','billing','messages'].includes(item.key)).map(item => <button key={item.key} title={item.label} aria-label={item.label} aria-current={section===item.key?"page":undefined} className={'nav-link ' + (section === item.key ? 'active' : '')} onClick={() => navigate(item.key)}><item.icon size={18} strokeWidth={1.8}/><span>{item.label}</span>{item.key === 'work' && <span className="nav-count">{rows.length}</span>}</button>)}</nav>
       <div className="nav-divider" /><span className="nav-label">DOCUMENTI E DATI</span>
-      <button className="nav-link" title="Importa Excel" aria-label="Importa Excel" onClick={()=>setShowImport(true)}><Upload size={17}/><span>Importa Excel</span></button>
       <div className="sidebar-bottom"><div className="demo-notice"><span className="notice-top"><span className="notice-led"/> {demo ? "Demo locale" : "Area riservata"}</span><p>{demo ? "Dati di esempio su questo dispositivo." : "Accesso riservato al personale abilitato."}</p></div></div>
     </aside>
     <div className="main-side">
@@ -418,7 +418,7 @@ function Workspace() {
       <main className="content">{failure && <div className="warning-strip" role="alert"><span>{failure}</span><button className="btn btn-plain" onClick={()=>download(JSON.stringify(db,null,2),'raia-modifiche-non-salvate.json','application/json')}>Esporta modifiche</button><button className="btn btn-plain" onClick={()=>{if(confirm('Ricaricare i dati salvati? Le modifiche non salvate devono essere esportate prima.'))location.reload();}}>Ricarica</button></div>}<fieldset className="workspace-fieldset" disabled={!!failure}>
         {section === 'work' && <>
           <div className="eyebrow dashboard-date">IL PUNTO SUI LAVORI <span className="eyebrow-line" />{fmtDate(today())}</div>
-          <div className="titlebar"><div><h1>Panoramica</h1><p>Organizza il lavoro. Segui ogni dettaglio.</p></div><div className="title-actions"><button className="btn btn-plain" onClick={()=>setShowImport(true)}><Upload size={16}/> Importa Excel</button><button className="btn btn-plain" onClick={() => { setNewClient({ name: '', email: '', phone: '', address: '', postalCode: '', city: '', province: '', country: 'IT', vat: '', taxCode: '', recipientCode: '', pec: '' }); setShowNewClient(true); }}><Users size={16}/> Nuovo cliente</button><button className="btn btn-primary" onClick={() => startOrder()}><Plus size={17}/> Nuovo lavoro</button></div></div>
+          <div className="titlebar overview-titlebar"><div><h1>Panoramica</h1><p>Organizza il lavoro. Segui ogni dettaglio.</p></div><MessageBoxes/><div className="title-actions"><button className="btn btn-plain" onClick={() => { setNewClient({ name: '', email: '', phone: '', address: '', postalCode: '', city: '', province: '', country: 'IT', vat: '', taxCode: '', recipientCode: '', pec: '' }); setShowNewClient(true); }}><Users size={16}/> Nuovo cliente</button><button className="btn btn-primary" onClick={() => startOrder()}><Plus size={17}/> Nuovo lavoro</button></div></div>
           <nav className="register-category-nav" aria-label="Tipo di lavorazione">{[{id:'general',label:'Lavorazioni generali'},{id:'books',label:'Libri'}].map(t=><button type="button" key={t.id} aria-pressed={category===t.id} className={category===t.id?'active':''} onClick={()=>{setCategory(t.id as WorkCategory);setSelectedWork([]);setQuick('all');}}>{t.label}<span>{rows.filter(r=>workCategory(r,r.order)===t.id).length}</span></button>)}</nav>
           <div className="metrics metrics-five">
             <button className={'metric ' + (quick === 'all' ? 'metric-chosen' : '')} onClick={() => setQuick('all')}><div className="metric-top"><span>Lavorazioni totali</span><span className="metric-icon neutral"><Layers3 size={20}/></span></div><strong>{overviewRows.length}</strong><small>Tutte le voci del registro <ArrowUpRight size={13}/></small></button>
@@ -445,6 +445,7 @@ function Workspace() {
           return <article key={c.id} className="client-card"><button type="button" className="client-edit-main" aria-label={"Modifica cliente "+c.name} onClick={()=>setEditingClient({...c})}><div className="client-card-head"><span className="company-avatar large">{initials(c.name)}</span><Pencil size={18}/></div><strong>{c.name}</strong><small>{c.email || 'Nessuna email'} </small><span className="client-contact">{[c.phone,c.address,[c.postalCode,c.city,c.province,c.country].filter(Boolean).join(" "),c.vat&&"P. IVA: "+c.vat,c.taxCode&&"CF: "+c.taxCode,c.recipientCode&&"SDI: "+c.recipientCode,c.pec&&"PEC: "+c.pec].filter(Boolean).map((value,i)=><span key={i} style={{display:"block"}}>{value}</span>)}</span><div className="client-stats"><span><b>{new Set(own.map(r => r.order.id)).size}</b> lavori</span><span><b>{own.length}</b> lavorazioni</span></div></button><div className="client-card-actions"><button type="button" className="client-open" onClick={() => { setClientFilter(c.id); setStatusFilter(''); setOperatorFilter(''); setSection('orders'); setYear(''); setMonth(''); setQuick('all'); setSearch(''); }}>Visualizza tutti i lavori <ArrowRight size={15}/></button><DeleteClient client={c} orderCount={clientOrders.length} draftCount={clientDrafts.length} canDelete={!failure&&saveStatus!=="Salvataggio…"} getRevision={getRevision} onDeleteDemo={()=>deleteClientFromDemo(c.id)}/></div></article>;
         })}</div><p className="client-delete-note">* L’eliminazione è bloccata se il cliente ha bozze di fatturazione o un account attivo nel portale clienti. In demo, non è possibile eliminare clienti con ordini collegati.</p></>}
 
+        {section === 'messages' && profile.role==='admin' && <AdminMessages/>}
         {section === 'ddt' && <DdtPanel demo={demo}/>}
         {section === 'billing' && profile.role==='admin' && <><div className="eyebrow">AMMINISTRAZIONE</div><div className="titlebar"><div><h1>Fatturazione</h1><p>Seleziona un ordine per preparare la fattura o il suo DDT.</p></div><button className="btn btn-primary" onClick={() => { setSection('work'); setQuick('unbilled'); }}><Plus size={17}/> Seleziona lavori</button></div><div className="warning-strip"><ShieldAlert size={19}/><span><strong>Fatture in Cloud.</strong> Dalla bozza puoi creare la fattura reale: verifica cliente, IVA e pagamento. La creazione non invia il documento allo SDI.</span></div><FicDocumentsPanel store={db} demo={demo}/><DocumentLauncher store={db} onOpenOrder={order=>{setDrawerWorkId(null);setDrawerOrderId(order.id);}} onPrepare={ids=>{setSelectedWork(ids);setShowDraft(true);}}/><div className="metrics metrics-three"><div className="metric"><div className="metric-top">Bozze interne <ReceiptText size={19}/></div><strong>{db.drafts.length}</strong></div><div className="metric"><div className="metric-top">Lavorazioni nelle bozze <ClipboardList size={19}/></div><strong>{rows.filter(r => r.invoiceId).length}</strong></div><div className="metric"><div className="metric-top">Importo ancora libero <Clock3 size={19}/></div><strong className="metric-euros">{money(toInvoice)}</strong></div></div><div className="workspace-card"><div className="card-top"><div><h2>Documenti preparati</h2><p>Bozze interne e fatture create in Fatture in Cloud.</p></div></div>{db.drafts.length ? db.drafts.map(draft => {
           const own = draft.workIds.map(wid => indexed.get(wid)).filter((r): r is WorkRow => !!r);
@@ -469,7 +470,6 @@ function Workspace() {
     </div>}
     {confirmUnsavedExit&&<div className="unsaved-prompt-backdrop"><section className="unsaved-prompt" role="alertdialog" aria-modal="true" aria-labelledby="unsaved-exit-title"><h3 id="unsaved-exit-title">Modifiche non salvate</h3><p>Vuoi salvare le modifiche prima di uscire?</p><div><button type="button" className="btn btn-primary" onClick={saveAndExit}>Salvare e uscire</button><button type="button" className="btn btn-plain" onClick={exitWithoutSaving}>Uscire senza salvare</button><button type="button" className="btn btn-plain" onClick={()=>setConfirmUnsavedExit(false)}>Continua a modificare</button></div></section></div>}
     {editingClient && <ClientEditor key={editingClient.id} client={editingClient} onClose={()=>setEditingClient(null)} onSave={changes=>{if(JSON.stringify([...db.clients,...(db.clientHistory||[])].find(c=>c.id===editingClient.id))!==JSON.stringify(editingClient)){notify('Il cliente è stato aggiornato nel frattempo. Copia le modifiche e riapri la scheda.');return;}updateClient(editingClient.id,changes);setEditingClient(null);notify("Dati cliente aggiornati e preparazioni di fatturazione riallineate.");}}/>}
-    {showImport && <ExcelImport store={db} onClose={()=>setShowImport(false)} onImport={next=>{setDb(next);setShowImport(false);setSearch('');setYear('');setMonth('');notify('Importazione applicata. Controlla lo stato del salvataggio in alto.');}}/>}
     {toastMessage && <div className="toast"><CheckCircle2 size={18}/>{toastMessage}<button onClick={() => setToastMessage('')}><X size={15}/></button></div>}
-  </div></OperatorHistoryContext.Provider></AdminCifraProvider></ProcessContext.Provider>;
+  </div></OperatorHistoryContext.Provider></AdminCifraProvider></ProcessContext.Provider></StaffMessagesProvider>;
 }
