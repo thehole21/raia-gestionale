@@ -16,7 +16,7 @@ export async function GET(request:Request){try{
  for(let i=0;i<(result.data||[]).length;i+=3){documents.push(...await Promise.all(result.data.slice(i,i+3).map(async(d:any)=>{
   const link=ddtInvoiceLink(d);let state:string=link.state==='linked'?'unknown':link.state,invoiceNumber='';
   if(link.id&&Date.now()<deadline){try{if(!linked.has(link.id))linked.set(link.id,ficGet(c.tokens.access_token,`/c/${c.row.company_id}/issued_documents/${link.id}?fields=id,type,number,numeration`));const invoice=(await linked.get(link.id)).data;if(invoice?.type==='invoice'){state='billed';invoiceNumber=String(invoice.number)+(invoice.numeration||'');}else state='unknown';}catch{state='unknown';}}
-  return {id:d.id,number:String(d.number)+(d.numeration||''),client:d.entity?.name||'',subject:d.visible_subject||d.subject||'',date:d.date,state,invoiceNumber};
+  return {id:d.id,number:String(d.number)+(d.numeration||''),client:d.entity?.name||'',clientId:d.entity?.id||0,subject:d.visible_subject||d.subject||'',date:d.date,state,invoiceNumber};
  })));}
  return json({documents,next:result.current_page<result.last_page?page+1:0,total:result.total});
  }catch(e){return failure(e);}}
