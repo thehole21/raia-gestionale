@@ -11,9 +11,9 @@ export function ProcessSettings({store, disabled, onSave}: {store: Store; disabl
     setProcesses(current => current.map(p => p.id === processId ? {...p, ...patch} : p));
   }
   return <section className="workspace-card settings-panel">
-    <h2>Processo</h2>
-    <p>Personalizza nomi, colore del riquadro e colore del testo. Le voci rimosse restano leggibili nei lavori già registrati.</p>
-    <form onSubmit={e => {
+    <div className="card-top"><div><h2>Processo</h2>
+    <p>Personalizza nomi, colore del riquadro e colore del testo. Le voci rimosse restano leggibili nei lavori già registrati.</p></div></div>
+    <form className="settings-editor-body" onSubmit={e => {
       e.preventDefault();
       try {
         validateProcesses(processes);

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './settings-layout.css';
 export const metadata: Metadata = {
   title: 'RAIA Workspace · Gestionale',
   description: 'Gestione lavori, clienti, ordini e bozze di fatturazione',
