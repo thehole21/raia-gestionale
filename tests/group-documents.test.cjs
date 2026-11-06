@@ -33,3 +33,10 @@ assert.equal(billingState(billWork,[{...invoice,status:'failed'}]),'draft');
 assert.equal(billingState({...billWork,invoiceId:null},[invoice]),'unbilled');
 assert.throws(()=>saveGroupDDT(next,next.orders[1],ddt),/già usato/);
 console.log('PASS: spunta solo su fattura confermata, bozze/errori esclusi e duplicati DDT bloccati.');
+
+const {groupWork,newestEntryFirst}=require('../lib/order-groups.ts');
+const dated={...base,orders:[{...order('old','2026-11-05'),executionDate:'2026-11-20'},order('new','2026-11-06'),order('unknown','')]};
+const datedRows=flatten(dated);
+assert.deepEqual(groupWork(datedRows,datedRows).map(g=>g.key),['new','old','unknown']);
+assert.deepEqual([...dated.orders].sort(newestEntryFirst).map(o=>o.id),['new','old','unknown']);
+console.log('PASS chronology follows entry date, not execution date; undated orders last.');

@@ -65,7 +65,7 @@ import { OverviewRegister } from '@/src/components/overview-register';
 import type { PendingEditChange } from '@/lib/pending-edits';
 import { WorkGroups } from '@/src/components/work-groups';
 import { OrderDates } from '@/src/components/order-dates';
-import { overallStatus, executionDay, planningPeriod, matchesPeriod, workPeriods, orderRegistrationNumbers } from '@/lib/order-groups';
+import { overallStatus, newestEntryFirst, planningPeriod, matchesPeriod, workPeriods, orderRegistrationNumbers } from '@/lib/order-groups';
 import {sharedDDT,changeGroupDates,saveGroupDDT,inheritGroupDDT,groupInvoiceRows,prepareGroupDraft} from '@/lib/group-documents';
 import { DeliveryNoteSection } from '@/src/components/delivery-note';
 import { prepareInvoice, draftRows } from '@/lib/billing';
@@ -206,7 +206,7 @@ function Workspace() {
     if (quick === 'unbilled' && isInvoiced(r)) return false;
     if (quick === 'delivered' && r.status !== 'Consegnato') return false;
     return true;
-  }).sort((a, b) => executionDay(b.order).localeCompare(executionDay(a.order)) || b.order.number.localeCompare(a.order.number)), [overviewRows, searchTerm, titleSearchIndex, quick, solicitedByOrder]);
+  }).sort((a, b) => newestEntryFirst(a.order,b.order)), [overviewRows, searchTerm, titleSearchIndex, quick, solicitedByOrder]);
   const selected = useMemo(()=>{const ids=new Set(selectedWork);return rows.filter(r=>ids.has(r.id)&&!isInvoiced(r));},[rows,selectedWork]);
   const selectedClients = new Set(selected.map(r => r.client.id));
   const validSelected = selected.length > 0 && selectedClients.size === 1;

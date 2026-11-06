@@ -7,6 +7,7 @@ export function orderRegistrationNumbers(orders:Order[]):Map<string,number>{
  return new Map(registered.map((order,index)=>[order.id,index+1]));
 }
 export const executionDay=(order:Order)=>order.executionDate || order.created;
+export const newestEntryFirst=(a:Order,b:Order)=>(b.created||'').localeCompare(a.created||'')||b.id.localeCompare(a.id);
 export const orderGroupKey=(order:Order)=>order.id;
 export const orderTitle=(order:Order)=>order.title?.trim() || 'Senza titolo';
 export const planningPeriod=(order:Order)=>order.planningMonth || executionDay(order).slice(0,7);
@@ -30,7 +31,7 @@ export function groupWork(all:WorkRow[],visible:WorkRow[]) {
  for(const r of all){if(!visibleOrders.has(r.order.id))continue;const date=executionDay(r.order);const key=orderGroupKey(r.order);
   let group=map.get(key);if(!group){group={key,date,isExecution:!!r.order.executionDate,client:r.client,rows:[],visible:[]};map.set(key,group);}group.rows.push(r);if(visibleIds.has(r.id))group.visible.push(r);
  }
- return [...map.values()].filter(g=>g.visible.length).sort((a,b)=>b.date.localeCompare(a.date)||a.client.name.localeCompare(b.client.name,'it'));
+ return [...map.values()].filter(g=>g.visible.length).sort((a,b)=>newestEntryFirst(a.rows[0].order,b.rows[0].order));
 }
 
 export const statusText=(status:string)=>status==='In Stampa'?'In stampa':status==='In attesa File'?'In attesa file':status;
