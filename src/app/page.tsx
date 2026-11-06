@@ -72,7 +72,7 @@ import {Suppliers} from '@/src/components/suppliers';
 import {SupplierSelect} from '@/src/components/supplier-select';
 import {suppliersOf} from '@/lib/suppliers';
 type Section = 'work' | 'orders' | 'clients' | 'suppliers' | 'billing' | 'estimator' | 'settings';
-type FilterType = 'all' | 'active' | 'solicited' | 'planned' | 'working' | 'ready' | 'unbilled' | 'delivered' | 'cancelled';
+type FilterType = 'quote' | 'all' | 'active' | 'solicited' | 'planned' | 'working' | 'ready' | 'unbilled' | 'delivered' | 'cancelled';
 type NewLine = { operatorIds?:string[]; supplier: string; key: string; description: string; qty: string; unit: string; price: string; status: Status; operatorId: string };
 const DATA_KEY = 'raia_workspace_v2_next_demo';
 const OLD_DATA_KEY = 'raia_workspace_v1_2026';
@@ -193,6 +193,7 @@ function Workspace() {
   const hasWorkTerm = (r: WorkRow, term: string) => [r.description, r.order.title, r.client.name, r.order.number, workDdtNumber(r,r.order), r.operator.name, processLabel(db,r.status), r.order.notes, r.notes, r.order.created, r.order.executionDate, r.production?.supplier, r.production?.ddtNumber, r.production?.delivery, r.production?.invoicing, r.production?.section, r.production?.category, r.production?.comments].join(' ').toLocaleLowerCase('it').includes(term);
   const filtered = useMemo(() => overviewRows.filter(r => {
     if (search.trim() && ![r.order.title, r.description].join(' ').toLocaleLowerCase('it').includes(search.trim().toLocaleLowerCase('it'))) return false;
+    if (quick === 'quote' && r.status !== 'Preventivo') return false;
     if (quick === 'active' && isWorkClosed(r)) return false;
     if (quick === 'solicited' && !isOrderSolicited(r.order, now)) return false;
     if (quick === 'planned' && !isPlanned(r)) return false;
@@ -416,11 +417,12 @@ function Workspace() {
           <div className="eyebrow dashboard-date">IL PUNTO SUI LAVORI <span className="eyebrow-line" />{fmtDate(today())}</div>
           <div className="titlebar"><div><h1>Panoramica</h1><p>Organizza il lavoro. Segui ogni dettaglio.</p></div><div className="title-actions"><button className="btn btn-plain" onClick={()=>setShowImport(true)}><Upload size={16}/> Importa Excel</button><button className="btn btn-plain" onClick={() => { setNewClient({ name: '', email: '', phone: '', address: '', postalCode: '', city: '', province: '', country: 'IT', vat: '', taxCode: '', recipientCode: '', pec: '' }); setShowNewClient(true); }}><Users size={16}/> Nuovo cliente</button><button className="btn btn-primary" onClick={() => startOrder()}><Plus size={17}/> Nuovo lavoro</button></div></div>
           <nav className="register-category-nav" aria-label="Tipo di lavorazione">{[{id:'general',label:'Lavorazioni generali'},{id:'books',label:'Libri'}].map(t=><button type="button" key={t.id} aria-pressed={category===t.id} className={category===t.id?'active':''} onClick={()=>{setCategory(t.id as WorkCategory);setSelectedWork([]);setQuick('all');}}>{t.label}<span>{rows.filter(r=>workCategory(r,r.order)===t.id).length}</span></button>)}</nav>
-          <div className="metrics metrics-four">
+          <div className="metrics metrics-five">
             <button className={'metric ' + (quick === 'all' ? 'metric-chosen' : '')} onClick={() => setQuick('all')}><div className="metric-top"><span>Lavorazioni totali</span><span className="metric-icon neutral"><Layers3 size={20}/></span></div><strong>{overviewRows.length}</strong><small>Tutte le voci del registro <ArrowUpRight size={13}/></small></button>
             <button className={'metric ' + (quick === 'active' ? 'metric-chosen' : '')} onClick={() => setQuick('active')}><div className="metric-top"><span>Lavori da seguire</span><span className="metric-icon orange"><Clock3 size={20}/></span></div><strong>{totalPending}</strong><small>Ancora in corso <ArrowUpRight size={13}/></small></button>
             <button className={'metric ' + (quick === 'planned' ? 'metric-chosen' : '')} onClick={() => setQuick('planned')}><div className="metric-top"><span>In programma</span><span className="metric-icon blue"><CalendarDays size={20}/></span></div><strong>{planned}</strong><small>Bozza, procedere e da elaborare <ArrowUpRight size={13}/></small></button>
             <button className={'metric ' + (quick === 'solicited' ? 'metric-chosen' : '')} onClick={() => setQuick('solicited')}><div className="metric-top"><span>Ordini Sollecitati</span><span className="metric-icon orange"><AlertTriangle size={20}/></span></div><strong>{solicitedOrders}</strong><small>Ordini segnalati <ArrowUpRight size={13}/></small></button>
+            <button type="button" aria-pressed={quick==='quote'} className={'metric '+(quick==='quote'?'metric-chosen':'')} onClick={()=>{setSearch('');setQuick('quote');}}><div className="metric-top"><span>Preventivo</span><span className="metric-icon orange"><FileText size={20}/></span></div><strong>{new Set(overviewRows.filter(r=>r.status==='Preventivo').map(r=>r.order.id)).size}</strong><small>Ordini con processo Preventivo <ArrowUpRight size={13}/></small></button>
           </div>
           <div className="workspace-card">
             <div className="card-top"><div><h2>{category==='books'?'Registro libri':'Registro lavorazioni generali'} {quick!=='cancelled'&&<span className="head-count">{filtered.length}</span>}</h2><p>Ogni ordine ha le proprie righe, anche per lo stesso cliente nella stessa giornata.</p></div><button disabled={quick==='cancelled'} className="btn btn-small btn-plain" onClick={exportCSV}><Download size={15}/> Esporta CSV</button></div>
