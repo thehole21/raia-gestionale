@@ -24,9 +24,7 @@ begin
  where client_data.value->>'id'=target_client_id;
  if target_client is null then raise exception 'NOT_FOUND'; end if;
 
- if exists(select 1 from public.raia_customers c where c.client_id=target_client_id) then
-  raise exception 'CUSTOMER_PORTAL_LINKED';
- end if;
+
 
  if exists(
   select 1

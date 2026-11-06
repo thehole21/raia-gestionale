@@ -6,7 +6,7 @@ Il NAS ospita l'app Next.js in un container Docker di produzione, con riavvio au
 
 In ufficio si apre l'indirizzo del gestionale dal browser. Da fuori si attiva una VPN privata e si usa lo stesso indirizzo. Il NAS e la connessione aziendale devono restare disponibili. Vercel si disattiva solo dopo aver verificato login, recupero password, documenti e accesso remoto sul nuovo ambiente.
 
-La sezione clienti /clienti e il preventivatore pubblico devono restare su un hosting pubblico, per esempio insieme al sito principale. I clienti esterni non devono entrare nella VPN aziendale. Le funzioni cloud possono ricevere webhook senza aprire l'amministrazione del NAS a Internet.
+Il portale pubblico clienti è stato rimosso. Il gestionale può restare sulla rete aziendale/VPN; non richiede un accesso pubblico per clienti esterni.
 
 ## Informazioni necessarie del NAS e della rete
 

@@ -1,5 +1,5 @@
 import type {SupabaseClient} from '@supabase/supabase-js';
-import type {BookSpec} from './portal';
+import type {BookSpec} from './book-spec';
 export async function validPdf(file:File){return file.size<=20*1024*1024&&new TextDecoder().decode(await file.slice(0,5).arrayBuffer())==='%PDF-';}
 export async function uploadExtraBooks(client:SupabaseClient,userId:string,rid:string,spec:BookSpec,files:Record<number,{book?:File;cover?:File}>){
  const additionalBooks=[];

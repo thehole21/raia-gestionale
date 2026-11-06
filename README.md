@@ -54,39 +54,27 @@ Eseguire anche database/supabase-order-deletion.sql. La cancellazione verifica p
 
 ## Eliminazione clienti
 
-Per abilitare l'eliminazione cliente nel progetto Supabase già collegato, applicare una sola volta `database/delete-client.sql` nel SQL Editor. Il comando verifica admin, password e revisione corrente in una singola transazione. Archivia tutti gli ordini non collegati a bozze in `raia_deleted_orders`, propaga l'annullamento alle richieste del portale, poi rimuove l'anagrafica. Se ci sono bozze collegate oppure un account del portale, l'operazione viene bloccata per non lasciare riferimenti o accessi orfani. In demo è possibile rimuovere solo clienti senza ordini e bozze. Gli ordini singoli mantengono la procedura di annullamento/archiviazione già esistente. Il test SQL della cancellazione cliente è in `tests/client-deletion.integration.sql` e va eseguito dopo la migrazione su un progetto di test.
+Per abilitare l'eliminazione cliente nel progetto Supabase già collegato, applicare una sola volta `database/delete-client.sql` nel SQL Editor. Il comando verifica admin, password e revisione corrente in una singola transazione. Archivia tutti gli ordini non collegati a bozze in `raia_deleted_orders`, propaga l'annullamento alle richieste del portale, poi rimuove l'anagrafica. Se ci sono bozze collegate, l'operazione viene bloccata per non lasciare riferimenti o accessi orfani. In demo è possibile rimuovere solo clienti senza ordini e bozze. Gli ordini singoli mantengono la procedura di annullamento/archiviazione già esistente. Il test SQL della cancellazione cliente è in `tests/client-deletion.integration.sql` e va eseguito dopo la migrazione su un progetto di test.
 
 ## Progetto Supabase collegato
 Progetto wqhnjmzincfoussybyxd (Raia S.R.L.), regione eu-west-1. Schema e bucket privato applicati tramite migrazione remota. Le operazioni account e cancellazione usano la Edge Function raia-admin con JWT obbligatorio, getUser e controllo profilo attivo. Non occorre più una service-role key in .env.local. I vecchi script SQL di setup sono storici: non rieseguirli sul progetto configurato. database/deployed-schema-reference.sql rappresenta lo schema applicato. Primo amministratore in attesa di creazione account Auth da parte del titolare.
 
 
-## Area clienti e preventivatore (ottobre 2026)
+## Portale pubblico rimosso (novembre 2026)
 
-Percorso locale: /clienti. Il gestionale operatori resta su /. Stesso progetto, schermate e sessioni browser separate (storageKey raia-customer-session). Non basta nascondere le schermate: RLS impedisce ai clienti di accedere al workspace e ai dati/PDF di altri clienti.
-
-- Registrazione email/password con anagrafica; il trigger crea un cliente nel workspace in modo atomico. I metadati di registrazione contengono solo dati anagrafici, mai ruoli staff. L’invio richiede email confermata.
-- Specifiche libro, due PDF privati immutabili (20 MB ciascuno), anteprima del PDF originale. Non è un motore di impaginazione, verifica automatica delle pagine o preflight tipografico.
-- Conferma richiesta via RPC atomica/idempotente: una richiesta, un lavoro, un collegamento al cliente. Prezzi ancora da definire: nessun listino fittizio, pagamento o preventivo economico vincolante.
-- Il gestionale rilegge gli aggiornamenti ogni 15 secondi quando non ha modifiche in salvataggio; il controllo revisioni protegge da sovrascritture. La barra cliente viene aggiornata ogni 15 secondi.
-- Il personale conferma l’ordine dal dettaglio Richiesta cliente; gli stati di produzione interna sono indipendenti dalla barra cliente.
-- Tracking: corriere e codice salvabili; funzione server-only raia_tracking_event pronta, con verifica abbinamento, idempotenza e protezione dagli eventi fuori ordine. Nessun corriere è connesso: inserire un numero NON attiva ancora aggiornamenti automatici. Collegare un adapter che verifichi firma webhook, normalizzi gli eventi e richiami la funzione con credenziale server. Non esporre mai service_role al browser.
-
-Prima dell’apertura pubblica configurare Supabase Auth: registrazione email abilitata, conferma email, URL Site e redirect consentiti per /clienti e /clienti?reset=1 (in sviluppo http://localhost:3000, in produzione dominio HTTPS scelto). Configurare SMTP per inviare conferme e recuperi ai clienti esterni; verificare un ciclo reale registrazione → email → login → due upload → invio. Il servizio email predefinito non va assunto come pronto per invii pubblici. Configurare informative e condizioni aziendali con i testi effettivi prima del lancio.
-
-DDL applicato: database/customer-portal.sql. Test di integrazione SQL eseguito in transazione con ROLLBACK: registrazione automatica, isolamento dati/PDF tra due clienti, invio idempotente, arrivo nel workspace, rifiuto conferma da cliente, conferma staff, tracking riservato al server, eventi duplicati e fuori ordine. Nessun account/file di prova è rimasto. Il test SQL non sostituisce la prova di consegna delle email e upload binario attraverso Auth/Storage.
-
-Loghi originali in public/images, utilizzati su login, registrazione, sidebar, intestazione e footer clienti; monogramma anche come icona del sito.
-
+Il percorso /clienti non esiste più. Il gestionale, la sua anagrafica Clienti e il preventivatore staff restano disponibili. Le specifiche e i PDF dei lavori esistenti sono conservati, accessibili solo allo staff.
+La migrazione `supabase/review/remove-customer-portal.sql` rimuove registrazione automatica, invio richieste e tracking del portale; archivia le tabelle dedicate nello schema privato senza cancellare dati storici. Il bucket mantiene il nome storico `raia-customer-files`, ma è riservato allo staff.
+Gli script SQL storici e i test del vecchio portale non descrivono più lo schema corrente e non devono essere rieseguiti. La migrazione di rimozione va applicata per ultima su un ripristino storico.
 
 ### Assegnazioni e annullamento
 Ruolo di accesso e assegnazione sono indipendenti: operatori e amministratori attivi entrano nell’elenco tramite trigger del database. Gli ordini manuali e le nuove righe preselezionano l’utente collegato; la scelta resta modificabile. Il profilo personale con titolo Tecnico conserva role=admin e tutti i permessi, ma viene escluso dalle assegnazioni anche lato database.
 
-Annullamento disponibile nel dettaglio del lavoro e della lavorazione per tutti gli account staff attivi, con conferma esplicita e password. L’ordine passa nell’archivio di Panoramica → Ordini annullati, con anagrafica cliente e nome di chi annulla conservati al momento dell’operazione. Una bozza di fatturazione collegata deve essere rimossa prima. Il cliente vede Ordine annullato; conferme o eventi di tracking successivi non possono riattivarlo. Email rinviata su richiesta del titolare: nessun invio viene dichiarato o effettuato.
+Annullamento disponibile nel dettaglio del lavoro e della lavorazione per tutti gli account staff attivi, con conferma esplicita e password. L’ordine passa nell’archivio di Panoramica → Ordini annullati, con anagrafica cliente e nome di chi annulla conservati al momento dell’operazione. Una bozza di fatturazione collegata deve essere rimossa prima.  Email rinviata su richiesta del titolare: nessun invio viene dichiarato o effettuato.
 
 Test SQL ripetibile con ROLLBACK: tests/cancellation.integration.sql. Verifica anche inserimento amministratore nelle assegnazioni, esclusione Tecnico, archivio e stato terminale. Sidebar desktop comprimibile a icone con preferenza locale; menu mobile indipendente.
 
 
 ### Preventivatore staff e layout adattivi
-Menu Preventivatore prima di Impostazioni. Inserimento per qualsiasi cliente dell’anagrafica, anche senza account portale: richiede due PDF e crea un ordine confirmed con lavorazione Da elaborare. Per un cliente già registrato, richiesta e PDF sono visibili nel suo portale. Conferma staff verificata lato database: i clienti non possono chiamare questo percorso. Assegnazione predefinita al creatore, modificabile; Tecnico escluso. Listino economico ancora da definire. Schema: database/staff-quote.sql; test transazionale con rollback: tests/staff-quote.integration.sql.
+Menu Preventivatore prima di Impostazioni. Inserimento per qualsiasi cliente dell’anagrafica, anche senza account portale: richiede due PDF e crea un ordine confirmed con lavorazione Da elaborare. Specifiche e PDF sono riservati allo staff. Conferma staff verificata lato database: i clienti non possono chiamare questo percorso. Assegnazione predefinita al creatore, modificabile; Tecnico escluso. Listino economico ancora da definire. Schema: database/staff-quote.sql; test transazionale con rollback: tests/staff-quote.integration.sql.
 
 Impostazioni organizzate in Il mio account, Utenti e permessi, Backup e dati; eliminata la scheda Nominativi. Layout adattivi per login, registrazione, dashboard, impostazioni, moduli e preventivatori. Form a colonna su mobile, target touch e tabelle scorrevoli. Build e controlli TypeScript passati; verifica visiva su telefono ancora da completare perché la scheda browser integrata era una pagina di errore data: non accessibile al controllo UI.

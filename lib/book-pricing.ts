@@ -1,4 +1,4 @@
-import type { BookSpec, BookItem } from './portal';
+import type { BookSpec, BookItem } from './book-spec';
 // Enable after the reviewed Supabase migration is applied and submission tests pass.
 export const BOOK_SUBMISSION_ENABLED=false;
 export const PRICE_VERSION='raia-libri-2026-03-v1';

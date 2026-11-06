@@ -3,7 +3,7 @@ const root=process.env.RAIA_PROJECT||path.resolve(__dirname,'..');
 const ts=require(path.join(root,'node_modules/typescript'));
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,file);
 const {bookPrice,baseBookUnit,IVORY,COVER_COATED,COVER_MARKED}=require(path.join(root,'lib/book-pricing.ts'));
-const {emptySpec}=require(path.join(root,'lib/portal.ts'));
+const {emptySpec}=require(path.join(root,'lib/book-spec.ts'));
 const fixtures=JSON.parse(fs.readFileSync(path.join(__dirname,'book-price-fixtures.json'),'utf8')).fixtures;
 const specs=[];
 for(const f of fixtures){

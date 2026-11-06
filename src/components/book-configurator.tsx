@@ -1,5 +1,5 @@
 'use client';
-import {type BookSpec,type BookItem,emptySpec} from '@/lib/portal';
+import {type BookSpec,type BookItem,emptySpec} from '@/lib/book-spec';
 import {bookPrice,baseBookUnit,COVER_COATED,COVER_MARKED,IVORY,DISCOUNTS,PRICE_VERSION,type BookPrice} from '@/lib/book-pricing';
 import {money} from '@/lib/data';
 export type ExtraFiles=Record<number,{book?:File;cover?:File}>;

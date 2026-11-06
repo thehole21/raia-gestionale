@@ -3,7 +3,7 @@ import {SearchableSelect} from './searchable-select';
 import {useEffect,useState,type FormEvent} from 'react';
 import {cloud} from '@/lib/supabase';
 import {type Store} from '@/lib/data';
-import {emptySpec,specLabels,type BookSpec} from '@/lib/portal';
+import {emptySpec,specLabels,type BookSpec} from '@/lib/book-spec';
 import {useAccess} from './access';
 import {BookConfigurator,BookPriceSummary,EstimatorSections,ObjectsPlaceholder,type ExtraFiles} from '@/src/components/book-configurator';
 import {bookPrice,BOOK_SUBMISSION_ENABLED} from '@/lib/book-pricing';

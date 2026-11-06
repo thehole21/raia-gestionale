@@ -22,7 +22,7 @@ Deno.serve(async req=>{
   const deleted=await service.rpc("raia_delete_client",{target_client_id:body.clientId,actor_id:user.id,expected_revision:body.expectedRevision});
   if(deleted.error){
    const m=deleted.error.message;
-   return reply({error:m.includes("DRAFT_LINKED")?"Cliente collegato a una bozza di fatturazione: rimuovila prima di eliminare il cliente.":m.includes("CUSTOMER_PORTAL_LINKED")?"Cliente collegato a un account del portale clienti: l’eliminazione non è disponibile finché l’account è attivo.":m.includes("CONFLICT")?"Dati aggiornati da un altro operatore. Ricarica prima di eliminare il cliente.":m.includes("NOT_FOUND")?"Cliente non trovato. Ricarica i dati e riprova.":"Eliminazione non riuscita."},409);
+   return reply({error:m.includes("DRAFT_LINKED")?"Cliente collegato a una bozza di fatturazione: rimuovila prima di eliminare il cliente.":m.includes("CONFLICT")?"Dati aggiornati da un altro operatore. Ricarica prima di eliminare il cliente.":m.includes("NOT_FOUND")?"Cliente non trovato. Ricarica i dati e riprova.":"Eliminazione non riuscita."},409);
   }
   return reply({ok:true});
  }
