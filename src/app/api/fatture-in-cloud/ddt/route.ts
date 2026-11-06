@@ -1,3 +1,4 @@
+import {inspectDdt} from '@/lib/fic-ddt-management';
 import {matchesRequestedDocument} from '@/lib/fic-document-match';
 import {orderRegistrationNumbers} from '@/lib/order-groups';
 import {randomUUID} from 'node:crypto';
@@ -26,6 +27,8 @@ export async function GET(request:Request){try{
   if(error||!op)throw new FicError('DDT non trovato.');
   const remoteId=op.remote_id||Number(q.get('remoteId'));
   if(!Number.isSafeInteger(remoteId)||remoteId<1)throw new FicError('Esito da verificare in Fatture in Cloud: inserisci l’ID del documento se già presente.',409);
+  if(op.company_id!==c.row.company_id)throw new FicError('Seleziona la stessa azienda del DDT.',409);
+  if(op.remote_id){const verified=await inspectDdt(ctx,c.tokens.access_token,op.company_id,op.remote_id);if(verified.removed)return json(verified);}
   const doc=(await ficGet(c.tokens.access_token,`/c/${op.company_id}/issued_documents/${remoteId}`)).data;
   if(!op.remote_id&&!matchesRequestedDocument(doc,op.request_data))throw new FicError('DDT non corrispondente alla richiesta.');
   const number=String(doc.number)+(doc.numeration||'');
