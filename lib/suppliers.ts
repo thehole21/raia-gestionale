@@ -24,9 +24,15 @@ const supplierGroups=[
  {label:'Blu',background:'#164c92',foreground:'#ffffff',names:['makito','stamina','roly','valento','imaco','promit']},
  {label:'In Casa',background:'#399eff',foreground:'#101c2b',names:['In Casa']},
 ];
-export function supplierAppearance(name:string){
- const key=colorKey(name);
- for(let group=0;group<supplierGroups.length;group++){const spec=supplierGroups[group],position=spec.names.findIndex(n=>colorKey(n)===key);if(position>=0)return {group:String(group),groupLabel:spec.label,background:spec.background,foreground:spec.foreground,rank:group*100+position};}
- return {group:'other',groupLabel:'Altri fornitori',background:'#f4f3f5',foreground:'#38353b',rank:10000};
-}
+const otherAppearance={group:'other',groupLabel:'Altri fornitori',background:'#f4f3f5',foreground:'#38353b',rank:10000};
+const appearanceByName=new Map(supplierGroups.flatMap((spec,group)=>spec.names.map((name,position)=>[colorKey(name),{group:String(group),groupLabel:spec.label,background:spec.background,foreground:spec.foreground,rank:group*100+position}] as const)));
+export function supplierAppearance(name:string){return appearanceByName.get(colorKey(name))||otherAppearance;}
 export function sortSuppliers(suppliers:Supplier[]):Supplier[]{return [...suppliers].sort((a,b)=>supplierAppearance(a.name).rank-supplierAppearance(b.name).rank);}
+
+type SupplierOption={id:string;name:string}&ReturnType<typeof supplierAppearance>;
+const optionCache=new WeakMap<Supplier[],SupplierOption[]>();
+export function supplierOptions(suppliers:Supplier[]):SupplierOption[]{
+ const cached=optionCache.get(suppliers);if(cached)return cached;
+ const options=sortSuppliers(suppliers.filter(s=>s.active)).map(s=>({id:s.name,name:s.name,...supplierAppearance(s.name)}));
+ optionCache.set(suppliers,options);return options;
+}

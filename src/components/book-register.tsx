@@ -1,4 +1,6 @@
 'use client';
+import {useOrderWindow} from './order-window';
+import {useMemo} from 'react';
 import {ProcessSelect, ProcessBadge} from './process-controls';
 import {SearchableSelect} from './searchable-select';
 import {workDdtNumber} from '@/lib/delivery-selection';
@@ -19,9 +21,10 @@ import {isOrderSolicited} from '@/lib/order-solicitation';
 import {DeleteOrder} from './delete-order';
 const columns=['N.','Cliente','Data ingresso','Orario ingresso','Titolo lavoro','Copie','Operatore','Fornitori','Processo','Commenti','Consegna richiesta','Urgenza','Orario uscita','DDT','Terminato','Fatturato','Modalità consegna'];
 function BookRegisterView({suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,canDelete,getRevision,now}:{suppliers:Supplier[];interactionVersion:string;renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;canDelete:boolean;getRevision:()=>number;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;now:number}){
- const groups=groupWork(all,visible);
+ const groups=useMemo(()=>groupWork(all,visible),[all,visible]);
+ const {shown,footer}=useOrderWindow(groups);
  const change=(r:WorkRow,patch:Partial<ReturnType<typeof bookProduction>>)=>onUpdate(r.id,{production:{...bookProduction(r,r.order),...patch}});
- return <div className="overview-register books-register"><div className="register-toolbar"><span>{visible.length} libri · {groups.length} ordini</span></div>{groups.map(g=>{
+ return <div className="overview-register books-register"><div className="register-toolbar"><span>{visible.length} libri · {groups.length} ordini</span></div>{shown.map(g=>{
   const main=g.visible[0];
   return <section className="register-group" key={g.key}><button type="button" className="register-group-heading" onClick={()=>onOpen(main)}><span className="register-company"><small>CLIENTE · LIBRI</small><strong>{g.client.name}</strong></span><ProcessBadge className="register-overall" status={overallStatus(g.rows)}/><span className="register-group-action">Dettagli ordine <ChevronRight size={18}/></span></button>{g.visible.length<g.rows.length&&<p className="register-filter-note">{g.visible.length} di {g.rows.length} libri corrispondono ai filtri. Stato generale calcolato sull’intero ordine.</p>}
   <div className="book-register-scroll" tabIndex={0} role="region" aria-label={'Registro libri di '+g.client.name}><table className="book-register-table"><caption className="sr-only">Registro libri di {g.client.name}</caption><thead><tr><th aria-label="Selezione"/>{columns.map(c=><th key={c}>{c}</th>)}<th aria-label="Dettagli"/></tr></thead><tbody>{g.visible.map((r,i)=>{
@@ -45,7 +48,7 @@ function BookRegisterView({suppliers,renderActions,renderDelete,onTitleSave,all,
     <td data-label="Fatturato"><BillingMark rows={[r]}/></td><td data-label="Modalità consegna"><DeliveryEditor row={r} onUpdate={onUpdate}/></td><td data-label="Dettagli"><button type="button" className="icon-btn" aria-label={'Apri '+r.description} onClick={()=>onOpen(r)}><ArrowUpRight size={17}/></button></td>
    </tr></Fragment>;
   })}</tbody></table></div></section>;
- })}</div>;
+ })}{footer}</div>;
 }
 
 export const BookRegister=memo(BookRegisterView);

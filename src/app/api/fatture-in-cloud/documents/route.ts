@@ -25,8 +25,8 @@ export async function GET(request:Request){try{
  if(mode==='document'){const doc=(await ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/issued_documents/${id(q.get('id'))}`)).data;return json({data:doc});}
  const type=q.get('type')||'quote';if(!documentTypes[type])throw new FicError('Tipo documento non valido.');
  if(mode==='editor'){
-  const info=(await ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/issued_documents/info?type=${type}`)).data;
-  const transformed=q.get('sourceId')?await sourceData(ctx,id(q.get('sourceId')),type):null;
+  const [metadata,transformed]=await Promise.all([ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/issued_documents/info?type=${type}`),q.get('sourceId')?sourceData(ctx,id(q.get('sourceId')),type):Promise.resolve(null)]);
+  const info=metadata.data;
   return json({info,data:transformed?.data,source:transformed?.source,companyId:ctx.company});
  }
  const page=Math.max(1,Math.min(100000,Number(q.get('page'))||1));

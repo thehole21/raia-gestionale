@@ -34,11 +34,14 @@ export async function GET(request:Request){try{
   if(finish)throw new FicError('Documento trovato; riprova per aggiornare il gestionale.');
   return json({created:true,number,url:doc.url});
  }
- const {data:ops,error:opsError}=await ctx.db.from('raia_fic_deliveries').select('id,work_ids,status,remote_id,remote_number,updated_at').eq('order_id',orderId).neq('status','failed').order('updated_at');if(opsError)throw opsError;
- const {data:old,error:oldError}=await ctx.db.from('raia_fic_ddts').select('status,remote_id,remote_number').eq('order_id',orderId).neq('status','failed').maybeSingle();if(oldError)throw oldError;
- const documents=[...(ops||[]),...(old?[{...old,id:'legacy',work_ids:order.lines.map(w=>w.id)}]:[])];
  const client=store.clients.find(v=>v.id===order.clientId)||store.clientHistory?.find(v=>v.id===order.clientId);
- const selectedClient=await resolveFicClient(c.tokens.access_token,c.row.company_id,client);
+ const [opsResult,oldResult,selectedClient]=await Promise.all([
+  ctx.db.from('raia_fic_deliveries').select('id,work_ids,status,remote_id,remote_number,updated_at').eq('order_id',orderId).neq('status','failed').order('updated_at'),
+  ctx.db.from('raia_fic_ddts').select('status,remote_id,remote_number').eq('order_id',orderId).neq('status','failed').maybeSingle(),
+  resolveFicClient(c.tokens.access_token,c.row.company_id,client)
+ ]);
+ if(opsResult.error)throw opsResult.error;if(oldResult.error)throw oldResult.error;
+ const documents=[...(opsResult.data||[]),...(oldResult.data?[{...oldResult.data,id:'legacy',work_ids:order.lines.map(w=>w.id)}]:[])];
  return json({companyId:c.row.company_id,companyName:c.row.companies.find((v:any)=>v.id===c.row.company_id)?.name,revision:ws.revision,client:selectedClient,clientName:client?.name,documents,lines:order.lines.map(w=>({id:w.id,description:w.description,qty:w.qty,unit:w.unit,ddt:workDdtNumber(w,order),reserved:documents.some(d=>d.work_ids.includes(w.id))}))});
 }catch(e){return failure(e);}}
 export async function POST(request:Request){let ctx:Awaited<ReturnType<typeof ddtContext>>|undefined;let claimed=false,operationId='';try{

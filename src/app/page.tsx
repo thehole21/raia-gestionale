@@ -180,29 +180,30 @@ function Workspace() {
   const orderNumbers = useMemo(() => orderRegistrationNumbers(db.orders), [db.orders]);
   const overviewRows = useMemo(()=>rows.filter(r=>workCategory(r,r.order)===category),[rows,category]);
   const indexed = useMemo(() => new Map(rows.map(r => [r.id, r])), [rows]);
-  const totalPending = overviewRows.filter(r => !isWorkClosed(r)).length;
-  const solicitedOrders = new Set(overviewRows.filter(r => isOrderSolicited(r.order, now)).map(r => r.order.id)).size;
   const isPlanned = (r:WorkRow) => !isWorkClosed(r) && ['Bozza','Procedere','Da elaborare'].includes(r.status);
-  const planned = overviewRows.filter(isPlanned).length;
-  const inProgress = overviewRows.filter(r => ['In lavorazione','In Stampa','In allestimento'].includes(r.status)).length;
-  const ready = overviewRows.filter(r => r.status === 'Pronto' || r.status === 'Elaborato').length;
-  const uninvoicedRows = rows.filter(r => !isInvoiced(r));
-  const toInvoice = uninvoicedRows.reduce((s, r) => s + sumWork(r), 0);
-  const overdue = rows.filter(r => !isWorkClosed(r) && r.order.due && r.order.due < today()).length;
+  const solicitedByOrder=useMemo(()=>new Map(db.orders.map(order=>[order.id,isOrderSolicited(order,now)])),[db.orders,now]);
+  const {totalPending,solicitedOrders,planned,inProgress,ready,quoteOrders}=useMemo(()=>{
+    let totalPending=0,planned=0,inProgress=0,ready=0;const solicited=new Set<string>(),quotes=new Set<string>();
+    for(const r of overviewRows){if(!isWorkClosed(r))totalPending++;if(isPlanned(r))planned++;if(['In lavorazione','In Stampa','In allestimento'].includes(r.status))inProgress++;if(['Pronto','Elaborato'].includes(r.status))ready++;if(solicitedByOrder.get(r.order.id))solicited.add(r.order.id);if(r.status==='Preventivo')quotes.add(r.order.id);}
+    return {totalPending,planned,inProgress,ready,solicitedOrders:solicited.size,quoteOrders:quotes.size};
+  },[overviewRows,solicitedByOrder]);
+  const toInvoice=useMemo(()=>rows.reduce((sum,r)=>isInvoiced(r)?sum:sum+sumWork(r),0),[rows]);
+  const titleSearchIndex=useMemo(()=>new Map(rows.map(r=>[r.id,[r.order.title,r.description].join(' ').toLocaleLowerCase('it')])),[rows]);
+  const searchTerm=search.trim().toLocaleLowerCase('it');
   const hasWorkTerm = (r: WorkRow, term: string) => [r.description, r.order.title, r.client.name, r.order.number, workDdtNumber(r,r.order), r.operator.name, processLabel(db,r.status), r.order.notes, r.notes, r.order.created, r.order.executionDate, r.production?.supplier, r.production?.ddtNumber, r.production?.delivery, r.production?.invoicing, r.production?.section, r.production?.category, r.production?.comments].join(' ').toLocaleLowerCase('it').includes(term);
   const filtered = useMemo(() => overviewRows.filter(r => {
-    if (search.trim() && ![r.order.title, r.description].join(' ').toLocaleLowerCase('it').includes(search.trim().toLocaleLowerCase('it'))) return false;
+    if (searchTerm && !titleSearchIndex.get(r.id)?.includes(searchTerm)) return false;
     if (quick === 'quote' && r.status !== 'Preventivo') return false;
     if (quick === 'active' && isWorkClosed(r)) return false;
-    if (quick === 'solicited' && !isOrderSolicited(r.order, now)) return false;
+    if (quick === 'solicited' && !solicitedByOrder.get(r.order.id)) return false;
     if (quick === 'planned' && !isPlanned(r)) return false;
     if (quick === 'working' && !['In lavorazione','In Stampa','In allestimento'].includes(r.status)) return false;
     if (quick === 'ready' && !['Pronto', 'Elaborato'].includes(r.status)) return false;
     if (quick === 'unbilled' && isInvoiced(r)) return false;
     if (quick === 'delivered' && r.status !== 'Consegnato') return false;
     return true;
-  }).sort((a, b) => executionDay(b.order).localeCompare(executionDay(a.order)) || b.order.number.localeCompare(a.order.number)), [overviewRows, search, quick, now]);
-  const selected = rows.filter(r=>selectedWork.includes(r.id)&&!isInvoiced(r));
+  }).sort((a, b) => executionDay(b.order).localeCompare(executionDay(a.order)) || b.order.number.localeCompare(a.order.number)), [overviewRows, searchTerm, titleSearchIndex, quick, solicitedByOrder]);
+  const selected = useMemo(()=>{const ids=new Set(selectedWork);return rows.filter(r=>ids.has(r.id)&&!isInvoiced(r));},[rows,selectedWork]);
   const selectedClients = new Set(selected.map(r => r.client.id));
   const validSelected = selected.length > 0 && selectedClients.size === 1;
   const orderDrawer = db.orders.find(o => o.id === drawerOrderId) || null;
@@ -421,7 +422,7 @@ function Workspace() {
             <button className={'metric ' + (quick === 'active' ? 'metric-chosen' : '')} onClick={() => setQuick('active')}><div className="metric-top"><span>Lavori da seguire</span><span className="metric-icon orange"><Clock3 size={20}/></span></div><strong>{totalPending}</strong><small>Ancora in corso <ArrowUpRight size={13}/></small></button>
             <button className={'metric ' + (quick === 'planned' ? 'metric-chosen' : '')} onClick={() => setQuick('planned')}><div className="metric-top"><span>In programma</span><span className="metric-icon blue"><CalendarDays size={20}/></span></div><strong>{planned}</strong><small>Bozza, procedere e da elaborare <ArrowUpRight size={13}/></small></button>
             <button className={'metric ' + (quick === 'solicited' ? 'metric-chosen' : '')} onClick={() => setQuick('solicited')}><div className="metric-top"><span>Ordini Sollecitati</span><span className="metric-icon orange"><AlertTriangle size={20}/></span></div><strong>{solicitedOrders}</strong><small>Ordini segnalati <ArrowUpRight size={13}/></small></button>
-            <button type="button" aria-pressed={quick==='quote'} className={'metric '+(quick==='quote'?'metric-chosen':'')} onClick={()=>{setSearch('');setQuick('quote');}}><div className="metric-top"><span>Preventivo</span><span className="metric-icon orange"><FileText size={20}/></span></div><strong>{new Set(overviewRows.filter(r=>r.status==='Preventivo').map(r=>r.order.id)).size}</strong><small>Ordini con processo Preventivo <ArrowUpRight size={13}/></small></button>
+            <button type="button" aria-pressed={quick==='quote'} className={'metric '+(quick==='quote'?'metric-chosen':'')} onClick={()=>{setSearch('');setQuick('quote');}}><div className="metric-top"><span>Preventivo</span><span className="metric-icon orange"><FileText size={20}/></span></div><strong>{quoteOrders}</strong><small>Ordini con processo Preventivo <ArrowUpRight size={13}/></small></button>
           </div>
           <div className="workspace-card">
             <div className="card-top"><div><h2>{category==='books'?'Registro libri':'Registro lavorazioni generali'} {quick!=='cancelled'&&<span className="head-count">{filtered.length}</span>}</h2><p>Ogni ordine ha le proprie righe, anche per lo stesso cliente nella stessa giornata.</p></div><button disabled={quick==='cancelled'} className="btn btn-small btn-plain" onClick={exportCSV}><Download size={15}/> Esporta CSV</button></div>
