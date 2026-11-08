@@ -20,7 +20,7 @@ import {groupWork,overallStatus,orderTitle} from '@/lib/order-groups';
 import {isOrderSolicited} from '@/lib/order-solicitation';
 
 const monthFormat=new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric'});
-function EntryDate({date,time,orderNumber}:{date:string;time?:string;orderNumber:number|string}){
+export function EntryDate({date,time,orderNumber}:{date:string;time?:string;orderNumber:number|string}){
  const parsed=/^\d{4}-\d{2}-\d{2}$/.test(date)?new Date(date+'T12:00:00'):null;
  const valid=parsed&&Number.isFinite(parsed.getTime());
  return <div className="register-entry"><div className="register-entry-heading"><span>ENTRATA ORDINE</span><strong>N. {orderNumber}</strong></div>{valid?<time dateTime={date}><strong>{date.slice(8,10)}</strong><span>{monthFormat.format(parsed!)}</span></time>:<strong className="register-date-unknown">Non precisata</strong>}{time&&<small>Ore {time}</small>}</div>;
