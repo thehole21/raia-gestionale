@@ -229,7 +229,7 @@ function Workspace() {
     return ()=>{root.style.overflow=previousRoot;body.style.overflow=previousBody;body.style.paddingRight=previousPadding;};
   },[drawerOpen]);
 
-  const workFingerprint=(work:Partial<Work>)=>JSON.stringify([work.description,work.qty,work.price,work.unit,work.status,work.operatorId,operatorIds(work),work.notes,work.notesRight,work.technical,work.production?{...work.production,ddtNumber:undefined}:null]);
+  const workFingerprint=(work:Partial<Work>)=>JSON.stringify([work.description,work.commercialDescription||'',work.qty,work.price,work.unit,work.status,work.operatorId,operatorIds(work),work.notes,work.notesRight,work.technical,work.production?{...work.production,ddtNumber:undefined}:null]);
   const workChangesPending=!!workDrawer&&workFingerprint(editWork)!==workFingerprint(savedEditWork);
 
   function validAssignee(next: string, previous = '') { return !next || next === previous || db.operators.some(o => o.id === next); }
@@ -302,7 +302,7 @@ function Workspace() {
     if (operatorIds(editWork).some(id=>!db.operators.some(o=>o.id===id)&&!operatorIds(workDrawer).includes(id))) { notify('Operatore non più disponibile. Aggiorna l’assegnazione prima di salvare.'); return false; }
     if (!String(editWork.description || '').trim() || !Number.isFinite(Number(editWork.qty)) || !Number.isFinite(Number(editWork.price)) || (Number(editWork.qty) < 0 || (!editWork.production && Number(editWork.qty) === 0)) || Number(editWork.price) < 0) { notify('Descrizione, quantità e prezzo non validi.'); return false; }
     if(workDrawer && workFingerprint({...workDrawer,...(workCategory(workDrawer,workDrawer.order)==='books'?{production:bookProduction(workDrawer,workDrawer.order)}:{})})!==workFingerprint(savedEditWork)){notify('Questo lavoro è stato aggiornato nel frattempo. Copia le tue modifiche e riapri il dettaglio prima di salvare.');return false;}
-    const changes={ description: String(editWork.description).trim(), qty: Number(editWork.qty), price: Number(editWork.price), unit: String(editWork.unit || 'pz'), status: (editWork.status || 'Da elaborare') as Status, operatorId: String(editWork.operatorId),operatorIds:operatorIds(editWork), notes: String(editWork.notes || ''),notesRight:editWork.notesRight||'',technical:editWork.technical, production: editWork.production };
+    const changes={ commercialDescription: String(editWork.commercialDescription || ''), description: String(editWork.description).trim(), qty: Number(editWork.qty), price: Number(editWork.price), unit: String(editWork.unit || 'pz'), status: (editWork.status || 'Da elaborare') as Status, operatorId: String(editWork.operatorId),operatorIds:operatorIds(editWork), notes: String(editWork.notes || ''),notesRight:editWork.notesRight||'',technical:editWork.technical, production: editWork.production };
     updateWork(workDrawer.id, changes);setEditWork(current=>({...current,...changes}));setSavedEditWork(current=>({...current,...changes}));notify('Lavorazione salvata.');return true;
   }
   function saveEditWork(e: FormEvent<HTMLFormElement>) {
