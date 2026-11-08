@@ -85,7 +85,7 @@ const sections: { key: Section; label: string; icon: typeof LayoutGrid }[] = [
   { key: 'clients', label: 'Clienti', icon: Users },
   { key: 'suppliers', label: 'Fornitori', icon: Building2 },
   { key: 'ddt', label: 'DDT', icon: FileText },
-  { key: 'report', label: 'Report Mensile', icon: CalendarDays },
+  { key: 'report', label: 'Report', icon: CalendarDays },
   { key: 'estimator', label: 'Preventivatore', icon: FileText },
   { key: 'messages', label: 'Messaggi', icon: Mail },
   { key: 'settings', label: 'Impostazioni', icon: Settings2 },
