@@ -71,10 +71,11 @@ import { DeliveryNoteSection } from '@/src/components/delivery-note';
 import { prepareInvoice, draftRows } from '@/lib/billing';
 import { automaticSolicitationKey, isOrderAutomaticallySolicited, isOrderSolicited } from '@/lib/order-solicitation';
 import { cloud } from '@/lib/supabase';
+import {MonthlyReport} from '@/src/components/monthly-report';
 import {Suppliers} from '@/src/components/suppliers';
 import {SupplierSelect} from '@/src/components/supplier-select';
 import {suppliersOf} from '@/lib/suppliers';
-type Section = 'work' | 'orders' | 'clients' | 'suppliers' | 'billing' | 'ddt' | 'messages' | 'estimator' | 'settings';
+type Section = 'report' | 'work' | 'orders' | 'clients' | 'suppliers' | 'billing' | 'ddt' | 'messages' | 'estimator' | 'settings';
 type FilterType = 'quote' | 'all' | 'active' | 'solicited' | 'planned' | 'working' | 'ready' | 'unbilled' | 'delivered' | 'cancelled';
 type NewLine = { operatorIds?:string[]; supplier: string; key: string; description: string; qty: string; unit: string; price: string; status: Status; operatorId: string };
 const DATA_KEY = 'raia_workspace_v2_next_demo';
@@ -84,7 +85,7 @@ const sections: { key: Section; label: string; icon: typeof LayoutGrid }[] = [
   { key: 'clients', label: 'Clienti', icon: Users },
   { key: 'suppliers', label: 'Fornitori', icon: Building2 },
   { key: 'ddt', label: 'DDT', icon: FileText },
-  { key: 'billing', label: 'Fatturazione', icon: ReceiptText },
+  { key: 'report', label: 'Report Mensile', icon: CalendarDays },
   { key: 'estimator', label: 'Preventivatore', icon: FileText },
   { key: 'messages', label: 'Messaggi', icon: Mail },
   { key: 'settings', label: 'Impostazioni', icon: Settings2 },
@@ -439,6 +440,7 @@ function Workspace() {
 
         {section === 'orders' && <><div className="eyebrow">ORGANIZZAZIONE</div><div className="titlebar"><div><h1>Storico</h1><p>Ogni richiesta è un ordine distinto, con tutte le sue righe già visibili.</p></div><button className="btn btn-primary" onClick={() => startOrder()}><Plus size={17}/> Nuovo lavoro</button></div><div className="section-filter"><form role="search" autoComplete="off" className="search-field" onSubmit={e=>e.preventDefault()}><Search size={17}/><input key="history-search" name="history-search-query" aria-label="Cerca nello storico" type="search" autoComplete="off" autoCapitalize="none" spellCheck={false} data-lpignore="true" data-1p-ignore="true" placeholder="Cerca per cliente, descrizione o numero lavoro…" value={search} onChange={e => setSearch(e.target.value)}/></form></div>{periodFilters}<div className="workspace-card order-groups-card">{clientFilter&&<div className="client-filter-bar">Lavori di: <strong>{[...db.clients,...(db.clientHistory||[])].find(c=>c.id===clientFilter)?.name}</strong><button onClick={()=>setClientFilter('')}>Mostra tutti i clienti <X size={13}/></button></div>}<WorkGroups interactionVersion={interactionVersion} renderActions={stableActions} onTitleSave={stableTitle} all={rows} visible={historyRows} renderRows={stableTable}/></div></>}
 
+        {section === 'report' && <MonthlyReport store={db} onOpen={order=>requestExit(()=>{setSection('work');setCategory(order.lines[0]?workCategory(order.lines[0],order):'general');setQuick('all');setSearch('');setClientFilter('');setStatusFilter('');setOperatorFilter('');setYear('');setMonth('');setDrawerWorkId(null);setDrawerOrderId(order.id);})}/>}
         {section === 'suppliers' && <Suppliers store={db} disabled={!hydrated||!!failure||saveStatus==='Salvataggio…'} onChange={fn=>write(s=>activity(fn(s),'Anagrafica fornitori aggiornata'))}/>}
         {section === 'clients' && <><div className="eyebrow">ANAGRAFICHE</div><div className="titlebar"><div><h1>Clienti</h1><p>Tutte le aziende con storico lavori e lavori sempre collegati.</p></div><button className="btn btn-primary" onClick={() => setShowNewClient(true)}><Plus size={17}/> Nuovo cliente</button></div>{profile.role==='admin'&&!demo&&<FicClientImportButton write={write} disabled={!!failure||saveStatus==='Salvataggio…'}/>}<div className="section-filter"><form role="search" autoComplete="off" className="search-field" onSubmit={e=>e.preventDefault()}><Search size={17}/><input key="client-search" name="client-search-query" aria-label="Cerca un cliente" type="search" autoComplete="off" autoCapitalize="none" spellCheck={false} data-lpignore="true" data-1p-ignore="true" placeholder="Cerca un cliente…" value={search} onChange={e => setSearch(e.target.value)}/><button type="button" aria-label="Cancella ricerca clienti" onClick={()=>setSearch('')}><X size={15}/></button></form></div><div className="client-grid">{db.clients.filter(c => [c.name, c.email, c.vat].join(' ').toLocaleLowerCase('it').includes(search.toLocaleLowerCase('it'))).map(c => {
           const own = rows.filter(r => r.client.id === c.id),clientOrders=db.orders.filter(order=>order.clientId===c.id),clientDrafts=db.drafts.filter(draft=>draft.clientId===c.id);
