@@ -27,3 +27,18 @@ async function check(statuses,remove=false,{type='delivery_note',setup=false,rpc
  assert.ok((await check([404,200],false,{rpcError:true})).error);
  console.log('PASS DDT deletion, exact 404 + company verification, failure preservation, invoice type protection, status from remote links only.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
+
+(async()=>{
+ const calls=[];
+ const mocks={ddtContext:async()=>({}),bearer:()=> 'token',connection:async()=>({tokens:{access_token:'token'},row:{company_id:1}}),sameOrigin:()=>{},FicError,ddtInvoiceLink,
+ failure:e=>new Response(JSON.stringify({error:e.message}),{status:e.status||500}),
+ ficGet:async(token,url)=>{calls.push(url);if(url.includes('?type=delivery_note'))return {data:[{id:1,number:1,merged_in:{id:10}},{id:2,number:2,merged_in:null}],current_page:1,last_page:2,total:30};if(url.includes('/10?'))return {data:{id:10,type:'invoice',number:7}};throw Error('API unavailable');}};
+ const route=load('src/app/api/fatture-in-cloud/ddt/manage/route.ts',{require:()=>mocks,Response,URL});
+ const listed=await (await route.GET({url:'https://local.test?page=1'})).json();
+ assert.equal(calls.length,1,'list must not wait for linked invoices');
+ assert.equal(listed.documents[0].state,'unknown');assert.equal(listed.documents[0].invoiceId,10);assert.equal(listed.documents[1].state,'unbilled');assert.equal(listed.next,2);
+ const checked=await (await route.POST({json:async()=>({action:'verify-invoices',ids:[10,10,11]})})).json();
+ assert.equal(checked.invoices.length,2);assert.equal(checked.invoices[0].state,'billed');assert.equal(checked.invoices[1].state,'unknown');assert.equal(calls.length,3,'deduplicate invoice checks');
+ const invalid=await route.POST({json:async()=>({action:'verify-invoices',ids:[-1]})});assert.equal(invalid.status,400);
+ console.log('PASS immediate DDT list, deferred invoice checks, deduplication and API failure safety.');
+})().catch(e=>{console.error(e);process.exitCode=1;});

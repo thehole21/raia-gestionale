@@ -11,17 +11,18 @@ export async function GET(request:Request){try{
  const words=(q.get('search')||'').slice(0,120).match(/[\p{L}\p{N}]+/gu)||[];
  const filter=words.map(w=>`(entity.name contains '${w}' or any_subject contains '${w}'${/^\d+$/.test(w)?' or number = '+Number(w):''})`).join(' and ');
  const result=await ficGet(c.tokens.access_token,`/c/${c.row.company_id}/issued_documents?type=delivery_note&per_page=25&page=${page}&fieldset=detailed&sort=-date,-number${filter?'&q='+encodeURIComponent(filter):''}`);
- const linked=new Map<number,Promise<any>>(),deadline=Date.now()+20000;
- const documents:any[]=[];
- for(let i=0;i<(result.data||[]).length;i+=3){documents.push(...await Promise.all(result.data.slice(i,i+3).map(async(d:any)=>{
-  const link=ddtInvoiceLink(d);let state:string=link.state==='linked'?'unknown':link.state,invoiceNumber='';
-  if(link.id&&Date.now()<deadline){try{if(!linked.has(link.id))linked.set(link.id,ficGet(c.tokens.access_token,`/c/${c.row.company_id}/issued_documents/${link.id}?fields=id,type,number,numeration`));const invoice=(await linked.get(link.id)).data;if(invoice?.type==='invoice'){state='billed';invoiceNumber=String(invoice.number)+(invoice.numeration||'');}else state='unknown';}catch{state='unknown';}}
-  return {id:d.id,number:String(d.number)+(d.numeration||''),client:d.entity?.name||'',clientId:d.entity?.id||0,subject:d.visible_subject||d.subject||'',date:d.date,state,invoiceNumber};
- })));}
+ // Return the list immediately; invoice details are resolved separately.
+ const documents=(result.data||[]).map((d:any)=>{const link=ddtInvoiceLink(d);return {id:d.id,number:String(d.number)+(d.numeration||''),client:d.entity?.name||'',clientId:d.entity?.id||0,subject:d.visible_subject||d.subject||'',date:d.date,state:link.state==='linked'?'unknown':link.state,invoiceId:link.id||null,invoiceNumber:''};});
  return json({documents,next:result.current_page<result.last_page?page+1:0,total:result.total});
  }catch(e){return failure(e);}}
 export async function POST(request:Request){try{
  sameOrigin(request);const {ctx,c}=await context(request),body=await request.json();
+ if(body.action==='verify-invoices'){
+  if(!Array.isArray(body.ids)||body.ids.length>25||body.ids.some((id:unknown)=>!Number.isSafeInteger(id)||Number(id)<1))throw new FicError('Documenti non validi.');
+  const ids=[...new Set<number>(body.ids)],invoices:{id:number;state:string;number:string}[]=[];
+  for(let i=0;i<ids.length;i+=3){invoices.push(...await Promise.all(ids.slice(i,i+3).map(async id=>{try{const invoice=(await ficGet(c.tokens.access_token,`/c/${c.row.company_id}/issued_documents/${id}?fields=id,type,number,numeration`)).data;return {id,state:invoice?.type==='invoice'?'billed':'unknown',number:invoice?.type==='invoice'?String(invoice.number)+(invoice.numeration||''):''};}catch{return {id,state:'unknown',number:''};}})));}
+  return json({invoices});
+ }
  if(body.action==='sync'){
   const after=Number(body.after||0);if(!Number.isSafeInteger(after)||after<0)throw new FicError('Pagina non valida.');
   const rows=await trackedDdts(ctx,c.row.company_id,after,6);let removed=0;
