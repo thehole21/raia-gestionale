@@ -20,7 +20,7 @@ export function prepareInvoice(rows: WorkRow[]) {
  issues.push('Cliente fiscale, IVA e pagamento si confermano nel passaggio Crea fattura in Cloud.');
  return {version:1,provider:'fatture-in-cloud',readyToSend:false,issues,customer:client?{...client}:null,
   deliveryNotes:[...new Map(rows.filter(r=>workDdtNumber(r,r.order)).map(r=>[JSON.stringify([workDdtNumber(r,r.order),workDdt(r,r.order)?.date||'']),{orderId:r.order.id,orderNumber:r.order.number,orderIds:[r.order.id],number:workDdtNumber(r,r.order),date:workDdt(r,r.order)?.date||''}])).values()],
-  lines:rows.map(r=>({workId:r.id,orderId:r.order.id,description:r.description,orderTitle:r.order.title||'',deliveryNoteNumber:workDdtNumber(r,r.order),quantity:r.qty,unit:r.unit,netUnitPrice:r.price,vatId:r.vatId??null})),
+  lines:rows.map(r=>({workId:r.id,orderId:r.order.id,description:r.commercialDescription?.trim()||r.description,orderTitle:r.order.title||'',deliveryNoteNumber:workDdtNumber(r,r.order),quantity:r.qty,unit:r.unit,netUnitPrice:r.price,vatId:r.vatId??null})),
   currency:'EUR',paymentMethodId:null,paymentDueDate:null,companyId:null,remoteDocumentId:null};
 }
 export function draftRows(store:Store,workIds:string[]){return flatten(store).filter(r=>workIds.includes(r.id));}

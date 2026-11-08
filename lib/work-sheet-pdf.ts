@@ -63,6 +63,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
    heading('DATI DEL LAVORO');fieldRows(fields);y+=2;
    if(specs.length){heading('CARATTERISTICHE TECNICHE');fieldRows(specs);y+=2;}
    function block(label:string,value:unknown){if(!value)return;put(label,x,y,labelSize,true,wine);y+=5;for(const l of wrap(value,width,size)){put(l,x,y);y+=leading;}y+=3;}
+   block('DESCRIZIONE',work.commercialDescription);
    block('COMMENTI DI PRODUZIONE',work.production?.comments);block('ANNOTAZIONI AGGIUNTIVE',work.production?.additionalNotes);
    heading('NOTE LAVORAZIONE');
    const left=wrap(work.notes||'',86,size),right=wrap(work.notesRight||'',86,size),count=Math.max(1,left.length,right.length),spacing=7;
