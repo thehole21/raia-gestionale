@@ -26,9 +26,9 @@ function EntryDate({date,time,orderNumber}:{date:string;time?:string;orderNumber
  return <div className="register-entry"><div className="register-entry-heading"><span>ENTRATA ORDINE</span><strong>N. {orderNumber}</strong></div>{valid?<time dateTime={date}><strong>{date.slice(8,10)}</strong><span>{monthFormat.format(parsed!)}</span></time>:<strong className="register-date-unknown">Non precisata</strong>}{time&&<small>Ore {time}</small>}</div>;
 }
 function DataCell({label,children}:{label:string;children:ReactNode}){return <div className="register-field"><dt>{label}</dt><dd>{children}</dd></div>;}
-function OverviewRegisterView({suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,orderNumbers,now}:{interactionVersion:string;suppliers:Supplier[];renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;orderNumbers:Map<string,number>;now:number}){
+function OverviewRegisterView({targetOrderId,suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,orderNumbers,now}:{targetOrderId?:string;interactionVersion:string;suppliers:Supplier[];renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;orderNumbers:Map<string,number>;now:number}){
  const groups=useMemo(()=>groupWork(all,visible),[all,visible]);
- const {shown,footer}=useOrderWindow(groups);
+ const {shown,footer}=useOrderWindow(groups,targetOrderId);
  function record(r:WorkRow,parent?:WorkRow){
   const p=r.production,books=p?.category==='Libri',due=workDue(r,r.order),historical=!!r.operatorId&&!operators.some(o=>o.id===r.operatorId);
   const solicited=isOrderSolicited(r.order,now);
@@ -52,7 +52,7 @@ function OverviewRegisterView({suppliers,renderActions,renderDelete,onTitleSave,
  }
  return <div className="overview-register"><div className="register-toolbar"><span>{groups.length} ordini · {visible.length} lavorazioni</span></div>{shown.map(g=>{
  const status=overallStatus(g.rows),orders=[...new Map(g.visible.map(r=>[r.order.id,r.order])).values()];
- return <section className="register-group" key={g.key}>
+ return <section id={'overview-order-'+g.key} tabIndex={-1} className={"register-group"+(g.key===targetOrderId?" report-order-target":"")} key={g.key}>
  <button type="button" className="register-group-heading" onClick={()=>onOpen(g.visible[0])}><span className="register-company"><small>CLIENTE</small><strong>{g.client.name}</strong></span><ProcessBadge className="register-overall" status={status}/><span className="register-group-action">Dettagli ordine <ChevronRight size={18}/></span></button>
  {g.visible.length<g.rows.length&&<p className="register-filter-note">{g.visible.length} di {g.rows.length} lavorazioni corrispondono ai filtri. Lo stato generale considera l’intero ordine.</p>}
  {orders.map((order,index)=><div className="register-order" key={order.id}><div className="register-order-title">{(index===0||order.created!==orders[0].created)&&<EntryDate date={order.created} orderNumber={orderNumbers.get(order.id)||'—'}/>}<OrderTitleEditor order={order} onSave={onTitleSave}/><span className="register-count">Tot. Lavori <strong>{order.lines.length}</strong></span></div><div className="register-order-actions">{renderActions(order)}</div><div className="register-products">{g.visible.filter(r=>r.order.id===order.id).map(r=>record(r,g.visible[0]))}</div></div>)}
