@@ -4,10 +4,19 @@ import {operatorIds} from './assignments';
 import {technicalFields} from './technical-fields';
 import {orderRegistrationNumbers} from './order-groups';
 const clean=(s:unknown)=>String(s??'').replace(/[–—‑]/g,'-').replace(/[“”]/g,'"').replace(/[’‘]/g,"'").replace(/…/g,'...').replace(/\t/g,'  ');
-export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logoBytes?:Uint8Array,monogramBytes?:Uint8Array):Promise<Blob>{
+export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logoBytes?:Uint8Array,monogramBytes?:Uint8Array,rotateBack=true):Promise<Blob>{
  code=String(orderRegistrationNumbers(store.orders).get(order.id)||order.number);
  const {jsPDF}=await import('jspdf');
- const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a3',compress:true});
+ const doc=new jsPDF({orientation:'landscape',unit:'mm',format:[440,330],compress:true});
+ // Preserve the existing artwork proportions, centered on a 440 × 330 mm sheet.
+ // Matrix translation uses PDF points and bottom-left coordinates.
+ function beginFace(page:number){
+  const scale=440/420,margin=(330-297*scale)/2,pt=72/25.4;
+  const ty=(330-margin-330*scale)*pt,flipped=rotateBack&&page%2===0;
+  doc.saveGraphicsState();
+  doc.setCurrentTransformationMatrix(flipped?doc.Matrix(-scale,0,0,-scale,440*pt,330*pt-ty):doc.Matrix(scale,0,0,scale,0,ty));
+ }
+ const endFace=()=>doc.restoreGraphicsState();
  const logo=logoBytes||new Uint8Array(await (await fetch('/images/raia-logo-transparent.png')).arrayBuffer());
  const monogram=monogramBytes||new Uint8Array(await (await fetch('/images/raia-monogram-transparent.png')).arrayBuffer());
  const client=[...(store.clientHistory||[]),...store.clients].reverse().find(c=>c.id===order.clientId),roster=[...store.operators,...(store.operatorHistory||[])];
@@ -19,7 +28,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  function grid(gx:number,gy:number,width:number,height:number){doc.setDrawColor('#b0b0b0');doc.setLineWidth(.22);for(let xx=0;xx<=width;xx+=8)doc.line(gx+xx,gy,gx+xx,gy+height);for(let yy=0;yy<=height;yy+=8)doc.line(gx,gy+yy,gx+width,gy+yy);doc.rect(gx,gy,width,height);}
  function frame(){for(const px of [7,217]){doc.setDrawColor(line);doc.setLineWidth(.3);doc.roundedRect(px,7,196,276,2,2);doc.setDrawColor(wine);doc.setLineWidth(1);doc.line(px+7,7,px+39,7);}doc.setLineWidth(.2);}
 
- frame();
+ beginFace(1);frame();
  // Outer face: back on the left, front cover on the right.
  doc.addImage(logo,'PNG',267,17,100.8,50.16,undefined,'FAST');
  function right(value:unknown,yy:number,size:number,bold=false,color=ink){font(size,bold,color);doc.text(clean(value),394,yy,{align:'right'});}
@@ -44,6 +53,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  if(sy<190){text('APPUNTI',14,sy+5,8,true,wine);grid(14,sy+10,182,Math.max(24,210-sy-10));}
  text('PASSAGGI / CONTROLLO FINALE',14,228,9,true,wine);
  for(const [i,label] of ['File verificati','Materiali verificati','Quantità e finiture controllate','Imballaggio e consegna'].entries()){doc.rect(14,237+i*9,3,3);text(label,21,240+i*9,10);doc.line(105,241+i*9,196,241+i*9);}
+ endFace();
  const x=224,width=182;
  for(let index=0;index<order.lines.length;index++){
   const work=order.lines[index];
@@ -75,10 +85,10 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
   }
   let size=11.5;while(size>9&&layout(false,size)>274)size-=.5;
   if(layout(false,size)>274)throw new Error(`La lavorazione ${index+1} contiene troppo testo per una sola facciata leggibile. Riduci le note o suddividi la lavorazione prima di stampare la cartellina.`);
-  doc.addPage('a3','landscape');doc.addImage(logo,'PNG',83,12,44,21.9,undefined,'FAST');grid(15,43,180,230);doc.setDrawColor(line);doc.setLineWidth(.3);doc.roundedRect(217,7,196,276,2,2);doc.setDrawColor(wine);doc.setLineWidth(1);doc.line(224,7,256,7);doc.setLineWidth(.2);layout(true,size,Math.max(0,272-layout(false,size)));
+  doc.addPage([440,330],'landscape');beginFace(doc.getNumberOfPages());doc.addImage(logo,'PNG',83,12,44,21.9,undefined,'FAST');grid(15,43,180,230);doc.setDrawColor(line);doc.setLineWidth(.3);doc.roundedRect(217,7,196,276,2,2);doc.setDrawColor(wine);doc.setLineWidth(1);doc.line(224,7,256,7);doc.setLineWidth(.2);layout(true,size,Math.max(0,272-layout(false,size)));endFace();
  }
  const sheets=doc.getNumberOfPages();
- for(let p=1;p<=sheets;p++){doc.setPage(p);text(`Entrata ordine n. ${code}  /  ${p} di ${sheets}`,p===1?14:224,288,8,false,muted);}
- doc.setProperties({title:`Scheda lavoro ${code} - ${order.title||order.number}`,author:'RAIA',subject:'Cartellina di produzione A3 piegabile'});
+ for(let p=1;p<=sheets;p++){doc.setPage(p);beginFace(p);text(`Entrata ordine n. ${code}  /  ${p} di ${sheets}`,p===1?14:224,288,8,false,muted);endFace();}
+ doc.setProperties({title:`Scheda lavoro ${code} - ${order.title||order.number}`,author:'RAIA',subject:'Cartellina di produzione 44 x 33 cm piegabile'});
  return doc.output('blob');
 }
