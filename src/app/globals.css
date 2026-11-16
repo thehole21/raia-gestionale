@@ -312,3 +312,5 @@ select.register-process option,.inline-status option{background:#fff;color:#3034
 @media(max-width:600px){.report-row{grid-template-columns:minmax(75px,1.25fr) minmax(65px,1fr) 68px 78px;gap:5px;padding:7px 5px;font-size:10px;min-height:44px}.report-row button{font-size:12px}.report-columns-head .report-row{font-size:9px}.report-filters{gap:6px}.report-filters button{padding:8px 10px}}
 
 .overview-register .register-group{scroll-margin-top:24px}.overview-register .report-order-target{outline:2px solid #812c46;outline-offset:3px}
+
+.fic-document-links{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}.fic-document-links small{flex-basis:100%;color:var(--muted,#62656b)}.fic-document-links .fic-linked-pdf{background:#edf5f0;border:1px solid #b9d4c2;color:#245138;padding:7px 10px}

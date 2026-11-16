@@ -1,3 +1,4 @@
+import {ddtInvoiceLink} from '@/lib/fic-ddt-status';
 import {joinIds,joinDdtData,readJoinSources,validateJoinSources,verifyJoinedInvoice,reconcileJoinReservations} from '@/lib/fic-ddt-join';
 import {createClient} from '@supabase/supabase-js';
 import {randomUUID,createHash} from 'node:crypto';
@@ -23,6 +24,24 @@ async function sourceData(ctx:Awaited<ReturnType<typeof context>>,sourceId:numbe
 export async function GET(request:Request){try{
  const ctx=await context(request),q=new URL(request.url).searchParams,mode=q.get('mode')||'list';
  if(mode==='operations'){const {data,error}=await ctx.service.from('raia_fic_documents').select('id,source_id,target_type,status,remote_id,remote_number,created_at').eq('company_id',ctx.company).in('status',['creating','reconcile']).order('created_at',{ascending:false}).limit(50);if(error)throw new FicError('Archivio operazioni non disponibile.',503);return json({data});}
+ if(mode==='relations'){
+  const ids=[...new Set((q.get('ids')||'').split(',').map(id))];if(ids.length>25)throw new FicError('Troppi documenti.');
+  if(q.get('type')==='invoice'){
+   const page=Math.max(1,Number(q.get('page'))||1);
+   const result=await ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/issued_documents?type=delivery_note&page=${page}&per_page=100&fields=id,type,number,numeration,merged_in&sort=-date`);
+   const links=(result.data||[]).flatMap((d:any)=>{const link=ddtInvoiceLink(d);return link.state==='linked'&&ids.includes(link.id!)?[{owner:link.id,document:{id:d.id,type:d.type,number:d.number,numeration:d.numeration}}]:[];});
+   return json({links,next:page<(result.last_page||1)?page+1:null,unknown:(result.data||[]).some((d:any)=>ddtInvoiceLink(d).state==='unknown')});
+  }
+  if(q.get('type')!=='delivery_note')throw new FicError('Tipo non valido.');
+  const links:any[]=[],unknown:number[]=[];
+  for(let i=0;i<ids.length;i+=3)await Promise.all(ids.slice(i,i+3).map(async owner=>{
+   try{const doc=(await ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/issued_documents/${owner}?fieldset=detailed`)).data,link=ddtInvoiceLink(doc);
+    if(link.state==='unknown'){unknown.push(owner);return;}
+    if(link.state==='linked'){const target=(await ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/issued_documents/${link.id}`)).data;if(target.type==='invoice')links.push({owner,document:{id:target.id,type:target.type,number:target.number,numeration:target.numeration}});else unknown.push(owner);}
+   }catch{unknown.push(owner);}
+  }));
+  return json({links,unknown,next:null});
+ }
  if(mode==='document'){const doc=(await ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/issued_documents/${id(q.get('id'))}`)).data;return json({data:doc});}
  const type=q.get('type')||'quote';if(!documentTypes[type])throw new FicError('Tipo documento non valido.');
  if(mode==='editor'){
