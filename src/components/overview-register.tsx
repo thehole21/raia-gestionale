@@ -26,7 +26,7 @@ export function EntryDate({date,time,orderNumber}:{date:string;time?:string;orde
  return <div className="register-entry"><div className="register-entry-heading"><span>ENTRATA ORDINE</span><strong>N. {orderNumber}</strong></div>{valid?<time dateTime={date}><strong>{date.slice(8,10)}</strong><span>{monthFormat.format(parsed!)}</span></time>:<strong className="register-date-unknown">Non precisata</strong>}{time&&<small>Ore {time}</small>}</div>;
 }
 function DataCell({label,children}:{label:string;children:ReactNode}){return <div className="register-field"><dt>{label}</dt><dd>{children}</dd></div>;}
-function OverviewRegisterView({targetOrderId,suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,orderNumbers,now}:{targetOrderId?:string;interactionVersion:string;suppliers:Supplier[];renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;orderNumbers:Map<string,number>;now:number}){
+function OverviewRegisterView({deliveryModes,targetOrderId,suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,orderNumbers,now}:{deliveryModes?:string[];targetOrderId?:string;interactionVersion:string;suppliers:Supplier[];renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;orderNumbers:Map<string,number>;now:number}){
  const groups=useMemo(()=>groupWork(all,visible),[all,visible]);
  const {shown,footer}=useOrderWindow(groups,targetOrderId);
  function record(r:WorkRow,parent?:WorkRow){
@@ -42,8 +42,8 @@ function OverviewRegisterView({targetOrderId,suppliers,renderActions,renderDelet
     <DataCell label="Consegna richiesta"><DueEditor row={r} onUpdate={onUpdate}/></DataCell>
     <DataCell label="DDT">{workDdtNumber(r,r.order)||'—'}</DataCell>
     <DataCell label="Terminato">{p?<label className="register-terminated"><input type="checkbox" aria-label={'Terminato: '+r.description} checked={p.terminated} onChange={e=>onUpdate(r.id,{production:{...p,terminated:e.target.checked}})}/>{p.terminated?'Sì':'No'}</label>:['Pronto','Consegnato'].includes(r.status)?'Sì':'No'}</DataCell>
-    <DataCell label="Fatturato"><BillingMark rows={[r]}/></DataCell>
-    <DataCell label="Modalità consegna"><DeliveryEditor row={r} onUpdate={onUpdate}/></DataCell>
+    <DataCell label="Fatturato"><BillingMark rows={[r]} onUpdate={onUpdate}/></DataCell>
+    <DataCell label="Modalità consegna"><DeliveryEditor options={deliveryModes} row={r} onUpdate={onUpdate}/></DataCell>
     {p?.exitTime&&<DataCell label="Orario uscita">{p.exitTime}</DataCell>}
     {r.order.executionDate&&(!parent||parent.order.executionDate!==r.order.executionDate)&&<DataCell label="Esecuzione">{fmtDate(r.order.executionDate)}</DataCell>}
    </dl>

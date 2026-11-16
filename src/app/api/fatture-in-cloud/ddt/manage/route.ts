@@ -19,8 +19,8 @@ export async function POST(request:Request){try{
  sameOrigin(request);const {ctx,c}=await context(request),body=await request.json();
  if(body.action==='verify-invoices'){
   if(!Array.isArray(body.ids)||body.ids.length>25||body.ids.some((id:unknown)=>!Number.isSafeInteger(id)||Number(id)<1))throw new FicError('Documenti non validi.');
-  const ids=[...new Set<number>(body.ids)],invoices:{id:number;state:string;number:string}[]=[];
-  for(let i=0;i<ids.length;i+=3){invoices.push(...await Promise.all(ids.slice(i,i+3).map(async id=>{try{const invoice=(await ficGet(c.tokens.access_token,`/c/${c.row.company_id}/issued_documents/${id}?fields=id,type,number,numeration`)).data;return {id,state:invoice?.type==='invoice'?'billed':'unknown',number:invoice?.type==='invoice'?String(invoice.number)+(invoice.numeration||''):''};}catch{return {id,state:'unknown',number:''};}})));}
+  const ids=[...new Set<number>(body.ids)],invoices:{id:number;state:string;number:string;url?:string}[]=[];
+  for(let i=0;i<ids.length;i+=3){invoices.push(...await Promise.all(ids.slice(i,i+3).map(async id=>{try{const invoice=(await ficGet(c.tokens.access_token,`/c/${c.row.company_id}/issued_documents/${id}?fields=id,type,number,numeration,url`)).data;return {id,state:invoice?.type==='invoice'?'billed':'unknown',number:invoice?.type==='invoice'?String(invoice.number)+(invoice.numeration||''):'',url:invoice?.type==='invoice'&&typeof invoice.url==='string'&&invoice.url.startsWith('https://')?invoice.url:undefined};}catch{return {id,state:'unknown',number:''};}})));}
   return json({invoices});
  }
  if(body.action==='sync'){
