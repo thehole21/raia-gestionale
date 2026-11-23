@@ -84,11 +84,11 @@ const DATA_KEY = 'raia_workspace_v2_next_demo';
 const OLD_DATA_KEY = 'raia_workspace_v1_2026';
 const sections: { key: Section; label: string; icon: typeof LayoutGrid }[] = [
   { key: 'work', label: 'Panoramica', icon: ListTodo },
+  { key: 'report', label: 'Report', icon: CalendarDays },
   { key: 'clients', label: 'Clienti', icon: Users },
   { key: 'suppliers', label: 'Fornitori', icon: Building2 },
   { key: 'ddt', label: 'DDT', icon: FileText },
   { key: 'billing', label: 'Fatturazione', icon: ReceiptText },
-  { key: 'report', label: 'Report', icon: CalendarDays },
   { key: 'estimator', label: 'Preventivatore', icon: FileText },
   { key: 'messages', label: 'Messaggi', icon: Mail },
   { key: 'settings', label: 'Impostazioni', icon: Settings2 },

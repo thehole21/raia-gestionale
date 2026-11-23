@@ -1,3 +1,4 @@
+import {orderEntryLabel} from './order-entry-label';
 import type {Order,Store,Work} from './data';
 import {fmtDate,quantityLabel} from './data';
 import {operatorIds} from './assignments';
@@ -40,7 +41,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  cy=Math.max(173,cy+13);font(11,true,wine);doc.text('PROGETTO',315,cy,{align:'center'});cy+=12;
  const titleLines=wrap(order.title||order.number,166,25);
  for(const l of titleLines.slice(0,5)){font(25,true);doc.text(l,315,cy,{align:'center'});cy+=10;}
- text('ENTRATA ORDINE N.',232,251,9,true,muted);text(code,232,262,17,true,wine);
+ text(orderEntryLabel(order).toUpperCase()+' N.',232,251,9,true,muted);text(code,232,262,17,true,wine);
  right('LAVORAZIONI',251,9,true,muted);right(String(order.lines.length),265,28,true,wine);
 
  text('RAIA / PRODUZIONE',14,23,10,true,wine);text('Riepilogo ordine',14,38,22,true);
@@ -66,7 +67,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
    const put=(v:unknown,xx:number,yy:number,ss=size,bold=false,color=ink)=>{if(draw)text(v,xx,yy,ss,bold,color);};
    if(draw)doc.addImage(monogram,'PNG',x,13,10,10,undefined,'FAST');
    for(const l of wrap([order.title||order.number,client?.name].filter(Boolean).join(' · '),166,9)){put(l,x+15,y,9,false,muted);y+=4;}
-   y=Math.max(y+7,32);put('ENTRATA ORDINE N. '+code,x,y,10,true,wine);put(`LAVORAZIONE ${index+1} / ${order.lines.length}`,x+113,y,9,true,muted);y+=10;
+   y=Math.max(y+7,32);put(orderEntryLabel(order).toUpperCase()+' N. '+code,x,y,10,true,wine);put(`LAVORAZIONE ${index+1} / ${order.lines.length}`,x+113,y,9,true,muted);y+=10;
    for(const l of wrap(work.description,width,18)){put(l,x,y,18,true);y+=7;}y+=3;
    function heading(label:string){if(draw){doc.setFillColor('#f5eff2');doc.roundedRect(x,y-4,width,8,1,1,'F');}put(label,x+3,y+1,9,true,wine);y+=10;}
    function fieldRows(items:[string,string][]){for(let i=0;i<items.length;i+=3){let height=0;for(let j=0;j<3&&items[i+j];j++){const [label,value]=items[i+j],xx=x+j*62;let yy=y;for(const l of wrap(label,58,labelSize)){put(l,xx,yy,labelSize,true,muted);yy+=labelSize*.4;}yy+=1.5;for(const l of wrap(value||'—',58,size)){put(l,xx,yy);yy+=leading;}height=Math.max(height,yy-y);}y+=height+3;}}
@@ -88,7 +89,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
   doc.addPage([440,330],'landscape');beginFace(doc.getNumberOfPages());doc.addImage(logo,'PNG',83,12,44,21.9,undefined,'FAST');grid(15,43,180,230);doc.setDrawColor(line);doc.setLineWidth(.3);doc.roundedRect(217,7,196,276,2,2);doc.setDrawColor(wine);doc.setLineWidth(1);doc.line(224,7,256,7);doc.setLineWidth(.2);layout(true,size,Math.max(0,272-layout(false,size)));endFace();
  }
  const sheets=doc.getNumberOfPages();
- for(let p=1;p<=sheets;p++){doc.setPage(p);beginFace(p);text(`Entrata ordine n. ${code}  /  ${p} di ${sheets}`,p===1?14:224,288,8,false,muted);endFace();}
+ for(let p=1;p<=sheets;p++){doc.setPage(p);beginFace(p);text(`${orderEntryLabel(order)} n. ${code}  /  ${p} di ${sheets}`,p===1?14:224,288,8,false,muted);endFace();}
  doc.setProperties({title:`Scheda lavoro ${code} - ${order.title||order.number}`,author:'RAIA',subject:'Cartellina di produzione 44 x 33 cm piegabile'});
  return doc.output('blob');
 }
