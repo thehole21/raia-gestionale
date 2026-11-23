@@ -1,6 +1,6 @@
 import {orderEntryLabel} from './order-entry-label';
 import type {Order,Store,Work} from './data';
-import {fmtDate,quantityLabel} from './data';
+import {fmtDate,quantityLabel,workDue} from './data';
 import {operatorIds} from './assignments';
 import {technicalFields} from './technical-fields';
 import {orderRegistrationNumbers} from './order-groups';
@@ -39,8 +39,21 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  cy=Math.max(124,cy+10);right('CLIENTE',cy,10,true,wine);cy+=10;
  for(const l of wrap(client?.name||'Cliente non indicato',162,23)){right(l,cy,23,true);cy+=9;}
  cy=Math.max(173,cy+13);font(11,true,wine);doc.text('PROGETTO',315,cy,{align:'center'});cy+=12;
- const titleLines=wrap(order.title||order.number,166,25);
- for(const l of titleLines.slice(0,5)){font(25,true);doc.text(l,315,cy,{align:'center'});cy+=10;}
+ let titleSize=25;
+ const titleTop=cy;
+ while(titleSize>14&&titleTop+(wrap(order.title||order.number,166,titleSize).length-1)*titleSize*.4>211)titleSize--;
+ const titleLines=wrap(order.title||order.number,166,titleSize);
+ if(titleTop+(titleLines.length-1)*titleSize*.4>211)throw new Error('Titolo o anagrafica troppo lunghi per la copertina: abbreviali prima di stampare la scheda.');
+ for(const l of titleLines){font(titleSize,true);doc.text(l,315,cy,{align:'center'});cy+=titleSize*.4;}
+ const deliveryDates=[...new Set(order.lines.map(w=>workDue(w,order)).filter(Boolean))].sort();
+ if(!order.lines.length&&order.due)deliveryDates.push(order.due);
+ text('DATA DI CONSEGNA',232,221,9,true,wine);
+ const dateLines=wrap(deliveryDates.map(fmtDate).join(' / '),115,11);
+ if(dateLines.length>2)throw new Error('Troppe date di consegna per la copertina: suddividi la commessa prima di stampare.');
+ dateLines.forEach((value,i)=>text(value,278,221+i*4.5,11,true));
+ doc.setDrawColor(line);doc.setLineWidth(.3);
+ if(!deliveryDates.length)doc.line(278,223,394,223);
+ text('LUOGO DI CONSEGNA',232,236,9,true,wine);doc.line(278,238,394,238);
  text(orderEntryLabel(order).toUpperCase()+' N.',232,251,9,true,muted);text(code,232,262,17,true,wine);
  right('LAVORAZIONI',251,9,true,muted);right(String(order.lines.length),265,28,true,wine);
 
