@@ -316,3 +316,10 @@ select.register-process option,.inline-status option{background:#fff;color:#3034
 .fic-document-links{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}.fic-document-links small{flex-basis:100%;color:var(--muted,#62656b)}.fic-document-links .fic-linked-pdf{background:#edf5f0;border:1px solid #b9d4c2;color:#245138;padding:7px 10px}
 
 .order-title-controls{display:flex;align-items:center;gap:8px;flex:1;min-width:0}.order-title-controls .order-title-edit{min-height:40px}.order-title-pencil{flex-shrink:0}.order-title-chevron{transform:rotate(-90deg)}.order-title-chevron.expanded{transform:rotate(0)}.register-products[hidden]{display:none}@media(max-width:700px){.order-title-controls{flex-basis:50%}.order-title-pencil{min-width:40px;min-height:40px}}
+
+/* Alternate order cards while retaining process and urgency colours. */
+.overview-register > .register-group:nth-of-type(even){background:#f5f8fb;border-color:#b9cbd9}
+.overview-register > .register-group:nth-of-type(even) > .register-group-heading{background:#e3edf5}
+.overview-register > .register-group:nth-of-type(even) > .register-group-heading:hover{background:#d6e5f0}
+.overview-register > .register-group:nth-of-type(even) .register-order-title{background:#edf3f8;border-bottom-color:#cddce7}
+.overview-register > .register-group:nth-of-type(even) .register-order-actions{background:#f5f8fb}
