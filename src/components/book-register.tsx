@@ -1,7 +1,7 @@
 'use client';
 import {orderEntryLabel} from '@/lib/order-entry-label';
 import {useOrderWindow} from './order-window';
-import {useMemo} from 'react';
+import {useMemo,useState} from 'react';
 import {ProcessSelect, ProcessBadge} from './process-controls';
 import {EntryDate} from './overview-register';
 import {workDdtNumber} from '@/lib/delivery-selection';
@@ -21,13 +21,15 @@ import {groupWork,overallStatus} from '@/lib/order-groups';
 import {isOrderSolicited} from '@/lib/order-solicitation';
 
 function BookRegisterView({deliveryModes,targetOrderId,suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,canDelete,getRevision,orderNumbers,now}:{suppliers:Supplier[];deliveryModes?:string[];targetOrderId?:string;interactionVersion:string;renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;orderNumbers:Map<string,number>;canDelete:boolean;getRevision:()=>number;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;now:number}){
+ const [expandedOrders,setExpandedOrders]=useState<Record<string,boolean>>({});
+ const toggleOrder=(id:string)=>setExpandedOrders(current=>({...current,[id]:!current[id]}));
  const groups=useMemo(()=>groupWork(all,visible),[all,visible]);
  const {shown,footer}=useOrderWindow(groups,targetOrderId);
  const change=(r:WorkRow,patch:Partial<ReturnType<typeof bookProduction>>)=>onUpdate(r.id,{production:{...bookProduction(r,r.order),...patch}});
  return <div className="overview-register books-register"><div className="register-toolbar"><span>{visible.length} libri · {groups.length} ordini</span></div>{shown.map(g=>{
   const main=g.visible[0];
   return <section id={'overview-order-'+g.key} tabIndex={-1} className={"register-group"+(g.key===targetOrderId?" report-order-target":"")} key={g.key}><button type="button" className="register-group-heading" onClick={()=>onOpen(main)}><span className="register-company"><small>CLIENTE · LIBRI</small><strong>{g.client.name}</strong></span><ProcessBadge className="register-overall" status={overallStatus(g.rows)}/><span className="register-group-action">Dettagli ordine <ChevronRight size={18}/></span></button>{g.visible.length<g.rows.length&&<p className="register-filter-note">{g.visible.length} di {g.rows.length} libri corrispondono ai filtri. Stato generale calcolato sull’intero ordine.</p>}
-  <div className="register-order"><div className="register-order-title"><EntryDate label={orderEntryLabel(main.order)} date={main.order.created} orderNumber={orderNumbers.get(main.order.id)||'—'}/><OrderTitleEditor order={main.order} onSave={onTitleSave}/><span className="register-count">Tot. Lavori <strong>{main.order.lines.length}</strong></span></div><div className="register-order-actions">{renderActions(main.order)}</div><div className="register-products">{g.visible.map(r=>{
+  <div className="register-order"><div className="register-order-title"><EntryDate label={orderEntryLabel(main.order)} date={main.order.created} orderNumber={orderNumbers.get(main.order.id)||'—'}/><OrderTitleEditor order={main.order} onSave={onTitleSave} expanded={!!expandedOrders[main.order.id]} onToggle={()=>toggleOrder(main.order.id)} controls={"order-products-"+main.order.id}/><span className="register-count">Tot. Lavori <strong>{main.order.lines.length}</strong></span></div><div className="register-order-actions">{renderActions(main.order)}</div><div className="register-products" id={"order-products-"+main.order.id} hidden={!expandedOrders[main.order.id]}>{g.visible.map(r=>{
    const p=bookProduction(r,r.order);
    const solicited=isOrderSolicited(r.order,now);
    return <article className={'register-work'+(solicited?' register-work-solicited':'')} key={r.id} aria-label={'Libro: '+r.description}><div className="register-work-top"><div className="register-job"><div className="register-job-meta"><button type="button" className={'register-solicit'+(solicited?' register-solicit-active':'')} aria-label={(solicited?'Rimuovi sollecito: ':'Sollecita: ')+r.order.number} aria-pressed={solicited} onClick={()=>onToggleSolicited(r.order.id,!solicited)}><AlertTriangle size={16}/></button><span>Libro {p.bookNumber||'—'}</span></div><button type="button" className="register-job-link" onClick={()=>onOpen(r)}><strong>{r.description}</strong><ArrowUpRight size={17}/></button></div>{renderDelete(r.order,r.id)}<label className="register-select"><input type="checkbox" aria-label={'Seleziona '+r.description} disabled={isInvoiced(r)} checked={selected.includes(r.id)} onChange={e=>onSelect(r.id,e.target.checked)}/><span>Seleziona</span></label></div><dl className="register-data">

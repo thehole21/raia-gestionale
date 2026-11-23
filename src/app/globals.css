@@ -314,3 +314,5 @@ select.register-process option,.inline-status option{background:#fff;color:#3034
 .overview-register .register-group{scroll-margin-top:24px}.overview-register .report-order-target{outline:2px solid #812c46;outline-offset:3px}
 
 .fic-document-links{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}.fic-document-links small{flex-basis:100%;color:var(--muted,#62656b)}.fic-document-links .fic-linked-pdf{background:#edf5f0;border:1px solid #b9d4c2;color:#245138;padding:7px 10px}
+
+.order-title-controls{display:flex;align-items:center;gap:8px;flex:1;min-width:0}.order-title-controls .order-title-edit{min-height:40px}.order-title-pencil{flex-shrink:0}.order-title-chevron{transform:rotate(-90deg)}.order-title-chevron.expanded{transform:rotate(0)}.register-products[hidden]{display:none}@media(max-width:700px){.order-title-controls{flex-basis:50%}.order-title-pencil{min-width:40px;min-height:40px}}

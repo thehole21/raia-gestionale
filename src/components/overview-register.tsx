@@ -1,7 +1,7 @@
 'use client';
 import {orderEntryLabel} from '@/lib/order-entry-label';
 import {useOrderWindow} from './order-window';
-import {useMemo} from 'react';
+import {useMemo,useState} from 'react';
 import {ProcessSelect, ProcessBadge} from './process-controls';
 import {SearchableSelect} from './searchable-select';
 import {workDdtNumber} from '@/lib/delivery-selection';
@@ -28,6 +28,8 @@ export function EntryDate({date,time,orderNumber,label="Entrata commessa"}:{date
 }
 function DataCell({label,children}:{label:string;children:ReactNode}){return <div className="register-field"><dt>{label}</dt><dd>{children}</dd></div>;}
 function OverviewRegisterView({deliveryModes,targetOrderId,suppliers,renderActions,renderDelete,onTitleSave,all,visible,operators,selected,onSelect,onUpdate,onOpen,onToggleSolicited,orderNumbers,now}:{deliveryModes?:string[];targetOrderId?:string;interactionVersion:string;suppliers:Supplier[];renderActions:(order:WorkRow['order'])=>ReactNode;renderDelete:(order:WorkRow['order'],workId:string)=>ReactNode;onTitleSave:SaveOrderTitle;all:WorkRow[];visible:WorkRow[];operators:Operator[];selected:string[];onSelect:(id:string,checked:boolean)=>void;onUpdate:(id:string,changes:Partial<Work>)=>void;onOpen:(row:WorkRow)=>void;onToggleSolicited:(orderId:string,solicited:boolean)=>void;orderNumbers:Map<string,number>;now:number}){
+ const [expandedOrders,setExpandedOrders]=useState<Record<string,boolean>>({});
+ const toggleOrder=(id:string)=>setExpandedOrders(current=>({...current,[id]:!current[id]}));
  const groups=useMemo(()=>groupWork(all,visible),[all,visible]);
  const {shown,footer}=useOrderWindow(groups,targetOrderId);
  function record(r:WorkRow,parent?:WorkRow){
@@ -56,7 +58,7 @@ function OverviewRegisterView({deliveryModes,targetOrderId,suppliers,renderActio
  return <section id={'overview-order-'+g.key} tabIndex={-1} className={"register-group"+(g.key===targetOrderId?" report-order-target":"")} key={g.key}>
  <button type="button" className="register-group-heading" onClick={()=>onOpen(g.visible[0])}><span className="register-company"><small>CLIENTE</small><strong>{g.client.name}</strong></span><ProcessBadge className="register-overall" status={status}/><span className="register-group-action">Dettagli ordine <ChevronRight size={18}/></span></button>
  {g.visible.length<g.rows.length&&<p className="register-filter-note">{g.visible.length} di {g.rows.length} lavorazioni corrispondono ai filtri. Lo stato generale considera l’intero ordine.</p>}
- {orders.map((order,index)=><div className="register-order" key={order.id}><div className="register-order-title">{(index===0||order.created!==orders[0].created)&&<EntryDate label={orderEntryLabel(order)} date={order.created} orderNumber={orderNumbers.get(order.id)||'—'}/>}<OrderTitleEditor order={order} onSave={onTitleSave}/><span className="register-count">Tot. Lavori <strong>{order.lines.length}</strong></span></div><div className="register-order-actions">{renderActions(order)}</div><div className="register-products">{g.visible.filter(r=>r.order.id===order.id).map(r=>record(r,g.visible[0]))}</div></div>)}
+ {orders.map((order,index)=><div className="register-order" key={order.id}><div className="register-order-title">{(index===0||order.created!==orders[0].created)&&<EntryDate label={orderEntryLabel(order)} date={order.created} orderNumber={orderNumbers.get(order.id)||'—'}/>}<OrderTitleEditor order={order} onSave={onTitleSave} expanded={!!expandedOrders[order.id]} onToggle={()=>toggleOrder(order.id)} controls={"order-products-"+order.id}/><span className="register-count">Tot. Lavori <strong>{order.lines.length}</strong></span></div><div className="register-order-actions">{renderActions(order)}</div><div className="register-products" id={"order-products-"+order.id} hidden={!expandedOrders[order.id]}>{g.visible.filter(r=>r.order.id===order.id).map(r=>record(r,g.visible[0]))}</div></div>)}
  </section>;
  })}{footer}</div>;
 }
