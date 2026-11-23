@@ -323,3 +323,12 @@ select.register-process option,.inline-status option{background:#fff;color:#3034
 .overview-register > .register-group:nth-of-type(even) > .register-group-heading:hover{background:#d6e5f0}
 .overview-register > .register-group:nth-of-type(even) .register-order-title{background:#edf3f8;border-bottom-color:#cddce7}
 .overview-register > .register-group:nth-of-type(even) .register-order-actions{background:#f5f8fb}
+
+/* Solicitation remains prominent on collapsed cards and overrides alternating backgrounds. */
+.overview-register > .register-group.register-group-solicited{background:#fff0f2;border-color:#cf4053;box-shadow:inset 4px 0 0 #c52238,0 2px 7px #a7203020}
+.overview-register > .register-group.register-group-solicited > .register-group-heading{background:#ffcbd3;color:#86182a}
+.overview-register > .register-group.register-group-solicited > .register-group-heading:hover{background:#ffbbc6}
+.overview-register > .register-group.register-group-solicited .register-order-title{background:#ffd9de;border-bottom-color:#e89aa5}
+.overview-register > .register-group.register-group-solicited .register-order-actions{background:#fff0f2;border-bottom-color:#e89aa5}
+.register-order-title > .register-order-alert{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;background:#b51f35;color:#fff;border:1px solid #a21c2f;border-radius:7px;padding:6px 9px;font-size:11px;font-weight:700;min-height:34px}
+.register-order-alert svg{flex-shrink:0}.register-order-title > .register-order-alert:hover{background:#94182b}.register-order-alert:focus-visible{outline:2px solid #86182a;outline-offset:3px}
