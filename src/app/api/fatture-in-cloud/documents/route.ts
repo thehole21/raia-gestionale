@@ -1,3 +1,4 @@
+import {freshDocumentData,ficValidationMessage} from '@/lib/fic-create-data';
 import {reconcilePayments,applyPaymentTerms} from '@/lib/fic-payments';
 import {ddtInvoiceLink} from '@/lib/fic-ddt-status';
 import {joinIds,joinDdtData,readJoinSources,validateJoinSources,verifyJoinedInvoice,reconcileJoinReservations} from '@/lib/fic-ddt-join';
@@ -74,7 +75,7 @@ export async function POST(request:Request){try{
   if(ids)await reconcileJoinReservations(ctx.service,ctx.c.tokens.access_token,ctx.company,ids,ctx.userId);
   const sourceId=ids?null:body.sourceId?id(body.sourceId):null;
   const transformed=ids?await joinDdtData(ctx.c.tokens.access_token,ctx.company,ids,body.group):sourceId?await sourceData(ctx,sourceId,body.document.type):null;
-  let doc:any;try{doc=applyPaymentTerms(cleanDocument(body.document));validateDocument(doc);}catch(e){throw new FicError((e as Error).message);}
+  let doc:any;try{doc=freshDocumentData(applyPaymentTerms(cleanDocument(body.document)));validateDocument(doc);if(doc.e_invoice&&!/^MP(?:0[1-9]|1[0-9]|2[0-3])$/.test(doc.ei_data?.payment_method||''))throw Error('Seleziona la modalità di pagamento elettronica nei Pagamenti e condizioni (es. Bonifico).');}catch(e){throw new FicError((e as Error).message);}
   if((sourceId||ids)&&doc.entity?.id!==transformed!.source.entity?.id)throw new FicError('La trasformazione deve mantenere il cliente del documento originale.');
   if(!sourceId&&!ids){const client=(await ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/entities/clients/${id(doc.entity?.id)}`)).data;doc.entity={...client,...doc.entity,id:client.id};}
   const {data:ws,error:wsError}=await ctx.db.from('raia_workspace').select('payload,revision').eq('id',1).single();if(wsError)throw new FicError('Gestionale non disponibile.');
@@ -97,7 +98,7 @@ export async function POST(request:Request){try{
   }
   if((sourceId||ids)&&workIds.length){const rows=(ws.payload as Store).orders.flatMap(o=>o.lines.filter(l=>workIds.includes(l.id)).map(l=>({o,l})));if(rows.length!==workIds.length)throw new FicError('Una lavorazione collegata non esiste più.');if(doc.type==='invoice'&&rows.some(({l})=>l.invoiceId||/^(si|sì|true)$/i.test(l.production?.invoicing||'')))throw new FicError('Una lavorazione è già fatturata o collegata a una bozza.');}
   const options=transformed?transformed.options:{fix_payments:true};
-  const result=await fetch(api+`/c/${ctx.company}/issued_documents/totals`,{method:'POST',headers:{Authorization:'Bearer '+ctx.c.tokens.access_token,'Content-Type':'application/json'},body:JSON.stringify({data:doc,options}),signal:AbortSignal.timeout(20000)});const totals=await result.json();if(!result.ok)throw new FicError(totals.error?.message||'Controlla i campi del documento.');
+  const result=await fetch(api+`/c/${ctx.company}/issued_documents/totals`,{method:'POST',headers:{Authorization:'Bearer '+ctx.c.tokens.access_token,'Content-Type':'application/json'},body:JSON.stringify({data:doc,options}),signal:AbortSignal.timeout(20000)});const totals=await result.json();if(!result.ok)throw new FicError(ficValidationMessage(totals));
   try{doc=reconcilePayments(doc,totals.data?.amount_due);}catch(e){throw new FicError((e as Error).message);}
   const operationId=randomUUID();const {error}=await ctx.service.from('raia_fic_documents').insert({id:operationId,company_id:ctx.company,source_id:sourceId,...(ids?{source_ids:ids,source_fingerprints:Object.fromEntries((transformed as any).sources.map((s:any)=>[s.id,sourceDigest(s)]))}:{}),source_fingerprint:transformed?sourceDigest(transformed.source):null,target_type:doc.type,status:'prepared',request_data:doc,options,work_ids:workIds,workspace_revision:ws.revision,created_by:ctx.userId});if(error)throw new FicError('Impossibile salvare l’anteprima. Verifica la configurazione database.',503);
   return json({operationId,totals:totals.data,data:doc,confirmation:seal({id:operationId,user:ctx.userId,company:ctx.company,hash:digest(doc),expires:Date.now()+600000},'document-preview')});
@@ -111,7 +112,7 @@ export async function POST(request:Request){try{
  const {error:claimError}=await ctx.service.rpc('raia_claim_document',{operation_id:op.id,actor_id:ctx.userId});if(claimError)throw new FicError('Richiesta già inviata, trasformazione già eseguita o lavori modificati. Controlla le operazioni e ricarica.',409);
  try{
   const response=await fetch(api+`/c/${ctx.company}/issued_documents`,{method:'POST',headers:{Authorization:'Bearer '+ctx.c.tokens.access_token,'Content-Type':'application/json'},body:JSON.stringify({data:op.request_data,options:op.options}),signal:AbortSignal.timeout(20000)});
-  const result=await response.json();if(!response.ok){if(response.status>=400&&response.status<500&&![408,409,429].includes(response.status)){await ctx.service.from('raia_fic_documents').update({status:'failed'}).eq('id',op.id);throw new FicError(result.error?.message||'Documento rifiutato da Fatture in Cloud.',422);}throw Error('uncertain');}
+  const result=await response.json();if(!response.ok){if(response.status>=400&&response.status<500&&![408,409,429].includes(response.status)){await ctx.service.from('raia_fic_documents').update({status:'failed'}).eq('id',op.id);throw new FicError(ficValidationMessage(result),422);}throw Error('uncertain');}
   const doc=result.data;if(!Number.isSafeInteger(doc?.id))throw Error('uncertain');
   // Persist the remote ID and verify FIC links concurrently; await both even on failure.
   const [record,links]=await Promise.allSettled([
