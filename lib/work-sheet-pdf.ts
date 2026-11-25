@@ -47,15 +47,17 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  for(const l of titleLines){font(titleSize,true);doc.text(l,315,cy,{align:'center'});cy+=titleSize*.4;}
  const deliveryDates=[...new Set(order.lines.map(w=>workDue(w,order)).filter(Boolean))].sort();
  if(!order.lines.length&&order.due)deliveryDates.push(order.due);
- text('DATA DI CONSEGNA',232,221,9,true,wine);
- const dateLines=wrap(deliveryDates.map(fmtDate).join(' / '),115,11);
+ const deliveryTop=cy-2;
+ const dateLines=wrap(deliveryDates.map(fmtDate).join(' / '),120,11);
  if(dateLines.length>2)throw new Error('Troppe date di consegna per la copertina: suddividi la commessa prima di stampare.');
- dateLines.forEach((value,i)=>text(value,278,221+i*4.5,11,true));
  doc.setDrawColor(line);doc.setLineWidth(.3);
- if(!deliveryDates.length)doc.line(278,223,394,223);
- text('LUOGO DI CONSEGNA',232,236,9,true,wine);doc.line(278,238,394,238);
- text(orderEntryLabel(order).toUpperCase()+' N.',232,251,9,true,muted);text(code,232,262,17,true,wine);
- right('LAVORAZIONI',251,9,true,muted);right(String(order.lines.length),265,28,true,wine);
+ doc.rect(232,deliveryTop,166,28);doc.line(232,deliveryTop+12,398,deliveryTop+12);doc.line(277,deliveryTop,277,deliveryTop+28);
+ text('DATA DI CONSEGNA',235,deliveryTop+5,8,true,wine);
+ dateLines.forEach((value,i)=>text(value,280,deliveryTop+5+i*4.5,11,true));
+ text('LUOGO DI CONSEGNA',235,deliveryTop+18,8,true,wine);
+ grid(232,deliveryTop+28,166,258-deliveryTop-28);
+ text(orderEntryLabel(order).toUpperCase()+' N.',232,267,9,true,muted);text(code,232,278,17,true,wine);
+ right('LAVORAZIONI',267,9,true,muted);right(String(order.lines.length),279,24,true,wine);
 
  text('RAIA / PRODUZIONE',14,23,10,true,wine);text('Riepilogo ordine',14,38,22,true);
  text(code,14,49,10,false,muted);doc.setDrawColor(line);doc.line(14,56,196,56);
