@@ -59,7 +59,9 @@ export async function POST(request:Request){let ctx:Awaited<ReturnType<typeof dd
   let lines;try{lines=deliverySelection(order,body.workIds);}catch(e){throw new FicError((e as Error).message);}
   workIds=lines.map(w=>w.id);operationId=randomUUID();
   if(!Number.isSafeInteger(body.clientId)||body.clientId<1||!/^\d{4}-\d{2}-\d{2}$/.test(body.date)||Number.isNaN(Date.parse(body.date+'T12:00:00Z'))||new Date(body.date+'T12:00:00Z').toISOString().slice(0,10)!==body.date)throw new FicError('Controlla cliente e data.');
-  const entity=(await ficGet(c.tokens.access_token,`/c/${c.row.company_id}/entities/clients/${body.clientId}`)).data;if(!entity?.name)throw new FicError('Cliente non valido.');
+  const store=ws.payload as Store,client=store.clients.find(v=>v.id===order.clientId)||store.clientHistory?.find(v=>v.id===order.clientId);
+  const entity=await resolveFicClient(c.tokens.access_token,c.row.company_id,client);
+  if(!entity?.name||entity.id!==body.clientId)throw new FicError('Il DDT deve mantenere il committente dell’ordine. Collega il cliente a Fatture in Cloud e riapri il DDT.');
   for(const field of ['destination','carrier','packages','reason'])if(typeof body[field]!=='string'||body[field].length>500)throw new FicError('Dati di trasporto non validi.');
   if(!body.destination.trim()||!body.reason.trim())throw new FicError('Inserisci destinazione e causale.');
   payload={type:'delivery_note',entity,date:body.date,subject:'Ordine n. '+(orderRegistrationNumbers((ws.payload as Store).orders).get(order.id)||order.number),visible_subject:'Ordine n. '+(orderRegistrationNumbers((ws.payload as Store).orders).get(order.id)||order.number)+(order.title?' · '+order.title:''),e_invoice:false,show_totals:'none',dn_ai_destination:body.destination,dn_ai_transporter:body.carrier,dn_ai_packages_number:body.packages,dn_ai_causal:body.reason,items_list:lines.map(l=>({name:l.description,qty:l.qty,measure:l.unit,net_price:0}))};
