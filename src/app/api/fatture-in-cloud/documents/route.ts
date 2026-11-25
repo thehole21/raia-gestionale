@@ -1,3 +1,4 @@
+import {reconcilePayments} from '@/lib/fic-payments';
 import {ddtInvoiceLink} from '@/lib/fic-ddt-status';
 import {joinIds,joinDdtData,readJoinSources,validateJoinSources,verifyJoinedInvoice,reconcileJoinReservations} from '@/lib/fic-ddt-join';
 import {createClient} from '@supabase/supabase-js';
@@ -97,6 +98,7 @@ export async function POST(request:Request){try{
   if((sourceId||ids)&&workIds.length){const rows=(ws.payload as Store).orders.flatMap(o=>o.lines.filter(l=>workIds.includes(l.id)).map(l=>({o,l})));if(rows.length!==workIds.length)throw new FicError('Una lavorazione collegata non esiste più.');if(doc.type==='invoice'&&rows.some(({l})=>l.invoiceId||/^(si|sì|true)$/i.test(l.production?.invoicing||'')))throw new FicError('Una lavorazione è già fatturata o collegata a una bozza.');}
   const options=transformed?transformed.options:{fix_payments:true};
   const result=await fetch(api+`/c/${ctx.company}/issued_documents/totals`,{method:'POST',headers:{Authorization:'Bearer '+ctx.c.tokens.access_token,'Content-Type':'application/json'},body:JSON.stringify({data:doc,options}),signal:AbortSignal.timeout(20000)});const totals=await result.json();if(!result.ok)throw new FicError(totals.error?.message||'Controlla i campi del documento.');
+  try{doc=reconcilePayments(doc,totals.data?.amount_due);}catch(e){throw new FicError((e as Error).message);}
   const operationId=randomUUID();const {error}=await ctx.service.from('raia_fic_documents').insert({id:operationId,company_id:ctx.company,source_id:sourceId,...(ids?{source_ids:ids,source_fingerprints:Object.fromEntries((transformed as any).sources.map((s:any)=>[s.id,sourceDigest(s)]))}:{}),source_fingerprint:transformed?sourceDigest(transformed.source):null,target_type:doc.type,status:'prepared',request_data:doc,options,work_ids:workIds,workspace_revision:ws.revision,created_by:ctx.userId});if(error)throw new FicError('Impossibile salvare l’anteprima. Verifica la configurazione database.',503);
   return json({operationId,totals:totals.data,data:doc,confirmation:seal({id:operationId,user:ctx.userId,company:ctx.company,hash:digest(doc),expires:Date.now()+600000},'document-preview')});
  }
@@ -111,8 +113,13 @@ export async function POST(request:Request){try{
   const response=await fetch(api+`/c/${ctx.company}/issued_documents`,{method:'POST',headers:{Authorization:'Bearer '+ctx.c.tokens.access_token,'Content-Type':'application/json'},body:JSON.stringify({data:op.request_data,options:op.options}),signal:AbortSignal.timeout(20000)});
   const result=await response.json();if(!response.ok){if(response.status>=400&&response.status<500&&![408,409,429].includes(response.status)){await ctx.service.from('raia_fic_documents').update({status:'failed'}).eq('id',op.id);throw new FicError(result.error?.message||'Documento rifiutato da Fatture in Cloud.',422);}throw Error('uncertain');}
   const doc=result.data;if(!Number.isSafeInteger(doc?.id))throw Error('uncertain');
-  const {error:recordError}=await ctx.service.from('raia_fic_documents').update({remote_id:doc.id,remote_number:String(doc.number)+(doc.numeration||'')}).eq('id',op.id);if(recordError)throw recordError;
-  if(op.source_ids?.length&&!op.source_id)await verifyJoinedInvoice(ctx.c.tokens.access_token,ctx.company,op.source_ids,doc.id);
+  // Persist the remote ID and verify FIC links concurrently; await both even on failure.
+  const [record,links]=await Promise.allSettled([
+   ctx.service.from('raia_fic_documents').update({remote_id:doc.id,remote_number:String(doc.number)+(doc.numeration||'')}).eq('id',op.id),
+   op.source_ids?.length&&!op.source_id?verifyJoinedInvoice(ctx.c.tokens.access_token,ctx.company,op.source_ids,doc.id):Promise.resolve()
+  ]);
+  if(record.status==='rejected')throw record.reason;if(record.value.error)throw record.value.error;
+  if(links.status==='rejected')throw links.reason;
   const {error:finishError}=await ctx.service.rpc('raia_finish_document',{operation_id:op.id,document_id:doc.id,document_number:String(doc.number)+(doc.numeration||''),actor_id:ctx.userId});if(finishError)throw finishError;
   return json({created:true,data:doc});
  }catch(e){if(e instanceof FicError&&e.status===422)throw e;await ctx.service.from('raia_fic_documents').update({status:'reconcile'}).eq('id',op.id);throw new FicError('Esito da verificare. Non inviare di nuovo: usa Verifica operazione per recuperare il documento senza duplicarlo.',409);}
