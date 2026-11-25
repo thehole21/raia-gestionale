@@ -1,6 +1,6 @@
 import {processFromText} from './processes';
 import { STATUSES, id, type Store, type Status } from './data';
-export const fields = [['ddtNumber','Numero DDT'],['ddtDate','Data DDT'],['number','Commessa'],['client','Cliente *'],['description','Lavorazione *'],['date','Data ordine'],['execution','Data esecuzione'],['due','Consegna'],['qty','Quantità'],['unit','Unità'],['price','Prezzo unitario'],['status','Stato'],['operator','Operatore'],['notes','Note']] as const;
+export const fields = [['ddtNumber','Numero DDT'],['ddtDate','Data DDT'],['number','Commessa'],['client','Cliente *'],['description','Lavorazione *'],['date','Data commessa'],['execution','Data esecuzione'],['due','Consegna'],['qty','Quantità'],['unit','Unità'],['price','Prezzo unitario'],['status','Stato'],['operator','Operatore'],['notes','Note']] as const;
 export type Mapping = Record<string, string>;
 export function numberValue(value: unknown, fallback: number) {
  if(value === '' || value === null || value === undefined)return fallback;

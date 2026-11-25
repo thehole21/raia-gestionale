@@ -21,7 +21,7 @@ export function baseBookUnit(s:Pick<BookItem,'format'|'paper'|'paperWeight'|'pag
 }
 export function bookPrice(spec:BookSpec):{price:BookPrice|null;errors:string[]}{
  const errors:string[]=[],books=[spec,...(spec.additionalBooks||[])],kind=spec.orderKind||'standard',shipments=spec.shipments??0;
- if(!['standard','sample','mixed'].includes(kind))errors.push('Tipo di ordine non valido.');
+ if(!['standard','sample','mixed'].includes(kind))errors.push('Tipo di commessa non valido.');
  if(books.length>10||(kind!=='mixed'&&books.length!==1)||(kind==='mixed'&&books.length<2))errors.push('La lista mista deve contenere da 2 a 10 titoli.');
  if(!Number.isInteger(shipments)||shipments<0||shipments>100000)errors.push('Numero di spedizioni non valido.');
  books.forEach((s,i)=>{

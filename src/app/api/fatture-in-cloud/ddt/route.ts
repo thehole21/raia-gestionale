@@ -14,11 +14,11 @@ export async function GET(request:Request){try{
  if(!c?.row.company_id)throw new FicError('Un amministratore deve collegare Fatture in Cloud e scegliere l’azienda.');
  const q=new URL(request.url).searchParams;
  if(q.get('action')==='clients')return json(await searchFicClients(c.tokens.access_token,c.row.company_id,q));
- const orderId=q.get('orderId');if(!orderId)throw new FicError('Ordine richiesto.');
+ const orderId=q.get('orderId');if(!orderId)throw new FicError('Commessa richiesto.');
  const {data:ws,error:wsError}=await ctx.userDb.from('raia_workspace').select('payload,revision').eq('id',1).single();
- if(wsError||!ws)throw new FicError('Ordini non disponibili.');
+ if(wsError||!ws)throw new FicError('Commesse non disponibili.');
  const store=ws.payload as Store,order=store.orders.find(o=>o.id===orderId);
- if(!order)throw new FicError('Ordine non disponibile.');
+ if(!order)throw new FicError('Commessa non disponibile.');
  const operationId=q.get('operationId');
  if(operationId){
   const legacy=operationId==='legacy';
@@ -50,21 +50,21 @@ export async function GET(request:Request){try{
 export async function POST(request:Request){let ctx:Awaited<ReturnType<typeof ddtContext>>|undefined;let claimed=false,operationId='';try{
  sameOrigin(request);ctx=await ddtContext(bearer(request));const c=await connection(ctx);if(!c?.row.company_id)throw new FicError('Collegamento mancante.');
  const body=await request.json(),orderId=body.orderId;
- const {data:ws,error}=await ctx.userDb.from('raia_workspace').select('payload,revision').eq('id',1).single();if(error||!ws)throw new FicError('Ordini non disponibili.');
+ const {data:ws,error}=await ctx.userDb.from('raia_workspace').select('payload,revision').eq('id',1).single();if(error||!ws)throw new FicError('Commesse non disponibili.');
  let payload:any,workIds:string[];
  if(body.confirmation){const p=unseal<any>(body.confirmation,'ddt-preview-v2');if(p.user!==ctx.userId||p.expires<Date.now()||p.orderId!==orderId||p.revision!==ws.revision||p.companyId!==c.row.company_id)throw new FicError('Anteprima scaduta o dati modificati. Riapri il DDT.',409);payload=p.payload;workIds=p.workIds;operationId=p.operationId;
  }else{
   if(body.companyId!==c.row.company_id||body.revision!==ws.revision)throw new FicError('Dati aggiornati nel frattempo. Riapri il DDT.',409);
-  const order=(ws.payload as Store).orders.find(o=>o.id===orderId);if(!order)throw new FicError('Ordine non disponibile.');
+  const order=(ws.payload as Store).orders.find(o=>o.id===orderId);if(!order)throw new FicError('Commessa non disponibile.');
   let lines;try{lines=deliverySelection(order,body.workIds);}catch(e){throw new FicError((e as Error).message);}
   workIds=lines.map(w=>w.id);operationId=randomUUID();
   if(!Number.isSafeInteger(body.clientId)||body.clientId<1||!/^\d{4}-\d{2}-\d{2}$/.test(body.date)||Number.isNaN(Date.parse(body.date+'T12:00:00Z'))||new Date(body.date+'T12:00:00Z').toISOString().slice(0,10)!==body.date)throw new FicError('Controlla cliente e data.');
   const store=ws.payload as Store,client=store.clients.find(v=>v.id===order.clientId)||store.clientHistory?.find(v=>v.id===order.clientId);
   const entity=await resolveFicClient(c.tokens.access_token,c.row.company_id,client);
-  if(!entity?.name||entity.id!==body.clientId)throw new FicError('Il DDT deve mantenere il committente dell’ordine. Collega il cliente a Fatture in Cloud e riapri il DDT.');
+  if(!entity?.name||entity.id!==body.clientId)throw new FicError('Il DDT deve mantenere il committente della commessa. Collega il cliente a Fatture in Cloud e riapri il DDT.');
   for(const field of ['destination','carrier','packages','reason'])if(typeof body[field]!=='string'||body[field].length>500)throw new FicError('Dati di trasporto non validi.');
   if(!body.destination.trim()||!body.reason.trim())throw new FicError('Inserisci destinazione e causale.');
-  payload={type:'delivery_note',entity,date:body.date,subject:'Ordine n. '+(orderRegistrationNumbers((ws.payload as Store).orders).get(order.id)||order.number),visible_subject:'Ordine n. '+(orderRegistrationNumbers((ws.payload as Store).orders).get(order.id)||order.number)+(order.title?' · '+order.title:''),e_invoice:false,show_totals:'none',dn_ai_destination:body.destination,dn_ai_transporter:body.carrier,dn_ai_packages_number:body.packages,dn_ai_causal:body.reason,items_list:lines.map(l=>({name:l.description,qty:l.qty,measure:l.unit,net_price:0}))};
+  payload={type:'delivery_note',entity,date:body.date,subject:'Commessa n. '+(orderRegistrationNumbers((ws.payload as Store).orders).get(order.id)||order.number),visible_subject:'Commessa n. '+(orderRegistrationNumbers((ws.payload as Store).orders).get(order.id)||order.number)+(order.title?' · '+order.title:''),e_invoice:false,show_totals:'none',dn_ai_destination:body.destination,dn_ai_transporter:body.carrier,dn_ai_packages_number:body.packages,dn_ai_causal:body.reason,items_list:lines.map(l=>({name:l.description,qty:l.qty,measure:l.unit,net_price:0}))};
   return json({confirmation:seal({payload,workIds,operationId,user:ctx.userId,orderId,revision:ws.revision,companyId:c.row.company_id,expires:Date.now()+600000},'ddt-preview-v2'),customer:entity.name,lines:payload.items_list});
  }
  const {data:claim,error:claimError}=await ctx.userDb.rpc('raia_claim_delivery',{operation_id:operationId,target_order:orderId,selected_ids:workIds,expected_revision:ws.revision,target_company:c.row.company_id,document_data:payload});

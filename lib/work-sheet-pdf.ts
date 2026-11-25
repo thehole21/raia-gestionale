@@ -33,7 +33,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  // Outer face: back on the left, front cover on the right.
  doc.addImage(logo,'PNG',267,17,100.8,50.16,undefined,'FAST');
  function right(value:unknown,yy:number,size:number,bold=false,color=ink){font(size,bold,color);doc.text(clean(value),394,yy,{align:'right'});}
- right('ORDINE · '+fmtDate(order.created),80,12,true,wine);
+ right('COMMESSA · '+fmtDate(order.created),80,12,true,wine);
  const details=[client?.phone&&'Tel. '+client.phone,client?.email, [client?.address,client?.postalCode,client?.city,client?.province].filter(Boolean).join(' '),client?.vat&&'P. IVA '+client.vat,client?.taxCode&&'C.F. '+client.taxCode,client?.pec&&'PEC '+client.pec].filter(Boolean);
  let cy=89;for(const d of details){for(const l of wrap(d,162,10)){right(l,cy,10);cy+=4.5;}}
  cy=Math.max(124,cy+10);right('CLIENTE',cy,10,true,wine);cy+=10;
@@ -59,7 +59,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  text(orderEntryLabel(order).toUpperCase()+' N.',232,267,9,true,muted);text(code,232,278,17,true,wine);
  right('LAVORAZIONI',267,9,true,muted);right(String(order.lines.length),279,24,true,wine);
 
- text('RAIA / PRODUZIONE',14,23,10,true,wine);text('Riepilogo ordine',14,38,22,true);
+ text('RAIA / PRODUZIONE',14,23,10,true,wine);text('Riepilogo commessa',14,38,22,true);
  text(code,14,49,10,false,muted);doc.setDrawColor(line);doc.line(14,56,196,56);
  let sy=66;
  for(let i=0;i<Math.min(9,order.lines.length);i++){
@@ -73,7 +73,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
  const x=224,width=182;
  for(let index=0;index<order.lines.length;index++){
   const work=order.lines[index];
-  const fields:[string,string][]=[['QUANTITÀ',quantityLabel(work)],['DATA ORDINE',fmtDate(order.created)],['CONSEGNA RICHIESTA',fmtDate(work.production?work.production.requestedDate:order.due)],['OPERATORI',assigned(work)],['FORNITORI',work.production?.supplier||''],['MODALITÀ CONSEGNA',work.production?.delivery||'']];
+  const fields:[string,string][]=[['QUANTITÀ',quantityLabel(work)],['DATA COMMESSA',fmtDate(order.created)],['CONSEGNA RICHIESTA',fmtDate(work.production?work.production.requestedDate:order.due)],['OPERATORI',assigned(work)],['FORNITORI',work.production?.supplier||''],['MODALITÀ CONSEGNA',work.production?.delivery||'']];
   const specs:[string,string][]=[];
   for(const f of technicalFields(store).filter(f=>f.enabled&&f.printable!==false&&work.technical?.[f.key]?.trim()))specs.push([f.label.toUpperCase(),work.technical![f.key]]);
   if(work.production?.category==='Libri')fields.push(['INGRESSO / USCITA',[work.production.entryTime,work.production.exitTime].filter(Boolean).join(' / ')],['URGENZA',work.production.urgent?'Urgente':'No']);
@@ -96,7 +96,7 @@ export async function buildWorkSheetPdf(order:Order,store:Store,code:string,logo
    for(let i=0;i<count;i++){if(left[i])put(left[i],x,y);if(right[i])put(right[i],x+96,y);if(draw){doc.setDrawColor(line);doc.setLineWidth(.25);doc.line(x,y+2,x+86,y+2);doc.line(x+96,y+2,x+182,y+2);}y+=spacing;}y+=5;
    put('APPUNTI DI REPARTO',x,y,8,true,muted);y+=4;if(draw)grid(x,y,width,24+extra);y+=31+extra;
    put('ALTRI OPERATORI / FIRME',x,y,labelSize,true,wine);y+=8;if(draw){doc.setDrawColor(line);doc.line(x,y,x+182,y);}y+=8;
-   block('NOTE ORDINE',order.notes);block('GRUPPO / EVENTO',work.production?.section);
+   block('NOTE COMMESSA',order.notes);block('GRUPPO / EVENTO',work.production?.section);
    return y;
   }
   let size=11.5;while(size>9&&layout(false,size)>274)size-=.5;

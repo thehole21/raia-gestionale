@@ -1,7 +1,7 @@
 import rawSchema from './fic-document-schema.json';
 export type Schema={type?:string;format?:string;description?:string;readOnly?:boolean;enum?:any[];properties?:Record<string,Schema>;items?:Schema};
 export const documentSchema=rawSchema as Schema;
-export const documentTypes:Record<string,string>={quote:'Preventivo',order:'Ordine',proforma:'Proforma',receipt:'Ricevuta',invoice:'Fattura',delivery_note:'DDT',credit_note:'Nota di credito',work_report:'Rapporto di intervento',supplier_order:'Ordine fornitore',self_invoice:'Autofattura'};
+export const documentTypes:Record<string,string>={quote:'Preventivo',order:'Commessa',proforma:'Proforma',receipt:'Ricevuta',invoice:'Fattura',delivery_note:'DDT',credit_note:'Nota di credito',work_report:'Rapporto di intervento',supplier_order:'Commessa fornitore',self_invoice:'Autofattura'};
 export const transformTypes:Record<string,string[]>={quote:['order','proforma','receipt','invoice'],work_report:['order','proforma','receipt','invoice'],order:['proforma','receipt','invoice'],proforma:['receipt','invoice'],delivery_note:['invoice']};
 export const readOnlyField=(key:string,s:Schema)=>!!s.readOnly||/\[read.?only\]/i.test(s.description||'')||['url','dn_url','ai_url','attachment_url','created_at','updated_at','ei_status','locked','seen_date','next_due_date'].includes(key);
 export function cleanDocument(value:any,schema:Schema=documentSchema,root=true):any{

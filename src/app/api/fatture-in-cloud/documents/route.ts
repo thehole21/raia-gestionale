@@ -76,6 +76,7 @@ export async function POST(request:Request){try{
   const sourceId=ids?null:body.sourceId?id(body.sourceId):null;
   const transformed=ids?await joinDdtData(ctx.c.tokens.access_token,ctx.company,ids,body.group):sourceId?await sourceData(ctx,sourceId,body.document.type):null;
   let doc:any;try{doc=freshDocumentData(applyPaymentTerms(cleanDocument(body.document)));validateDocument(doc);if(doc.e_invoice&&!/^MP(?:0[1-9]|1[0-9]|2[0-3])$/.test(doc.ei_data?.payment_method||''))throw Error('Seleziona la modalità di pagamento elettronica nei Pagamenti e condizioni (es. Bonifico).');}catch(e){throw new FicError((e as Error).message);}
+  for(const key of ['subject','visible_subject'])if(typeof doc[key]==='string')doc[key]=doc[key].replace(/\bOrdine\b/g,'Commessa').replace(/\bORDINE\b/g,'COMMESSA').replace(/\bordine\b/g,'commessa');
   if((sourceId||ids)&&doc.entity?.id!==transformed!.source.entity?.id)throw new FicError('La trasformazione deve mantenere il cliente del documento originale.');
   if(!sourceId&&!ids){const client=(await ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/entities/clients/${id(doc.entity?.id)}`)).data;doc.entity={...client,...doc.entity,id:client.id};}
   const {data:ws,error:wsError}=await ctx.db.from('raia_workspace').select('payload,revision').eq('id',1).single();if(wsError)throw new FicError('Gestionale non disponibile.');
@@ -92,9 +93,9 @@ export async function POST(request:Request){try{
     workIds=delivery?.work_ids||workIds;
    }
   }else if(body.orderId){
-   const store=ws.payload as Store,order=store.orders.find(o=>o.id===body.orderId);if(!order)throw new FicError('Ordine non trovato.');
-   const client=store.clients.find(c=>c.id===order.clientId);if(client?.ficEntityId!==doc.entity.id||client?.ficCompanyId!==ctx.company)throw new FicError('Il cliente del documento deve corrispondere al cliente Fatture in Cloud associato all’ordine.');
-   workIds=order.lines.map(l=>l.id);doc.subject='Ordine n. '+orderRegistrationNumbers(store.orders).get(order.id);
+   const store=ws.payload as Store,order=store.orders.find(o=>o.id===body.orderId);if(!order)throw new FicError('Commessa non trovato.');
+   const client=store.clients.find(c=>c.id===order.clientId);if(client?.ficEntityId!==doc.entity.id||client?.ficCompanyId!==ctx.company)throw new FicError('Il cliente del documento deve corrispondere al cliente Fatture in Cloud associato alla commessa.');
+   workIds=order.lines.map(l=>l.id);doc.subject='Commessa n. '+orderRegistrationNumbers(store.orders).get(order.id);
   }
   if((sourceId||ids)&&workIds.length){const rows=(ws.payload as Store).orders.flatMap(o=>o.lines.filter(l=>workIds.includes(l.id)).map(l=>({o,l})));if(rows.length!==workIds.length)throw new FicError('Una lavorazione collegata non esiste più.');if(doc.type==='invoice'&&rows.some(({l})=>l.invoiceId||/^(si|sì|true)$/i.test(l.production?.invoicing||'')))throw new FicError('Una lavorazione è già fatturata o collegata a una bozza.');}
   const options=transformed?transformed.options:{fix_payments:true};

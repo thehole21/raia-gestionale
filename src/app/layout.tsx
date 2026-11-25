@@ -3,7 +3,7 @@ import './globals.css';
 import './settings-layout.css';
 export const metadata: Metadata = {
   title: 'RAIA Workspace · Gestionale',
-  description: 'Gestione lavori, clienti, ordini e bozze di fatturazione',
+  description: 'Gestione lavori, clienti, commesse e bozze di fatturazione',
   icons: { icon: '/images/raia-monogram-transparent.png', apple: '/images/raia-monogram-transparent.png' },
   robots: { index: false, follow: false },
 };

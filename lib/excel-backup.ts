@@ -9,7 +9,7 @@ export type ArchivedOrder={id:number;order_data:Order;client_data:Client|null;ac
 const months=['GENNAIO','FEBBRAIO','MARZO','APRILE','MAGGIO','GIUGNO','LUGLIO','AGOSTO','SETTEMBRE','OTTOBRE','NOVEMBRE','DICEMBRE'];
 const general=['','Entrata','Cliente','Lavoro','copie','Operatore','Fornitore','Processo','Consegna richiesta','DDT','Consegna','Terminato','Fatturato'];
 const books=['N.','Cliente','Data ingresso','Orario ingresso','Titolo Lavoro','Copie','Operatore','Processo','Commenti','Consegna','URGENZA','Orario uscita','DDT','Consegna','Terminato','Fatturato'];
-const extra=['Numero ordine','Data esecuzione','Note lavoro','Note ordine','Sezione','Annotazioni','Prezzo unitario','Unità','Sollecitato','ID ordine','ID lavorazione','Commenti lavorazione','Fornitore lavorazione','Data DDT','Titolo ordine'];
+const extra=['Numero commessa','Data esecuzione','Note lavoro','Note commessa','Sezione','Annotazioni','Prezzo unitario','Unità','Sollecitato','ID commessa','ID lavorazione','Commenti lavorazione','Fornitore lavorazione','Data DDT','Titolo commessa'];
 const date=(value:string|undefined):Date|string=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')?new Date(value+'T12:00:00'):value||'';
 function row(r:WorkRow,book:boolean,store:Store){
  const p=r.production,qty=p?.quantity??r.qty,op=r.operator.name==='—'?'':r.operator.name;
@@ -46,7 +46,7 @@ export function buildExcelBackup(store:Store,archived:ArchivedOrder[]=[]){
  add('FORNITORI',['Fornitore','Email','Telefono','Note','Selezionabile','ID'],suppliersOf(store).map(s=>[s.name,s.email,s.phone,s.notes,s.active?'Sì':'No',s.id]));
  add('OPERATORI',['Nome','ID','Selezionabile'],[...store.operators.map(o=>[o.name,o.id,'Sì']),...(store.operatorHistory||[]).filter(o=>!store.operators.some(a=>a.id===o.id)).map(o=>[o.name,o.id,'No · storico'])]);
  add('BOZZE FATTURE',['Numero','Cliente','Data','Stato','Lavorazioni','ID'],store.drafts.map(d=>[d.number,store.clients.find(c=>c.id===d.clientId)?.name||d.clientId,date(d.created),d.status||'draft',d.workIds.join(', '),d.id]));
- add('ORDINI ANNULLATI',['Ordine','Cliente','Lavorazione','Copie','Processo precedente','Annullato il','Annullato da','ID ordine'],archived.flatMap(a=>a.order_data.lines.map(l=>[a.order_data.number,a.client_data?.name||'',l.description,l.production?.quantity??l.qty,processLabel(store,l.status),a.deleted_at,a.actor_name||'',a.order_data.id])));
+ add('COMMESSE ANNULLATI',['Commessa','Cliente','Lavorazione','Copie','Processo precedente','Annullato il','Annullato da','ID commessa'],archived.flatMap(a=>a.order_data.lines.map(l=>[a.order_data.number,a.client_data?.name||'',l.description,l.production?.quantity??l.qty,processLabel(store,l.status),a.deleted_at,a.actor_name||'',a.order_data.id])));
  const annotations:unknown[][]=[];
  for(const register of store.productionRegisters||[])for(const note of register.notes)annotations.push([register.sheet,note.row,note.values.map(v=>v??'').join(' | '),Object.values(note.comments||{}).join('\n')]);
  for(const r of rows)for(const source of r.sourceHistory?.length?r.sourceHistory:r.source?[r.source]:[])if(Object.keys(source.comments||{}).length)annotations.push([source.sheet,source.row,r.description,Object.entries(source.comments||{}).map(([cell,value])=>cell+': '+value).join('\n')]);

@@ -14,7 +14,7 @@ export function changeOrderClient(store: Store, orderId: string, clientId: strin
   const drafts = store.drafts.map(draft => {
     if (!linked.includes(draft) || draft.remoteDocumentId || ['created', 'sent'].includes(draft.status || '')) return draft;
     const rows = draftRows(next, draft.workIds);
-    if (new Set(rows.map(r => r.client.id)).size !== 1) throw Error('La bozza include altri ordini del cliente precedente. Separa o elimina quella bozza prima di cambiare cliente.');
+    if (new Set(rows.map(r => r.client.id)).size !== 1) throw Error('La bozza include altre commesse del cliente precedente. Separa o elimina quella bozza prima di cambiare cliente.');
     return {...draft, clientId, status: 'draft' as const, preparedInvoice: prepareInvoice(rows)};
   });
   return {...next, drafts};
