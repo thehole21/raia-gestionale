@@ -1,4 +1,6 @@
 'use client';
+import {Check} from 'lucide-react';
+import {billingState} from '@/lib/data';
 import {useMemo,useState} from 'react';
 import {type Store,type Order,fmtDate,workDue} from '@/lib/data';
 import {newestEntryFirst} from '@/lib/order-groups';
@@ -16,6 +18,7 @@ export function MonthlyReport({store,onOpen}:{store:Store;onOpen:(order:Order)=>
  const texts=[...new Set(order.lines.map(w=>w.production?.requestedText).filter(Boolean))];
  const delivery=dates.length?fmtDate(dates[0])+(dates.length>1?' +'+(dates.length-1):''):texts.join(' · ')||'Non precisata';
  const title=order.title?.trim()||order.number;
- return <article className="report-row" key={order.id}><strong title={clients.get(order.clientId)||'Cliente non disponibile'}>{clients.get(order.clientId)||'Cliente non disponibile'}</strong><button type="button" title={title} aria-label={'Apri '+title+' in Panoramica'} onClick={()=>onOpen(order)}>{title}</button><time dateTime={order.created||undefined}>{order.created?fmtDate(order.created):'—'}</time><span title={[...dates.map(fmtDate),...texts].join(' · ')||'Non precisata'}>{delivery}</span></article>;
+ const billed=order.lines.length>0&&order.lines.every(work=>billingState(work,store.drafts)==='billed');
+ return <article className="report-row" key={order.id}><strong title={clients.get(order.clientId)||'Cliente non disponibile'}>{clients.get(order.clientId)||'Cliente non disponibile'}</strong><button type="button" title={title} aria-label={'Apri '+title+' in Panoramica'+(billed?' · Fatturato':'')} onClick={()=>onOpen(order)} className="report-work-title"><span>{title}</span>{billed&&<Check size={17} className="report-billed-check" aria-label="Fatturato"/>}</button><time dateTime={order.created||undefined}>{order.created?fmtDate(order.created):'—'}</time><span title={[...dates.map(fmtDate),...texts].join(' · ')||'Non precisata'}>{delivery}</span></article>;
  })}</div></section>)}{!orders.length&&<p className="helper-text">Nessun lavoro {activeOnly?'attivo':''} da mostrare.</p>}</section>;
 }

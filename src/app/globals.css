@@ -376,3 +376,6 @@ dialog[open] :is(.duplicate-body,.fic-editor-body,.multi-options,.staff-message-
 .fic-editor-compact .fic-line-description:focus-within{grid-column:1/-1!important;grid-row:auto!important}
 .fic-editor-compact .fic-line-description textarea:focus{min-height:160px}
 .ddt-selection-dock{position:sticky;bottom:12px;z-index:30;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;padding:12px 16px;background:#f5e9ef;border:1px solid #bb8296;border-radius:10px;box-shadow:0 8px 30px #44203030;margin:12px 0}.ddt-selection-dock strong{font-size:13px;color:#70243c}
+
+.register-order-billing{display:flex;align-items:center;gap:8px;margin-left:auto;padding:4px 8px;border:1px solid #ddcbd3;border-radius:6px;background:#ffffffb3;font-size:11px;color:#624251;white-space:nowrap}
+.report-row .report-work-title{display:flex;align-items:center;gap:7px;min-width:0}.report-work-title>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.report-billed-check{flex-shrink:0;color:#226942;stroke-width:3}
