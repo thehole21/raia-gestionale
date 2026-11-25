@@ -13,20 +13,22 @@ assert.deepEqual(transformTypes.quote,['order','proforma','receipt','invoice']);
 assert.ok(Object.keys(documentSchema.properties).length>70);
 const source=fs.readFileSync(path.join(__dirname,'../src/app/api/fatture-in-cloud/documents/route.ts'),'utf8');
 const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
-async function run({action='create',role='admin',status='prepared',claimError=false,remoteStatus=200,remoteThrows=false,sourceType,sourceTarget='invoice'}={}){
- const op={id:'00000000-0000-4000-8000-000000000001',company_id:1,status,request_data:good,options:{keep_copy:true},remote_id:10,source_id:null};let posts=0,claims=0,finishes=0;const patches=[],paths=[];
- const crypto=require('node:crypto'),hash=crypto.createHash('sha256').update(JSON.stringify(good)).digest('hex');
+async function run({action='create',role='admin',status='prepared',claimError=false,remoteStatus=200,remoteThrows=false,sourceType,sourceTarget='invoice',joined=false}={}){
+ const op={id:'00000000-0000-4000-8000-000000000001',company_id:1,status,request_data:JSON.parse(JSON.stringify(good,(key,value)=>value&&typeof value==='object'&&!Array.isArray(value)?Object.fromEntries(Object.entries(value).reverse()):value)),options:{keep_copy:true},remote_id:10,source_id:null};let posts=0,claims=0,finishes=0;const patches=[],paths=[],sent=[];
+ const ddt={id:1,type:'delivery_note',number:4,entity:{id:12,name:'Test'},date:'2026-11-05',items_list:good.items_list,merged_in:null};if(joined){op.source_ids=[1];op.options={create_from:['1']};op.source_fingerprints={1:require('../lib/fic-document-digest.ts').documentDigest({...cleanDocument(ddt),number:ddt.number,updated_at:undefined,merged_in:null})};}
+ const crypto=require('node:crypto'),hash=require('../lib/fic-document-digest.ts').documentDigest(good);
  const db={from:()=>{const q={select:()=>q,eq:()=>q,single:async()=>({data:op}),update:v=>{patches.push(v);return q;}};return q;},rpc:async(name)=>{if(name==='raia_claim_document'){claims++;return {error:claimError?{}:null};}finishes++;return {};}};
  class FicError extends Error{constructor(m,status=400){super(m);this.status=status;}}
- const exports={};vm.runInNewContext(code,{exports,process:{env:{SUPABASE_SECRET_KEY:'test',NEXT_PUBLIC_SUPABASE_URL:'https://test.invalid'}},URL,Response,AbortSignal,fetch:async()=>{posts++;if(remoteThrows)throw Error('timeout');return Response.json(remoteStatus===200?{data:{id:10,number:3,type:'quote'}}:{error:{message:'invalid'}},{status:remoteStatus});},require:n=>{
-  if(n==='node:crypto')return crypto;if(n==='@supabase/supabase-js')return {createClient:()=>db};if(n==='@/lib/fic-documents')return require('../lib/fic-documents.ts');if(n==='@/lib/fic-document-match')return require('../lib/fic-document-match.ts');if(n==='@/lib/order-groups')return {};
+ const exports={};vm.runInNewContext(code,{exports,process:{env:{SUPABASE_SECRET_KEY:'test',NEXT_PUBLIC_SUPABASE_URL:'https://test.invalid'}},URL,Response,AbortSignal,fetch:async(url,init)=>{sent.push({url,body:JSON.parse(init.body)});posts++;if(remoteThrows)throw Error('timeout');return Response.json(remoteStatus===200?{data:{id:10,number:3,type:'quote'}}:{error:{message:'invalid'}},{status:remoteStatus});},require:n=>{
+  if(n==='@/lib/fic-ddt-join')return {readJoinSources:async()=>[ddt],validateJoinSources:()=>{},verifyJoinedInvoice:async(t,c,ids,remote)=>{assert.deepEqual(Array.from(ids),[1]);assert.equal(remote,10);}};if(n==='@/lib/fic-document-digest')return require('../lib/fic-document-digest.ts');if(n==='node:crypto')return crypto;if(n==='@supabase/supabase-js')return {createClient:()=>db};if(n==='@/lib/fic-documents')return require('../lib/fic-documents.ts');if(n==='@/lib/fic-document-match')return require('../lib/fic-document-match.ts');if(n==='@/lib/order-groups')return {};
   return {FicError,bearer:()=>'',sameOrigin:()=>{},admin:async()=>{if(role!=='admin')throw new FicError('forbidden',403);return {db,userId:'actor'};},connection:async()=>({row:{company_id:1},tokens:{access_token:'test'}}),unseal:()=>({id:op.id,user:'actor',company:1,hash,expires:Date.now()+10000}),ficGet:async(t,url)=>{paths.push(url);if(url.includes('/info'))return {data:{}};if(url.includes('/transform')||url.includes('/join'))return {data:good,options:{keep_copy:true}};return {data:{...good,id:10,type:sourceType||'quote'}};},failure:e=>Response.json({error:e.message},{status:e.status||502})};
  }});
  const response=action==='editor'?await exports.GET(new Request('https://test.invalid?mode=editor&type='+sourceTarget+'&sourceId=10')):await exports.POST(new Request('https://test.invalid',{method:'POST',body:JSON.stringify({action,confirmation:'signed'})}));
- return {status:response.status,posts,claims,finishes,patches,paths};
+ return {status:response.status,posts,claims,finishes,patches,paths,sent};
 }
 (async()=>{
  let r=await run();assert.equal(r.status,200);assert.equal(r.posts,1);assert.equal(r.finishes,1);
+ r=await run({joined:true});assert.equal(r.status,200);assert.equal(r.posts,1);assert.equal(r.finishes,1);assert.ok(r.sent[0].url.endsWith('/issued_documents'));assert.deepEqual(r.sent[0].body.options,{create_from:['1']});
  r=await run({role:'operator'});assert.equal(r.status,403);assert.equal(r.posts,0);
  r=await run({claimError:true});assert.equal(r.posts,0);assert.equal(r.status,409);
  r=await run({status:'created'});assert.equal(r.posts,0);assert.equal(r.claims,0);

@@ -340,3 +340,5 @@ body:has(dialog[open], [aria-modal="true"]){overflow:hidden!important;overscroll
 dialog[open], [aria-modal="true"]{overscroll-behavior:contain}
 dialog[open] :is(.duplicate-body,.fic-editor-body,.multi-options,.staff-message-scroll),
 [aria-modal="true"] :is(.drawer-body,.modal-body){overscroll-behavior:contain}
+
+.fic-editor footer{flex-wrap:wrap}.fic-editor footer .fic-footer-error{flex-basis:100%;margin:0;padding:10px 12px;background:#fff0f2;border:1px solid #e5a1ae;border-radius:6px}

@@ -1,7 +1,8 @@
 import {ddtInvoiceLink} from '@/lib/fic-ddt-status';
 import {joinIds,joinDdtData,readJoinSources,validateJoinSources,verifyJoinedInvoice,reconcileJoinReservations} from '@/lib/fic-ddt-join';
 import {createClient} from '@supabase/supabase-js';
-import {randomUUID,createHash} from 'node:crypto';
+import {randomUUID} from 'node:crypto';
+import {documentDigest as digest} from '@/lib/fic-document-digest';
 import {admin,bearer,connection,ficGet,FicError,failure,sameOrigin,seal,unseal} from '@/lib/fic-server';
 import {documentTypes,transformTypes,cleanDocument,validateDocument} from '@/lib/fic-documents';
 import {matchesRequestedDocument} from '@/lib/fic-document-match';
@@ -11,7 +12,6 @@ export const runtime='nodejs';export const maxDuration=60;
 const json=(v:unknown)=>Response.json(v,{headers:{'Cache-Control':'no-store'}});
 const api='https://api-v2.fattureincloud.it';
 const sourceDigest=(v:any)=>digest({...cleanDocument(v),number:v.number,updated_at:v.updated_at,merged_in:v.merged_in});
-const digest=(v:unknown)=>createHash('sha256').update(JSON.stringify(v)).digest('hex');
 async function context(request:Request){const ctx=await admin(bearer(request)),c=await connection(ctx);if(!c?.row.company_id)throw new FicError('Collega Fatture in Cloud e seleziona l’azienda nelle impostazioni.');const secret=process.env.SUPABASE_SECRET_KEY;if(!secret)throw new FicError('Configurare SUPABASE_SECRET_KEY sul server.',503);const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,secret,{auth:{persistSession:false,autoRefreshToken:false}});return {...ctx,c,service:db,company:c.row.company_id as number};}
 const id=(v:any)=>{const n=Number(v);if(!Number.isSafeInteger(n)||n<=0)throw new FicError('Identificativo documento non valido.');return n;};
 async function sourceData(ctx:Awaited<ReturnType<typeof context>>,sourceId:number,target:string){
