@@ -119,6 +119,9 @@ function Workspace() {
   const [section, setSection] = useState<Section>('work');
   const [reportTarget,setReportTarget]=useState<string>();
   const [category,setCategory]=useState<WorkCategory>('general');
+  const restoredCategory=useRef(false);
+  useEffect(()=>{try{const saved=sessionStorage.getItem('raia-overview-category');if(saved==='books'||saved==='general')setCategory(saved);}catch{}restoredCategory.current=true;},[]);
+  useEffect(()=>{if(!restoredCategory.current)return;try{sessionStorage.setItem('raia-overview-category',category);}catch{}},[category]);
   const [orderCategory,setOrderCategory]=useState<WorkCategory>('general');
   const [quick, setQuick] = useState<FilterType>('all');
   const [search, setSearch] = useState('');

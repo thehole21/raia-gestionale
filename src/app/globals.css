@@ -369,3 +369,10 @@ dialog[open] :is(.duplicate-body,.fic-editor-body,.multi-options,.staff-message-
 @media(min-width:1400px){.fic-editor-compact .fic-item>.fic-fields{grid-template-columns:minmax(200px,3fr) repeat(5,minmax(62px,1fr))}.fic-editor-compact .fic-item>.fic-fields .fic-line-description{grid-row:auto}.fic-editor-compact .fic-line-description textarea{min-height:62px;height:62px}}
 @media(max-width:1000px){.fic-editor-compact .workspace-fieldset{grid-template-columns:minmax(0,1fr)}.fic-editor-compact .fic-editor-section:first-child>.fic-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.fic-editor-compact>header,.fic-editor-compact>footer,.fic-editor-compact .fic-editor-body{padding:10px}.fic-editor-compact .fic-editor-section:first-child>.fic-fields{grid-template-columns:1fr}.fic-editor-compact .fic-item>.fic-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.fic-editor-compact .fic-item>.fic-fields .fic-line-description{grid-column:1/-1;grid-row:auto}.fic-editor-compact .fic-fields input,.fic-editor-compact .fic-fields select,.fic-editor-compact .fic-fields textarea{font-size:16px}.fic-editor-compact .fic-editor-section{padding:9px}}
+
+.fic-editor-compact .workspace-fieldset>.fic-editor-section:nth-child(3){grid-column:1/-1}
+.fic-editor-compact .workspace-fieldset{grid-template-columns:minmax(0,1fr)}
+.fic-editor-compact .fic-line-description textarea{min-height:90px;height:90px;transition:none}
+.fic-editor-compact .fic-line-description:focus-within{grid-column:1/-1!important;grid-row:auto!important}
+.fic-editor-compact .fic-line-description textarea:focus{min-height:160px}
+.ddt-selection-dock{position:sticky;bottom:12px;z-index:30;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;padding:12px 16px;background:#f5e9ef;border:1px solid #bb8296;border-radius:10px;box-shadow:0 8px 30px #44203030;margin:12px 0}.ddt-selection-dock strong{font-size:13px;color:#70243c}

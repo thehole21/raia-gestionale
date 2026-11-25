@@ -24,7 +24,7 @@ function BookRegisterView({deliveryModes,targetOrderId,suppliers,renderActions,r
  const [expandedOrders,setExpandedOrders]=useState<Record<string,boolean>>({});
  const toggleOrder=(id:string)=>setExpandedOrders(current=>({...current,[id]:!current[id]}));
  const groups=useMemo(()=>groupWork(all,visible),[all,visible]);
- const {shown,footer}=useOrderWindow(groups,targetOrderId);
+ const {shown,footer}=useOrderWindow(groups,targetOrderId,"books");
  const change=(r:WorkRow,patch:Partial<ReturnType<typeof bookProduction>>)=>onUpdate(r.id,{production:{...bookProduction(r,r.order),...patch}});
  return <div className="overview-register books-register"><div className="register-toolbar"><span>{visible.length} libri · {groups.length} ordini</span></div>{shown.map(g=>{
   const main=g.visible[0];

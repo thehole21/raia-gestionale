@@ -1,4 +1,4 @@
-import {reconcilePayments} from '@/lib/fic-payments';
+import {reconcilePayments,applyPaymentTerms} from '@/lib/fic-payments';
 import {ddtInvoiceLink} from '@/lib/fic-ddt-status';
 import {joinIds,joinDdtData,readJoinSources,validateJoinSources,verifyJoinedInvoice,reconcileJoinReservations} from '@/lib/fic-ddt-join';
 import {createClient} from '@supabase/supabase-js';
@@ -74,7 +74,7 @@ export async function POST(request:Request){try{
   if(ids)await reconcileJoinReservations(ctx.service,ctx.c.tokens.access_token,ctx.company,ids,ctx.userId);
   const sourceId=ids?null:body.sourceId?id(body.sourceId):null;
   const transformed=ids?await joinDdtData(ctx.c.tokens.access_token,ctx.company,ids,body.group):sourceId?await sourceData(ctx,sourceId,body.document.type):null;
-  let doc:any;try{doc=cleanDocument(body.document);validateDocument(doc);}catch(e){throw new FicError((e as Error).message);}
+  let doc:any;try{doc=applyPaymentTerms(cleanDocument(body.document));validateDocument(doc);}catch(e){throw new FicError((e as Error).message);}
   if((sourceId||ids)&&doc.entity?.id!==transformed!.source.entity?.id)throw new FicError('La trasformazione deve mantenere il cliente del documento originale.');
   if(!sourceId&&!ids){const client=(await ficGet(ctx.c.tokens.access_token,`/c/${ctx.company}/entities/clients/${id(doc.entity?.id)}`)).data;doc.entity={...client,...doc.entity,id:client.id};}
   const {data:ws,error:wsError}=await ctx.db.from('raia_workspace').select('payload,revision').eq('id',1).single();if(wsError)throw new FicError('Gestionale non disponibile.');
