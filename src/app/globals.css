@@ -332,3 +332,11 @@ select.register-process option,.inline-status option{background:#fff;color:#3034
 .overview-register > .register-group.register-group-solicited .register-order-actions{background:#fff0f2;border-bottom-color:#e89aa5}
 .register-order-title > .register-order-alert{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;background:#b51f35;color:#fff;border:1px solid #a21c2f;border-radius:7px;padding:6px 9px;font-size:11px;font-weight:700;min-height:34px}
 .register-order-alert svg{flex-shrink:0}.register-order-title > .register-order-alert:hover{background:#94182b}.register-order-alert:focus-visible{outline:2px solid #86182a;outline-offset:3px}
+
+/* Keep the underlying page still for every open modal, including native PDF dialogs.
+   CSS follows the open DOM state, so nested dialogs cannot unlock each other. */
+html:has(dialog[open], [aria-modal="true"]),
+body:has(dialog[open], [aria-modal="true"]){overflow:hidden!important;overscroll-behavior:none}
+dialog[open], [aria-modal="true"]{overscroll-behavior:contain}
+dialog[open] :is(.duplicate-body,.fic-editor-body,.multi-options,.staff-message-scroll),
+[aria-modal="true"] :is(.drawer-body,.modal-body){overscroll-behavior:contain}
