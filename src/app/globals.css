@@ -379,3 +379,17 @@ dialog[open] :is(.duplicate-body,.fic-editor-body,.multi-options,.staff-message-
 
 .register-order-billing{display:flex;align-items:center;gap:8px;margin-left:auto;padding:4px 8px;border:1px solid #ddcbd3;border-radius:6px;background:#ffffffb3;font-size:11px;color:#624251;white-space:nowrap}
 .report-row .report-work-title{display:flex;align-items:center;gap:7px;min-width:0}.report-work-title>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.report-billed-check{flex-shrink:0;color:#226942;stroke-width:3}
+
+/* Keep the complete action strip on one line on desktop. */
+@media(min-width:701px){
+ .overview-register .register-order-actions{flex-wrap:nowrap;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+ .overview-register .register-order-actions>.order-actions{flex:0 0 auto;flex-wrap:nowrap;gap:8px;margin-left:auto}
+ .overview-register .register-order-actions>.register-order-billing{flex:0 0 auto;margin-left:0;gap:5px;padding:5px 7px}
+ .overview-register .register-order-actions>.btn{flex-shrink:0}
+ .overview-register .register-order-actions .order-tool-button{padding:6px 7px;gap:5px;font-size:11px;min-height:32px;border-radius:7px}
+ .overview-register .register-order-actions .order-actions>label{font-size:11px;gap:4px}
+ .overview-register .register-order-actions .job-delete-button{padding:6px;font-size:10px;gap:4px}
+ .overview-register .register-order-actions .admin-cifra{flex-shrink:0;gap:4px}
+ .overview-register .register-order-actions .admin-cifra input{width:70px;padding:6px}
+ .overview-register .register-order-actions .billing-mark{gap:4px}
+}
