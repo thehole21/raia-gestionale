@@ -406,3 +406,7 @@ dialog[open] :is(.duplicate-body,.fic-editor-body,.multi-options,.staff-message-
 .solicitation-welcome{width:min(540px,calc(100vw - 32px))}.welcome-greeting{font-size:30px;font-weight:750;letter-spacing:-.5px;color:#812c46;margin-bottom:16px}.solicitation-welcome h2{font-size:34px}.solicitation-welcome h2 strong{font-size:46px}.welcome-note{font-size:16px}.welcome-actions .btn{font-size:15px}
 @media(prefers-reduced-motion:no-preference){.solicitation-welcome[open]{animation:welcome-appear 140ms ease-out both}@keyframes welcome-appear{from{opacity:0;transform:translateY(6px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}}
 @media(max-width:500px){.welcome-greeting{font-size:26px}.solicitation-welcome h2{font-size:28px}.solicitation-welcome h2 strong{font-size:40px}.welcome-note{font-size:15px}}
+
+.monthly-report .report-row{grid-template-columns:64px minmax(0,1.15fr) minmax(0,1.5fr) 88px 120px}
+.report-order-number{font-variant-numeric:tabular-nums;font-weight:700;color:#705463;font-size:11px}
+@media(max-width:600px){.monthly-report .report-row{grid-template-columns:38px minmax(0,1fr) minmax(0,1.25fr) 64px 72px;gap:5px}.report-order-number{font-size:10px}}
